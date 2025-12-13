@@ -75,7 +75,7 @@ export default function Index() {
                   Share Food,{" "}
                   <span className="text-[#28bd5f]">Build Community</span>
                 </h1>
-                <p className="text-xl text-[#727d92] 0 max-w-xl">
+                <p className="text-xl text-[#727d92] max-w-xl">
                   Connect surplus food with those in need. Simple, transparent, and impactful food donation platform.
                 </p>
               </div>
@@ -94,7 +94,7 @@ export default function Index() {
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-3 gap-6 pt-8 border-t border-slate-200 dark:border-slate-700">
+              <div className="grid grid-cols-3 gap-6 pt-8 border-t border-slate-200">
                 {stats.map((stat) => (
                   <div key={stat.label}>
                     <div className="text-2xl font-bold text-[#28bd5f]">
@@ -116,7 +116,7 @@ export default function Index() {
 
                 <div className="relative h-full flex items-center justify-center p-8">
                   <div className="space-y-4">
-                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
                       <div className="flex items-start gap-4">
                         <div className="p-3 rounded-lg bg-green-500/10">
                           <Package className="h-6 w-6 text-[#28bd5f]" />
@@ -130,7 +130,7 @@ export default function Index() {
                       </div>
                     </div>
 
-                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
                       <div className="flex items-start gap-4">
                         <div className="p-3 rounded-lg bg-orange-500/10">
                           <MapPin className="h-6 w-6 text-orange-600" />
@@ -144,7 +144,7 @@ export default function Index() {
                       </div>
                     </div>
 
-                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
                       <div className="flex items-start gap-4">
                         <div className="p-3 rounded-lg bg-green-500/10">
                           <CheckCircle className="h-6 w-6 text-[#28bd5f]" />
@@ -166,27 +166,27 @@ export default function Index() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 bg-slate-50 dark:bg-slate-900/50">
+      <section className="py-20 px-4 bg-slate-50">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">
               How FoodShare Works
             </h2>
-            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
               A simple, transparent platform connecting food donors with those who need it most.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
             {features.map((feature, index) => (
-              <Card key={index} className="p-8 hover:shadow-lg transition-shadow border-slate-200 dark:border-slate-700 group">
+              <Card key={index} className="p-8 hover:shadow-lg transition-shadow border-slate-200 group">
                 <div className="p-3 rounded-lg bg-green-500/10 w-fit group-hover:bg-green-500/20 transition-colors">
                   <div className="text-[#28bd5f]">{feature.icon}</div>
                 </div>
-                <h3 className="text-xl font-semibold mt-4 text-slate-900 dark:text-white">
+                <h3 className="text-xl font-semibold mt-4 text-slate-900">
                   {feature.title}
                 </h3>
-                <p className="text-slate-600 dark:text-slate-300 mt-2">
+                <p className="text-slate-600 mt-2">
                   {feature.description}
                 </p>
               </Card>
@@ -199,10 +199,10 @@ export default function Index() {
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">
               Getting Started
             </h2>
-            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
               Join the food sharing community in four simple steps.
             </p>
           </div>
@@ -217,7 +217,7 @@ export default function Index() {
                   <div className="w-16 h-16 rounded-full bg-[#28bd5f] text-white font-bold text-2xl flex items-center justify-center mb-4 relative z-10">
                     {step.number}
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                  <h3 className="text-lg font-semibold text-slate-900">
                     {step.title}
                   </h3>
                   <p className="text-sm text-slate-600 mt-2">
@@ -239,22 +239,22 @@ export default function Index() {
               <div className="p-4 rounded-lg bg-green-500/10 w-fit mb-4">
                 <HandHeart className="h-8 w-8 text-[#28bd5f]" />
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+              <h3 className="text-2xl font-bold text-slate-900 mb-4">
                 Are You a Donor?
               </h3>
-              <p className="text-slate-600 dark:text-slate-300 mb-6">
+              <p className="text-slate-600 mb-6">
                 Have surplus food? Share it with those in need. Post your donations quickly with details and location.
               </p>
               <ul className="space-y-2 mb-8">
-                <li className="flex items-center gap-2 text-sm text-slate-900 dark:text-white">
+                <li className="flex items-center gap-2 text-sm text-slate-900">
                   <CheckCircle className="h-4 w-4 text-[#28bd5f]" />
                   Post surplus food easily
                 </li>
-                <li className="flex items-center gap-2 text-sm text-slate-900 dark:text-white">
+                <li className="flex items-center gap-2 text-sm text-slate-900">
                   <CheckCircle className="h-4 w-4 text-[#28bd5f]" />
                   Track requests in real-time
                 </li>
-                <li className="flex items-center gap-2 text-sm text-slate-900 dark:text-white">
+                <li className="flex items-center gap-2 text-sm text-slate-900">
                   <CheckCircle className="h-4 w-4 text-[#28bd5f]" />
                   Build your impact profile
                 </li>
@@ -269,22 +269,22 @@ export default function Index() {
               <div className="p-4 rounded-lg bg-orange-500/10 w-fit mb-4">
                 <TrendingUp className="h-8 w-8 text-orange-600" />
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+              <h3 className="text-2xl font-bold text-slate-900 mb-4">
                 Looking for Food?
               </h3>
-              <p className="text-slate-600 dark:text-slate-300 mb-6">
+              <p className="text-slate-600 mb-6">
                 Browse available food donations near you. Filter by location, type, and availability.
               </p>
               <ul className="space-y-2 mb-8">
-                <li className="flex items-center gap-2 text-sm text-slate-900 dark:text-white">
+                <li className="flex items-center gap-2 text-sm text-slate-900">
                   <CheckCircle className="h-4 w-4 text-[#28bd5f]" />
                   Browse nearby donations
                 </li>
-                <li className="flex items-center gap-2 text-sm text-slate-900 dark:text-white">
+                <li className="flex items-center gap-2 text-sm text-slate-900">
                   <CheckCircle className="h-4 w-4 text-[#28bd5f]" />
                   Request with one click
                 </li>
-                <li className="flex items-center gap-2 text-sm text-slate-900 dark:text-white">
+                <li className="flex items-center gap-2 text-sm text-slate-900">
                   <CheckCircle className="h-4 w-4 text-[#28bd5f]" />
                   Track request status
                 </li>
@@ -300,7 +300,7 @@ export default function Index() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-12 px-4 mt-auto">
+      <footer className="border-t border-slate-200 bg-white py-12 px-4 mt-auto">
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
@@ -313,28 +313,28 @@ export default function Index() {
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-slate-900 dark:text-white mb-4">Platform</h4>
+              <h4 className="font-semibold text-slate-900 mb-4">Platform</h4>
               <ul className="space-y-2 text-sm text-slate-600">
                 <li><Link to="/browse" className="hover:text-[#28bd5f] transition-colors">Browse</Link></li>
                 <li><Link to="/donate" className="hover:text-[#28bd5f] transition-colors">Donate</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-slate-900 dark:text-white mb-4">About</h4>
+              <h4 className="font-semibold text-slate-900 mb-4">About</h4>
               <ul className="space-y-2 text-sm text-slate-600">
                 <li><a href="#" className="hover:text-[#28bd5f] transition-colors">About Us</a></li>
                 <li><a href="#" className="hover:text-[#28bd5f] transition-colors">Contact</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-slate-900 dark:text-white mb-4">Legal</h4>
+              <h4 className="font-semibold text-slate-900 mb-4">Legal</h4>
               <ul className="space-y-2 text-sm text-slate-600">
                 <li><a href="#" className="hover:text-[#28bd5f] transition-colors">Privacy</a></li>
                 <li><a href="#" className="hover:text-[#28bd5f] transition-colors">Terms</a></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-slate-200 dark:border-slate-700 pt-8 flex flex-col md:flex-row justify-between items-center">
+          <div className="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-sm text-slate-600">
               © 2025 FoodShare. All rights reserved.
             </p>

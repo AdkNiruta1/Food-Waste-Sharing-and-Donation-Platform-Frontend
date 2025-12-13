@@ -10,7 +10,7 @@ export function Header() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Toggle true/false to test
   const [userName] = useState("John Doe");
-  const [userRole, setUserRole] = useState("donor"); // "donor" | "recipient" | "admin"
+  const [userRole] = useState("donor"); // "donor" | "recipient" | "admin"
 
   const handleLogout = () => {
     setIsLoggedIn(false);
@@ -91,33 +91,33 @@ export function Header() {
               <div className="relative">
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-                    <User className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                    <User className="h-5 w-5 text-green-600" />
                   </div>
-                  <span className="text-sm font-medium text-slate-900 dark:text-white">{userName}</span>
+                  <span className="text-sm font-medium text-slate-900">{userName}</span>
                 </button>
 
                 {isProfileOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-50">
+                  <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-50">
                     <Link
                       to="/user/d1"
-                      className="block px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 first:rounded-t-lg"
+                      className="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-100 first:rounded-t-lg"
                       onClick={() => setIsProfileOpen(false)}
                     >
                       <User className="h-4 w-4 inline mr-2" /> View Profile
                     </Link>
                     <Link
                       to="/edit-profile/d1"
-                      className="block px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
+                      className="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-100"
                       onClick={() => setIsProfileOpen(false)}
                     >
                       <Settings className="h-4 w-4 inline mr-2" /> Edit Profile
                     </Link>
                     <Link
                       to={userRole === "donor" ? "/donation-history" : userRole === "recipient" ? "/request-history" : "/admin"}
-                      className="block px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 border-t border-slate-200 dark:border-slate-700"
+                      className="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-100 border-t border-slate-200"
                       onClick={() => setIsProfileOpen(false)}
                     >
                       <Package className="h-4 w-4 inline mr-2" />
@@ -125,7 +125,7 @@ export function Header() {
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 last:rounded-b-lg"
+                      className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 last:rounded-b-lg"
                     >
                       <LogOut className="h-4 w-4 inline mr-2" /> Logout
                     </button>
@@ -151,7 +151,7 @@ export function Header() {
 
         {/* Mobile Menu Toggle */}
         <button
-          className="md:hidden text-slate-700 dark:text-slate-300"
+          className="md:hidden text-slate-700"
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle menu"
         >
@@ -161,72 +161,72 @@ export function Header() {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+        <div className="md:hidden border-t border-slate-200 bg-white">
           <div className="container mx-auto px-4 py-6 space-y-4">
             {/* Mobile Links */}
             {!isLoggedIn && (
               <>
-                <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 dark:text-white hover:text-green-600">Home</Link>
-                <Link to="/browse" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 dark:text-white hover:text-green-600">Browse Food</Link>
-                <Link to="/about" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 dark:text-white hover:text-green-600">About</Link>
-                <Link to="/contact" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 dark:text-white hover:text-green-600">Contact</Link>
+                <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Home</Link>
+                <Link to="/browse" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Browse Food</Link>
+                <Link to="/about" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">About</Link>
+                <Link to="/contact" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Contact</Link>
               </>
             )}
 
             {isLoggedIn && userRole === "donor" && (
               <>
-                <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 dark:text-white hover:text-green-600">Home</Link>
-                <Link to="/browse" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 dark:text-white hover:text-green-600">Browse Food</Link>
-                <Link to="/donation-history" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 dark:text-white hover:text-green-600">My Donations</Link>
-                <Link to="/donor-dashboard" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 dark:text-white hover:text-green-600">Dashboard</Link>
+                <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Home</Link>
+                <Link to="/browse" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Browse Food</Link>
+                <Link to="/donation-history" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">My Donations</Link>
+                <Link to="/donor-dashboard" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Dashboard</Link>
               </>
             )}
 
             {isLoggedIn && userRole === "recipient" && (
               <>
-                <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 dark:text-white hover:text-green-600">Home</Link>
-                <Link to="/browse" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 dark:text-white hover:text-green-600">Browse Food</Link>
-                <Link to="/request-history" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 dark:text-white hover:text-green-600">My Requests</Link>
-                <Link to="/recipient-dashboard" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 dark:text-white hover:text-green-600">Dashboard</Link>
+                <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Home</Link>
+                <Link to="/browse" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Browse Food</Link>
+                <Link to="/request-history" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">My Requests</Link>
+                <Link to="/recipient-dashboard" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Dashboard</Link>
               </>
             )}
 
             {isLoggedIn && userRole === "admin" && (
               <>
-                <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 dark:text-white hover:text-green-600">Home</Link>
-                <Link to="/admin" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 dark:text-white hover:text-green-600">Dashboard</Link>
+                <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Home</Link>
+                <Link to="/admin" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Dashboard</Link>
               </>
             )}
 
             {isLoggedIn && (
               <>
-                <div className="border-t border-slate-200 dark:border-slate-700 my-4" />
-                <Link to="/notifications" onClick={() => setIsOpen(false)} className="flex items-center gap-3 text-lg font-medium text-slate-900 dark:text-white hover:text-green-600">
+                <div className="border-t border-slate-200 my-4" />
+                <Link to="/notifications" onClick={() => setIsOpen(false)} className="flex items-center gap-3 text-lg font-medium text-slate-900 hover:text-green-600">
                   <Bell className="h-5 w-5" /> Notifications
                 </Link>
-                <Link to="/user/d1" onClick={() => setIsOpen(false)} className="flex items-center gap-3 text-lg font-medium text-slate-900 dark:text-white hover:text-green-600">
+                <Link to="/user/d1" onClick={() => setIsOpen(false)} className="flex items-center gap-3 text-lg font-medium text-slate-900 hover:text-green-600">
                   <User className="h-5 w-5" /> View Profile
                 </Link>
-                <Link to="/edit-profile/d1" onClick={() => setIsOpen(false)} className="flex items-center gap-3 text-lg font-medium text-slate-900 dark:text-white hover:text-green-600">
+                <Link to="/edit-profile/d1" onClick={() => setIsOpen(false)} className="flex items-center gap-3 text-lg font-medium text-slate-900 hover:text-green-600">
                   <Settings className="h-5 w-5" /> Edit Profile
                 </Link>
               </>
             )}
 
-            <div className="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-3">
+            <div className="border-t border-slate-200 pt-4 space-y-3">
               {isLoggedIn ? (
                 <button
                   onClick={() => { handleLogout(); setIsOpen(false); }}
-                  className="w-full text-left flex items-center gap-3 px-3 py-3 text-lg font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                  className="w-full text-left flex items-center gap-3 px-3 py-3 text-lg font-medium text-red-600 hover:bg-red-50 rounded-lg"
                 >
                   <LogOut className="h-5 w-5" /> Logout
                 </button>
               ) : (
                 <>
                   <Link to="/login" onClick={() => setIsOpen(false)} className="block">
-                    <Button variant="outline" size="lg" className="w-full  border-slate-300">Sign In</Button>
+                    <Button variant="outline" size="lg" className="w-full border-slate-300">Sign In</Button>
                   </Link>
-                  <Link to="/register" onClick={() => setIsOpen(false)} className="block ">
+                  <Link to="/register" onClick={() => setIsOpen(false)} className="block">
                     <Button size="lg" className="w-full bg-green-600 text-white hover:bg-green-700">Sign Up</Button>
                   </Link>
                 </>

@@ -181,16 +181,16 @@ export default function Register() {
                   <Label className="text-sm font-medium">I want to:</Label>
                   <div className="space-y-2">
                     <label
-                      className="flex items-center gap-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-accent/5 transition-colors"
+                      className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-accent/5 transition-colors"
                       style={{
-                        borderColor: formData.role === "donor" ? "hsl(var(--primary))" : undefined,
+                        borderColor: formData.role === "donor" ? "green" : "#d1d5db", // default gray border
                       }}
                     >
                       <input
                         type="radio"
                         value="donor"
                         checked={formData.role === "donor"}
-                        onChange={handleInputChange}
+                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                         className="w-4 h-4"
                       />
                       <div className="flex-1">
@@ -202,18 +202,16 @@ export default function Register() {
                     </label>
 
                     <label
-                      className="flex items-center gap-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-accent/5 transition-colors"
+                      className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-accent/5 transition-colors"
                       style={{
-                        borderColor: formData.role === "recipient" ? "hsl(var(--primary))" : undefined,
+                        borderColor: formData.role === "recipient" ? "green" : "#d1d5db",
                       }}
                     >
                       <input
                         type="radio"
                         value="recipient"
                         checked={formData.role === "recipient"}
-                        onChange={(e) =>
-                          setFormData({ ...formData, role: e.target.value})
-                        }
+                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                         className="w-4 h-4"
                       />
                       <div className="flex-1">
@@ -239,7 +237,7 @@ export default function Register() {
                     onChange={handleInputChange}
                     className="h-10"
                   />
-                  {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+                  {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -255,7 +253,7 @@ export default function Register() {
                     onChange={handleInputChange}
                     className="h-10"
                   />
-                  {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                  {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -271,7 +269,7 @@ export default function Register() {
                     onChange={handleInputChange}
                     className="h-10"
                   />
-                  {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
+                  {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -288,7 +286,7 @@ export default function Register() {
                     className="h-10"
                   />
                   {errors.confirmPassword && (
-                    <p className="text-xs text-destructive">{errors.confirmPassword}</p>
+                    <p className="text-xs text-red-500">{errors.confirmPassword}</p>
                   )}
                 </div>
               </>
@@ -307,7 +305,7 @@ export default function Register() {
                     onChange={handleInputChange}
                     className="h-10"
                   />
-                  {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
+                  {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -323,7 +321,7 @@ export default function Register() {
                     onChange={handleInputChange}
                     className="h-10"
                   />
-                  {errors.address && <p className="text-xs text-destructive">{errors.address}</p>}
+                  {errors.address && <p className="text-xs text-red-500">{errors.address}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -348,7 +346,7 @@ export default function Register() {
                     </label>
                   </div>
                   {errors.profileImage && (
-                    <p className="text-xs text-destructive">{errors.profileImage}</p>
+                    <p className="text-xs text-red-500">{errors.profileImage}</p>
                   )}
                 </div>
 
@@ -420,7 +418,7 @@ export default function Register() {
                     </div>
                   </div>
                   {errors.documents && (
-                    <p className="text-xs text-destructive">{errors.documents}</p>
+                    <p className="text-xs text-red-500">{errors.documents}</p>
                   )}
                 </div>
 
@@ -448,7 +446,7 @@ export default function Register() {
                     </Link>
                   </label>
                 </div>
-                {errors.terms && <p className="text-xs text-destructive">{errors.terms}</p>}
+                {errors.terms && <p className="text-xs text-red-500">{errors.terms}</p>}
               </>
             )}
 

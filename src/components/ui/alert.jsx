@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { cva } from "class-variance-authority";
 import { cn } from "../../resources/utils";
@@ -9,9 +7,9 @@ const alertVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-white text-slate-900 border-slate-200 dark:bg-slate-900 dark:text-slate-50 dark:border-slate-700",
+        default: "bg-white text-slate-900 border-slate-200",
         destructive:
-          "border-red-600/50 text-red-700 dark:border-red-500/50 dark:text-red-400 bg-red-50/50 dark:bg-red-900/20",
+          "border-red-600/50 text-red-700 bg-red-50/50",
       },
     },
     defaultVariants: {
@@ -53,7 +51,7 @@ const AlertDescription = React.forwardRef((props, ref) => {
   return (
     <div
       ref={ref}
-      className={cn("text-sm [&_p]:leading-relaxed text-slate-600 dark:text-slate-400", className)}
+      className={cn("text-sm [&_p]:leading-relaxed text-red-600", className)}
       {...rest}
     />
   );
