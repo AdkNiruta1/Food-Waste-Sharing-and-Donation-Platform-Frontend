@@ -100,22 +100,23 @@ export default function Register() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+//handle form submit
   const handleSubmit = async (e) => {
   e.preventDefault();
-
+// Validate current step
   if (step === 1) {
     if (validateStep1()) setStep(2);
     return;
   }
+  // Final submission for step 2
 
   if (!validateStep2()) return;
-
+// Check terms agreement
   if (!agreedToTerms) {
     setErrors({ terms: "You must agree to the terms" });
     return;
   }
-
+// Prepare form data for submission
   try {
     const formDataPayload = new FormData();
 
@@ -142,9 +143,9 @@ export default function Register() {
     if (formData.documents.drivingLicense) {
       formDataPayload.append("drivingLicense", formData.documents.drivingLicense);
     }
-
+// Call register service
     await register(formDataPayload);
-
+// Navigate to dashboard on success
     navigate("/dashboard");
   } catch (err) {
     console.error(err);

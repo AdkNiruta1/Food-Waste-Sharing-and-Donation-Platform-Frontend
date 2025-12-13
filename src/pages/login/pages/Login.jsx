@@ -21,12 +21,13 @@ export default function Login() {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
-
+//handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    // Attempt login
     try {
       await Login(formData);
+      //navigate to dashboard on success
       navigate("/"); // or dashboard
     } catch (err) {
       console.log("Login failed",err);
