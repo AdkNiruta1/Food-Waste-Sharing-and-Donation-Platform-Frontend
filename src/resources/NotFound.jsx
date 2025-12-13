@@ -1,8 +1,8 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { Header } from "@/components/Header";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Header } from "../components/Header";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
 import { Link } from "react-router-dom";
 import { AlertCircle, Home } from "lucide-react";
 

@@ -2,6 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Leaf, Menu, X, Bell, LogOut, User, Settings, Package } from "lucide-react";
 import { useState } from "react";
+import Logo from "../assets/logo.png";
 
 export function Header() {
   const navigate = useNavigate();
@@ -27,11 +28,11 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur supports-backdrop-filter:bg-white/80">
-      <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <nav className="container mx-auto px-4  flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 font-bold text-xl text-green-600">
-          <Leaf className="h-6 w-6" />
-          <span>FoodShare</span>
+          <img src={Logo} className="h-25 w-25" />
+          <span>Annapurna Bhandar</span>
         </Link>
 
         {/* Desktop Navigation */}

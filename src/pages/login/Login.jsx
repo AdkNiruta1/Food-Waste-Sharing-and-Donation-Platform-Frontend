@@ -14,7 +14,7 @@ export default function Login() {
         <Card className="max-w-md w-full p-8">
           <div className="flex items-center justify-center gap-2 mb-8">
             <Leaf className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">FoodShare</h1>
+            <h1 className="text-2xl font-bold text-foreground">Annapurna Bhandar</h1>
           </div>
 
           <h2 className="text-xl font-bold text-foreground mb-2">Sign In</h2>

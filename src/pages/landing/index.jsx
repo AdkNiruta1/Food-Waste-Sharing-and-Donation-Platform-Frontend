@@ -170,7 +170,7 @@ export default function Index() {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-slate-900 mb-4">
-              How FoodShare Works
+              How Annapurna Bhandar Works
             </h2>
             <p className="text-xl text-slate-600 max-w-2xl mx-auto">
               A simple, transparent platform connecting food donors with those who need it most.
@@ -306,7 +306,7 @@ export default function Index() {
             <div>
               <div className="flex items-center gap-2 font-bold text-lg text-[#28bd5f] mb-4">
                 <Leaf className="h-5 w-5" />
-                <span>FoodShare</span>
+                <span>Annapurna Bhandar</span>
               </div>
               <p className="text-sm text-slate-600">
                 Reducing food waste, one donation at a time.
@@ -336,7 +336,7 @@ export default function Index() {
           </div>
           <div className="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-sm text-slate-600">
-              © 2025 FoodShare. All rights reserved.
+              © 2025 Annapurna Bhandar. All rights reserved.
             </p>
             <div className="flex gap-6 mt-4 md:mt-0">
               <Star className="h-5 w-5 text-slate-500 hover:text-[#28bd5f] cursor-pointer transition-colors" />

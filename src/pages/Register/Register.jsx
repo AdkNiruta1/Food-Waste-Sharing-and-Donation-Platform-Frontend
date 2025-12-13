@@ -157,7 +157,7 @@ export default function Register() {
         <Card className="max-w-2xl w-full p-8">
           <div className="flex items-center justify-center gap-2 mb-8">
             <Leaf className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">FoodShare</h1>
+            <h1 className="text-2xl font-bold text-foreground">Annapurna Bhandar</h1>
           </div>
 
           <h2 className="text-xl font-bold text-foreground mb-2">Create Account</h2>
@@ -322,32 +322,6 @@ export default function Register() {
                     className="h-10"
                   />
                   {errors.address && <p className="text-xs text-red-500">{errors.address}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="profileImage" className="text-sm font-medium">
-                    Profile Image *
-                  </Label>
-                  <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
-                    <input
-                      id="profileImage"
-                      name="profileImage"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleInputChange}
-                      className="hidden"
-                    />
-                    <label htmlFor="profileImage" className="cursor-pointer">
-                      <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm font-medium text-foreground">
-                        {formData.profileImage ? formData.profileImage.name : "Click to upload image"}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">PNG, JPG up to 5MB</p>
-                    </label>
-                  </div>
-                  {errors.profileImage && (
-                    <p className="text-xs text-red-500">{errors.profileImage}</p>
-                  )}
                 </div>
 
                 <div className="space-y-3">
