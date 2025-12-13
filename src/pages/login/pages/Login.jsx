@@ -1,8 +1,8 @@
-import { Header } from "../../components/Header";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Card } from "../../components/ui/card";
-import { Label } from "../../components/ui/label";
+import { Header } from "../../../components/Header";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Card } from "../../../components/ui/card";
+import { Label } from "../../../components/ui/label";
 import { Link } from "react-router-dom";
 import { Leaf } from "lucide-react";
 
