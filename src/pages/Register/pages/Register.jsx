@@ -7,17 +7,19 @@ import { Link, useNavigate } from "react-router-dom";
 import { Leaf, Upload, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { Alert, AlertDescription } from "../../../components/ui/alert";
+import { useRegister } from "../hooks/useRegister";
 
 export default function Register() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const { register, loading, error } = useRegister();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
     role: "recipient",
-    profileImage: null,
     documents: {
       citizenship: null,
       pan: null,
@@ -83,9 +85,6 @@ export default function Register() {
     if (!formData.address.trim()) {
       newErrors.address = "Address is required";
     }
-    if (!formData.profileImage) {
-      newErrors.profileImage = "Profile image is required";
-    }
 
     // Check for documents if hotel or needs verification
     if (formData.role === "donor") {
@@ -103,46 +102,54 @@ export default function Register() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (step === 1) {
-      if (validateStep1()) {
-        setStep(2);
-      }
-      return;
+  if (step === 1) {
+    if (validateStep1()) setStep(2);
+    return;
+  }
+
+  if (!validateStep2()) return;
+
+  if (!agreedToTerms) {
+    setErrors({ terms: "You must agree to the terms" });
+    return;
+  }
+
+  try {
+    const formDataPayload = new FormData();
+
+    // Basic fields
+    formDataPayload.append("name", formData.name);
+    formDataPayload.append("email", formData.email);
+    formDataPayload.append("password", formData.password);
+    formDataPayload.append("role", formData.role);
+    formDataPayload.append("phone", formData.phone);
+    formDataPayload.append("address", formData.address);
+
+    // Profile image
+    if (formData.profileImage) {
+      formDataPayload.append("profilePicture", formData.profileImage);
     }
 
-    if (step === 2) {
-      if (!validateStep2()) {
-        return;
-      }
-
-      if (!agreedToTerms) {
-        setErrors({ terms: "You must agree to the terms" });
-        return;
-      }
-
-      // Store registration data (in real app, send to server)
-      localStorage.setItem("pendingRegistration", JSON.stringify({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        role: formData.role,
-        phone: formData.phone,
-        address: formData.address,
-        documents: {
-          citizenship: formData.documents.citizenship?.name || null,
-          pan: formData.documents.pan?.name || null,
-          drivingLicense: formData.documents.drivingLicense?.name || null,
-        },
-        verificationStatus: "pending",
-        createdAt: new Date().toISOString(),
-      }));
-
-      // Redirect to email verification
-      navigate("/verify-email", { state: { email: formData.email } });
+    // Documents (at least one required)
+    if (formData.documents.citizenship) {
+      formDataPayload.append("citizenship", formData.documents.citizenship);
     }
-  };
+    if (formData.documents.pan) {
+      formDataPayload.append("pan", formData.documents.pan);
+    }
+    if (formData.documents.drivingLicense) {
+      formDataPayload.append("drivingLicense", formData.documents.drivingLicense);
+    }
+
+    await register(formDataPayload);
+
+    navigate("/dashboard");
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const goBack = () => {
     if (step > 1) {
@@ -316,7 +323,7 @@ export default function Register() {
                     id="address"
                     name="address"
                     type="text"
-                    placeholder="Your residential address"
+                    placeholder="Jhumka, Sunsari, Nepal"
                     value={formData.address}
                     onChange={handleInputChange}
                     className="h-10"
@@ -430,10 +437,18 @@ export default function Register() {
                   Back
                 </Button>
               )}
-              <Button type="submit" className={step === 1 ? "w-full" : "flex-1"}>
-                {step === 1 ? "Continue" : "Create Account"}
+              {( loading ) ? (
+                <Button type="button" className={step === 1 ? "w-full" : "flex-1"} disabled>
+                  Processing...
+                </Button>
+              ) : (
+             <Button type="submit" className={step === 1 ? "w-full" : "flex-1"}>
+                {step === 1 ? "Continue" :  "Create Account"}
               </Button>
+              )}
             </div>
+              {error && (<div className="text-sm text-red-500 mt-2">{error}</div>)}
+
           </form>
 
           <div className="mt-6 border-t border-border pt-6 text-center text-sm text-muted-foreground">
