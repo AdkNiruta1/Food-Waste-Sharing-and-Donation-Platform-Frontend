@@ -1,28 +1,29 @@
-import { useState, useContext } from "react";
+import { useState } from "react";
+import { loginUserService } from "../services/loginServices";
 import { AppContext } from "../../../context/ContextApp";
-import { registerService } from "../services/registerService";
-
-export const useRegister = () => {
+import { useContext } from "react";
+export const useLogin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const appContext = useContext(AppContext);
   const { showToast } = appContext;
-  const register = async (payload) => {
+  const Login = async (payload) => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await registerService(payload);
-      showToast(response.message || "Registration successful!", "success");
+      const response = await loginUserService(payload);
+      showToast(response.message || "Login successful!", "success");
+
       return response;
     } catch (err) {
       setError(err.message);
-      showToast(err.message || "Registration failed", "error");
+      showToast(err.message || "Login failed", "error");
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  return { register, loading, error };
+  return { Login, loading, error };
 };
