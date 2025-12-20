@@ -3,7 +3,7 @@ import APIClient from "./ApiClient";
 // Create an instance of APIClient for the "users" endpoint
 const authClient = new APIClient("users");
 
-export const getMeService = () => {
-  // Uses the `get` method from APIClient to fetch "me" data
-  return authClient.get("me");
+export const LogoutService = () => {
+  // Uses the `post` method from APIClient to post "logout" data
+  return authClient.post({}, "logout");
 };

@@ -1,8 +1,6 @@
 // React hooks
 import { useState, useContext } from "react";
-// App-level context for global state (like toast notifications)
 import { AppContext } from "../../../context/ContextApp";
-// Service that handles registration API call
 import { registerService } from "../services/registerService";
 
 /**

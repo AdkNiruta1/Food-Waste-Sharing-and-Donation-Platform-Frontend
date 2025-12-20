@@ -17,7 +17,7 @@ export default function Login() {
     email: "",
     password: "",
   });
-
+//handle input change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
@@ -26,15 +26,18 @@ export default function Login() {
     e.preventDefault();
     // Attempt login
     try {
-      await Login(formData);
-      //navigate to dashboard on success
-      navigate("/"); // or dashboard
+    const data = await Login(formData);
+    //collect the status of email verified
+    const emailVerified = data.data.emailVerified
+    const role = data.data.role
+    emailVerified ? (role === "admin" ? navigate("/admin") : role === "donor" ? navigate("/donor") : role === "recipient" ? navigate("/recipient") : navigate("/")) : navigate('/email-verification')
     } catch (err) {
       console.log("Login failed",err);
     }
   };
 
   return (
+    // Page layout
     <div className="min-h-screen flex flex-col">
       <Header />
 
@@ -86,6 +89,19 @@ export default function Login() {
                 required
               />
             </div>
+            <div className="flex items-center justify-between text-sm">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4" />
+                <span className="text-muted-foreground">Remember me</span>
+              </label>
+              <Link
+                to="/forgot-password"
+                className="text-primary hover:text-primary/80 transition-colors"
+              >
+                Forgot password?
+              </Link>
+            </div>
+
 
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Signing in..." : "Sign In"}

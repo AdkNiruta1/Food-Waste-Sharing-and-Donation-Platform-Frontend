@@ -6,6 +6,8 @@ import NotFound from "../resources/NotFound";
 import About from "../pages/landing/About";
 import Contact from "../pages/landing/Contact";
 import ProtectedRoute from "./ProtectedRoute";
+import VerifyEmail from "../pages/login/pages/EmailVerified";
+import ForgotPassword from "../pages/login/pages/ForgetPassword";
 
 export default function AppRoutes() {
   return (
@@ -17,6 +19,11 @@ export default function AppRoutes() {
         <Route path="/register" element={<Register />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/email-verification" element={<VerifyEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+
+
+
 
         {/* Protected Routes */}
         {/* <Route element={<ProtectedRoute />}>

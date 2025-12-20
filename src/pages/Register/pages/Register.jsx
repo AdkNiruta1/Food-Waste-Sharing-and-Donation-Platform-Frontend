@@ -13,7 +13,7 @@ export default function Register() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const { register, loading, error } = useRegister();
-
+// Form state
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -33,7 +33,7 @@ export default function Register() {
 
   const handleInputChange = (e) => {
     const { name, value, type } = e.target;
-
+// Handle file inputs separately
     if (type === "file") {
       const file = e.target.files?.[0];
       if (name === "profileImage") {
@@ -58,7 +58,7 @@ export default function Register() {
 
   const validateStep1 = () => {
     const newErrors = {};
-
+// Basic info validations
     if (!formData.name.trim()) {
       newErrors.name = "Full name is required";
     }
@@ -78,7 +78,7 @@ export default function Register() {
 
   const validateStep2 = () => {
     const newErrors = {};
-
+// Additional info validations
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone number is required";
     }

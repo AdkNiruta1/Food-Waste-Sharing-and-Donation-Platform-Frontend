@@ -1,6 +1,4 @@
-// React Router components
 import { Navigate, Outlet } from "react-router-dom";
-// Custom hook to get current user and auth status
 import { useAuth } from "../hooks/useMe";
 
 export default function ProtectedRoute({ roles }) {

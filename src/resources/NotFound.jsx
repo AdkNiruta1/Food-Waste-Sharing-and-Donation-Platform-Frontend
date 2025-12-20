@@ -17,6 +17,7 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
+    // Page not found layout
     <div className="min-h-screen flex flex-col">
       <Header />
       <div className="flex-1 flex items-center justify-center px-4 py-20">

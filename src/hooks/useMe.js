@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { getMeService } from "../services/GetProfile";
-//not testing yet
+// authentication hook
 export const useAuth = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
+//call getMeService to check if user is authenticated
   useEffect(() => {
     const fetchUser = async () => {
       try {

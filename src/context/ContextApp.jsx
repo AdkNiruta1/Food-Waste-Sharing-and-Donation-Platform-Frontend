@@ -4,7 +4,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const AppContext = createContext(undefined);
-
+// Default toast configuration
 const defaultToastOptions = {
   position: "bottom-right",
   autoClose: 5000,
@@ -15,7 +15,7 @@ const defaultToastOptions = {
   progress: undefined,
   theme: "colored",
 };
-
+// Context Provider Component
 export default function ContextApp({ children }) {
   // Toast Function
   const showToast = (
@@ -40,7 +40,7 @@ export default function ContextApp({ children }) {
         break;
     }
   };
-
+// Provide context values to children components
   return (
     <AppContext.Provider value={{ showToast }}>
       <ToastContainer />

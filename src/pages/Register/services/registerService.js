@@ -1,6 +1,5 @@
 // Import the reusable APIClient
-import APIClient from "../../../services/ApiClient"; // Adjust the path based on your project
-
+import APIClient from "../../../services/ApiClient";
 // Create an instance of APIClient for the "users" endpoint
 const authClient = new APIClient("users");
 
