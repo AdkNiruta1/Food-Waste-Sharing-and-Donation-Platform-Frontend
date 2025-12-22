@@ -16,6 +16,7 @@ export function Header() {
 
   const isLoggedIn = isAuthenticated;
   const isEmailVerified = user?.emailVerified;
+  const isStatusVerified = user?.status;
   const userName = user?.emailVerified ? user?.name : "John Doe";
   const userRole = user?.emailVerified ? user?.role : "donor";
 
@@ -63,7 +64,7 @@ const handleLogout = async (e) => {
             )}
 
             {/* Donor */}
-            {isAuthenticated && isEmailVerified && userRole === "donor" && (
+            {isAuthenticated && isEmailVerified && isStatusVerified && userRole === "donor" && (
               <>
                 <Link to="/donor-dashboard" className={`text-sm font-medium pb-1 transition-colors ${isActive("/donor-dashboard")}`}>Dashboard</Link>
                 <Link to="/browse" className={`text-sm font-medium pb-1 transition-colors ${isActive("/browse")}`}>Browse Food</Link>
@@ -72,7 +73,7 @@ const handleLogout = async (e) => {
             )}
 
             {/* Recipient */}
-            {isAuthenticated && isEmailVerified && userRole === "recipient" && (
+            {isAuthenticated && isEmailVerified && isStatusVerified && userRole === "recipient" && (
               <>
                 <Link to="/" className={`text-sm font-medium pb-1 transition-colors ${isActive("/")}`}>Home</Link>
                 <Link to="/browse" className={`text-sm font-medium pb-1 transition-colors ${isActive("/browse")}`}>Browse Food</Link>
@@ -82,7 +83,7 @@ const handleLogout = async (e) => {
             )}
 
             {/* Admin */}
-            {isAuthenticated && isEmailVerified && userRole === "admin" && (
+            {isAuthenticated && isEmailVerified && isStatusVerified && userRole === "admin" && (
               <>
                 <Link to="/" className={`text-sm font-medium pb-1 transition-colors ${isActive("/")}`}>Home</Link>
                 <Link to="/admin" className={`text-sm font-medium pb-1 transition-colors ${isActive("/admin")}`}>Dashboard</Link>
@@ -92,7 +93,7 @@ const handleLogout = async (e) => {
 
           {/* Right Section - Desktop */}
           <div className="hidden md:flex items-center gap-3">
-            {isAuthenticated && isEmailVerified ? (
+            {isAuthenticated && isEmailVerified && isStatusVerified ? (
               <>
                 {/* Notifications */}
                 <Link to="/notifications">
@@ -179,7 +180,7 @@ const handleLogout = async (e) => {
           <div className="md:hidden border-t border-slate-200 bg-white">
             <div className="container mx-auto px-4 py-6 space-y-4">
               {/* Mobile Links */}
-              {!isAuthenticated && (
+              {!isAuthenticated &&  (
                 <>
                   <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Home</Link>
                   <Link to="/browse" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Browse Food</Link>
@@ -188,7 +189,7 @@ const handleLogout = async (e) => {
                 </>
               )}
 
-              {isLoggedIn && userRole === "donor" && (
+              {isLoggedIn && isStatusVerified && isEmailVerified && userRole === "donor" && (
                 <>
                   <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Home</Link>
                   <Link to="/browse" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Browse Food</Link>
@@ -197,7 +198,7 @@ const handleLogout = async (e) => {
                 </>
               )}
 
-              {isLoggedIn && userRole === "recipient" && (
+              {isLoggedIn && isStatusVerified && isEmailVerified && userRole === "recipient" && (
                 <>
                   <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Home</Link>
                   <Link to="/browse" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Browse Food</Link>
@@ -206,14 +207,14 @@ const handleLogout = async (e) => {
                 </>
               )}
 
-              {isLoggedIn && userRole === "admin" && (
+              {isLoggedIn && isStatusVerified && isEmailVerified && userRole === "admin" && (
                 <>
                   <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Home</Link>
                   <Link to="/admin" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Dashboard</Link>
                 </>
               )}
 
-              {isAuthenticated && isEmailVerified && (
+              {isAuthenticated && isStatusVerified && isEmailVerified && (
                 <>
                   <div className="border-t border-slate-200 my-4" />
                   <Link to="/notifications" onClick={() => setIsOpen(false)} className="flex items-center gap-3 text-lg font-medium text-slate-900 hover:text-green-600">
@@ -229,7 +230,7 @@ const handleLogout = async (e) => {
               )}
 
               <div className="border-t border-slate-200 pt-4 space-y-3">
-                {isAuthenticated && isEmailVerified ? (
+                {isAuthenticated && isStatusVerified && isEmailVerified ? (
                   <button
                    onClick={(e) => handleLogout(e)}
                     disabled={logoutLoading}

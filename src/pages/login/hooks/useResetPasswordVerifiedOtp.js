@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { verifyOtpService } from "../services/OtpServices";
+import { VerifyOtpService } from "../services/ResetPasswordService";
 //hook to verify OTP
-export const useVerifiedOtp = () => {
+export const useForgetPasswordVerifiedOtp = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -12,7 +12,7 @@ export const useVerifiedOtp = () => {
       setError(null);
       setSuccess(null);
 //call service
-      const res = await verifyOtpService({ email, otp });
+      const res = await VerifyOtpService({ email, otp });
       setSuccess(res.message);
       return res;
     } catch (err) {

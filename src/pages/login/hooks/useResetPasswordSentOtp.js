@@ -1,30 +1,31 @@
 import { useState } from "react";
-import { verifyOtpService } from "../services/OtpServices";
-//hook to verify OTP
-export const useVerifiedOtp = () => {
+import { SendOtpService } from "../services/ResetPasswordService";
+//hook to send OTP
+export const useResetPasswordSentOtp = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-//verify OTP function
-  const verifyOtp = async (email, otp) => {
+//send OTP function
+  const sendOtp = async (email) => {
     try {
       setLoading(true);
       setError(null);
       setSuccess(null);
 //call service
-      const res = await verifyOtpService({ email, otp });
+      const res = await SendOtpService({ email });
+      //set success message
       setSuccess(res.message);
       return res;
     } catch (err) {
       //set error message
       const message =
-        err.response?.data?.message || "Invalid OTP";
+        err.response?.data?.message || "Failed to send OTP";
       setError(message);
       throw new Error(message); // 🔥 important
     } finally {
       setLoading(false);
     }
   };
-//return functions and states
-  return { verifyOtp, loading, error, success };
+
+  return { sendOtp, loading, error, success };
 };

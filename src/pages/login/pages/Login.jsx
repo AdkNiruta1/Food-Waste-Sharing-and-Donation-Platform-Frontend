@@ -11,30 +11,53 @@ import { Alert, AlertDescription } from "../../../components/ui/alert";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { Login, loading, error } = useLogin();
+  const { Login, loading, error:loginError } = useLogin();
+const [error, setError] = useState(null);
+
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const displayError = error || loginError;
+
 //handle input change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 //handle form submit
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    // Attempt login
-    try {
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
     const data = await Login(formData);
-    //collect the status of email verified
-    const emailVerified = data.data.emailVerified
-    const role = data.data.role
-    emailVerified ? (role === "admin" ? navigate("/admin") : role === "donor" ? navigate("/donor") : role === "recipient" ? navigate("/recipient") : navigate("/")) : navigate('/email-verification')
-    } catch (err) {
-      console.log("Login failed",err);
+    const userVerified = data.data.status;
+    console.log("User verified status:", userVerified);
+    const emailVerified = data.data.emailVerified;
+    const role = data.data.role;
+    const email = data.data.email || formData.email;
+
+    if (emailVerified) {
+      if (userVerified)
+      {
+      if (role === "admin") navigate("/admin");
+      else if (role === "donor") navigate("/donor");
+      else if (role === "recipient") navigate("/recipient");
+      else navigate("/");
+      }
+      else{
+       setError("User not verified by admin yet.");
+      }
+    } else {
+      navigate("/email-verification", {
+        state: { email },
+      });
     }
-  };
+  } catch (err) {
+    console.log("Login failed", err);
+  }
+};
+
 
   return (
     // Page layout
@@ -58,13 +81,13 @@ export default function Login() {
           </p>
 
           {/* ❌ Error */}
-          {error && (
+          {displayError && (
             <Alert variant="destructive" className="mb-4">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{displayError}</AlertDescription>
             </Alert>
           )}
-
+          
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
