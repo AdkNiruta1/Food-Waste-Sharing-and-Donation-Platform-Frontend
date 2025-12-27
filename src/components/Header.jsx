@@ -16,7 +16,7 @@ export function Header() {
 
   const isLoggedIn = isAuthenticated;
   const isEmailVerified = user?.emailVerified;
-  const isStatusVerified = user?.status;
+  const isStatusVerified = user?.verified;
   const userName = user?.emailVerified ? user?.name : "John Doe";
   const userRole = user?.emailVerified ? user?.role : "donor";
 
@@ -85,8 +85,13 @@ const handleLogout = async (e) => {
             {/* Admin */}
             {isAuthenticated && isEmailVerified && isStatusVerified && userRole === "admin" && (
               <>
-                <Link to="/" className={`text-sm font-medium pb-1 transition-colors ${isActive("/")}`}>Home</Link>
                 <Link to="/admin" className={`text-sm font-medium pb-1 transition-colors ${isActive("/admin")}`}>Dashboard</Link>
+                <Link to="/manage-users" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-users")}`}>Manage Users</Link>
+                <Link to="/manage-requests" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-requests")}`}>Manage Requests</Link>
+                <Link to="/manage-reports" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-reports")}`}>Manage Reports</Link>
+                <Link to="/manage-notifications" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-notifications")}`}>Manage Notifications</Link>
+                <Link to="/manage-reviews" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-reviews")}`}>Manage Reviews</Link>
+
               </>
             )}
           </div>
