@@ -123,14 +123,14 @@ const handleLogout = async (e) => {
                   {isProfileOpen && (
                     <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-50">
                       <Link
-                        to="/user/d1"
+                        to="/profile"
                         className="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-100 first:rounded-t-lg"
                         onClick={() => setIsProfileOpen(false)}
                       >
                         <User className="h-4 w-4 inline mr-2" /> View Profile
                       </Link>
                       <Link
-                        to="/edit-profile/d1"
+                        to="/edit-profile"
                         className="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-100"
                         onClick={() => setIsProfileOpen(false)}
                       >
@@ -225,10 +225,10 @@ const handleLogout = async (e) => {
                   <Link to="/notifications" onClick={() => setIsOpen(false)} className="flex items-center gap-3 text-lg font-medium text-slate-900 hover:text-green-600">
                     <Bell className="h-5 w-5" /> Notifications
                   </Link>
-                  <Link to="/user/d1" onClick={() => setIsOpen(false)} className="flex items-center gap-3 text-lg font-medium text-slate-900 hover:text-green-600">
+                  <Link to="/profile" onClick={() => setIsOpen(false)} className="flex items-center gap-3 text-lg font-medium text-slate-900 hover:text-green-600">
                     <User className="h-5 w-5" /> View Profile
                   </Link>
-                  <Link to="/edit-profile/d1" onClick={() => setIsOpen(false)} className="flex items-center gap-3 text-lg font-medium text-slate-900 hover:text-green-600">
+                  <Link to="/edit-profile" onClick={() => setIsOpen(false)} className="flex items-center gap-3 text-lg font-medium text-slate-900 hover:text-green-600">
                     <Settings className="h-5 w-5" /> Edit Profile
                   </Link>
                 </>

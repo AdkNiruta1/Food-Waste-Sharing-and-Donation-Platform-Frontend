@@ -15,6 +15,8 @@ import Register from "../pages/auth/Register/pages/Register";
 import AdminVerifyDocuments from "../pages/admin/users/pages/AdminVeriedDoc";
 import AdminVerifiedUsers from "../pages/admin/users/pages/AdminVerifiedUsers";
 import { Header } from "../components/Header";
+import UserProfile from "../components/UserProfile";
+import Notifications from "../components/Notifications";
 
 export default function AppRoutes() {
   return (
@@ -32,6 +34,12 @@ export default function AppRoutes() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/browse" element={<BrowseFood />} />
 
+        <Route element={<ProtectedRoute  />}>
+          <Route path="/profile" element={<UserProfile />} />
+          <Route path="/notifications" element={<Notifications />} />
+
+
+        </Route>
         {/* Admin */}
         <Route element={<ProtectedRoute roles={["admin"]} />}>
           <Route path="/admin" element={<AdminDashboard />} />

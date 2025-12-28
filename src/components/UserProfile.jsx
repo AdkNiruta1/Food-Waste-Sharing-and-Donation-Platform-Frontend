@@ -1,12 +1,12 @@
-import { Header } from "@/components/Header";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { useState } from "react";
+import { Header } from "../components/Header";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
 import { useParams } from "react-router-dom";
-import { Edit2, Mail, Phone, MapPin, FileText, Star, Award, Shield } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Edit2, Mail, Phone, MapPin, Star, Shield, Award } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 
-
-const mockUsers= {
+const mockUsers = {
   "d1": {
     id: "d1",
     name: "Raj Kumar",
@@ -20,16 +20,8 @@ const mockUsers= {
     joinedDate: "2024-01-15",
     profileImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
     verificationStatus: "verified",
-    documents: {
-      citizenship: true,
-      pan: true,
-      drivingLicense: false,
-    },
-    stats: {
-      donations: 48,
-      completed: 45,
-      cancelled: 2,
-    },
+    documents: { citizenship: true, pan: true, drivingLicense: false },
+    stats: { donations: 48, completed: 45, cancelled: 2 },
   },
   "rec1": {
     id: "rec1",
@@ -40,263 +32,336 @@ const mockUsers= {
     rating: 4.5,
     totalRatings: 12,
     bio: "Grateful community member helping to feed my family. Always respectful and punctual.",
-    location: "Kathmandu",
+    location: "Kupondole, Lalitpur",
     joinedDate: "2024-02-20",
     profileImage: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
     verificationStatus: "verified",
-    documents: {
-      citizenship: true,
-      pan: false,
-      drivingLicense: false,
-    },
-    stats: {
-      requests: 18,
-      completed: 16,
-      cancelled: 1,
-    },
+    documents: { citizenship: true, pan: false, drivingLicense: false },
+    stats: { requests: 18, completed: 16, cancelled: 1 },
   },
 };
+
+const mockReviews = [
+  { rating: 5, text: "Very reliable donor! Food was fresh and pickup was smooth. Highly recommend.", date: "1 week ago" },
+  { rating: 4, text: "Punctual and respectful recipient. Great communication throughout.", date: "2 weeks ago" },
+  { rating: 5, text: "Excellent experience. Generous portion and well-organized.", date: "1 month ago" },
+  { rating: 3, text: "Good overall, but pickup time was slightly delayed.", date: "2 months ago" },
+];
 
 export default function UserProfile() {
   const { userId = "d1" } = useParams();
   const user = mockUsers[userId] || mockUsers["d1"];
-  const isCurrentUser = true; // In real app, check if viewing own profile
+  const isCurrentUser = true; // In real app: compare with logged-in user
+
+  const [reviewFilter, setReviewFilter] = useState("all"); // "all" | "5" | "4" | "3below"
+
+  const filteredReviews = mockReviews.filter((review) => {
+    if (reviewFilter === "all") return true;
+    if (reviewFilter === "5") return review.rating === 5;
+    if (reviewFilter === "4") return review.rating === 4;
+    if (reviewFilter === "3below") return review.rating <= 3;
+    return true;
+  });
+
+  const renderStars = (rating) => {
+    return [...Array(5)].map((_, i) => (
+      <Star
+        key={i}
+        className={`h-5 w-5 ${
+          i < Math.floor(rating)
+            ? "fill-yellow-400 text-yellow-400"
+            : i < rating
+            ? "fill-yellow-400 text-yellow-400"
+            : "text-slate-300"
+        }`}
+      />
+    ));
+  };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      
-
-      <div className="flex-1">
-        {/* Header Section */}
-        <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-border">
-          <div className="container mx-auto max-w-6xl px-4 py-12">
-            <div className="flex flex-col md:flex-row gap-8 items-start md:items-end">
-              {/* Profile Image */}
-              <div className="relative">
-                <img
-                  src={user.profileImage}
-                  alt={user.name}
-                  className="w-32 h-32 rounded-full object-cover border-4 border-background shadow-lg"
-                />
-                {user.verificationStatus === "verified" && (
-                  <div className="absolute bottom-0 right-0 bg-success rounded-full p-2">
-                    <Shield className="h-5 w-5 text-white" />
-                  </div>
-                )}
-              </div>
-
-              {/* User Info */}
-              <div className="flex-1">
-                <div className="flex flex-col gap-3">
-                  <h1 className="text-4xl font-bold text-foreground">{user.name}</h1>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                      <Star className="h-5 w-5 text-warning fill-warning" />
-                      <span className="font-bold text-foreground">{user.rating}</span>
-                      <span className="text-sm text-muted-foreground">
-                        ({user.totalRatings} ratings)
-                      </span>
-                    </div>
-                    <div className="text-sm bg-primary/10 text-primary px-3 py-1 rounded-full font-medium">
-                      {user.role === "donor" ? "Food Donor" : "Food Recipient"}
-                    </div>
-                  </div>
+    <div className="min-h-screen flex flex-col bg-white">
+      {/* Hero Header */}
+      <div className="bg-gradient-to-r from-green-500/10 to-green-500/5 border-b border-slate-200">
+        <div className="container mx-auto max-w-6xl px-4 py-12">
+          <div className="flex flex-col md:flex-row items-start md:items-end gap-8">
+            {/* Profile Image */}
+            <div className="relative">
+              <img
+                src={user.profileImage}
+                alt={user.name}
+                className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white shadow-xl"
+              />
+              {user.verificationStatus === "verified" && (
+                <div className="absolute bottom-0 right-0 w-10 h-10 bg-green-600 rounded-full flex items-center justify-center shadow-lg">
+                  <Shield className="h-6 w-6 text-white" />
                 </div>
-              </div>
-
-              {isCurrentUser && (
-                <Button>
-                  <Edit2 className="mr-2 h-4 w-4" />
-                  Edit Profile
-                </Button>
               )}
             </div>
+
+            {/* User Info */}
+            <div className="flex-1">
+              <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3">
+                {user.name}
+              </h1>
+
+              <div className="flex flex-wrap items-center gap-6 mb-4">
+                <div className="flex items-center gap-2">
+                  {renderStars(user.rating)}
+                  <span className="font-semibold text-slate-900 ml-2">
+                    {user.rating}
+                  </span>
+                  <span className="text-sm text-slate-600">
+                    ({user.totalRatings} reviews)
+                  </span>
+                </div>
+
+                <span className="px-4 py-2 rounded-full text-sm font-medium bg-green-100 text-green-700">
+                  {user.role === "donor" ? "Food Donor" : "Food Recipient"}
+                </span>
+              </div>
+
+              <p className="text-lg text-slate-600 max-w-2xl">
+                {user.bio}
+              </p>
+            </div>
+
+            {/* Edit Button (only for own profile) */}
+            {isCurrentUser && (
+              <Button size="lg" className="bg-green-600 hover:bg-green-700">
+                <Edit2 className="mr-2 h-5 w-5" />
+                Edit Profile
+              </Button>
+            )}
           </div>
         </div>
+      </div>
 
-        {/* Main Content */}
-        <div className="container mx-auto max-w-6xl px-4 py-8">
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Contact Info */}
-              <Card className="p-6 border-border">
-                <h3 className="font-bold text-foreground mb-4">Contact Information</h3>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <Mail className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Email</p>
-                      <p className="text-sm font-medium text-foreground">{user.email}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Phone className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Phone</p>
-                      <p className="text-sm font-medium text-foreground">{user.phone}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <MapPin className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Location</p>
-                      <p className="text-sm font-medium text-foreground">{user.location}</p>
-                    </div>
+      {/* Main Content */}
+      <div className="container mx-auto max-w-6xl px-4 py-10">
+        <div className="grid md:grid-cols-3 gap-8">
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Contact Info */}
+            <Card className="p-6 border-slate-200">
+              <h3 className="font-bold text-slate-900 mb-5">
+                Contact Information
+              </h3>
+              <div className="space-y-5">
+                <div className="flex items-center gap-4">
+                  <Mail className="h-5 w-5 text-green-600" />
+                  <div>
+                    <p className="text-xs text-slate-500">Email</p>
+                    <p className="font-medium text-slate-900">{user.email}</p>
                   </div>
                 </div>
-              </Card>
-
-              {/* Verification Status */}
-              <Card className="p-6 border-border">
-                <h3 className="font-bold text-foreground mb-4">Verification</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Citizenship</span>
-                    {user.documents.citizenship ? (
-                      <Shield className="h-5 w-5 text-success" />
-                    ) : (
-                      <FileText className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">PAN Card</span>
-                    {user.documents.pan ? (
-                      <Shield className="h-5 w-5 text-success" />
-                    ) : (
-                      <FileText className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Driving License</span>
-                    {user.documents.drivingLicense ? (
-                      <Shield className="h-5 w-5 text-success" />
-                    ) : (
-                      <FileText className="h-5 w-5 text-muted-foreground" />
-                    )}
+                <div className="flex items-center gap-4">
+                  <Phone className="h-5 w-5 text-green-600" />
+                  <div>
+                    <p className="text-xs text-slate-500">Phone</p>
+                    <p className="font-medium text-slate-900">{user.phone}</p>
                   </div>
                 </div>
-              </Card>
+                <div className="flex items-center gap-4">
+                  <MapPin className="h-5 w-5 text-green-600" />
+                  <div>
+                    <p className="text-xs text-slate-500">Location</p>
+                    <p className="font-medium text-slate-900">{user.location}</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
 
-              {/* Stats */}
-              <Card className="p-6 border-border">
-                <h3 className="font-bold text-foreground mb-4">Statistics</h3>
-                <div className="space-y-3">
-                  {user.role === "donor" ? (
-                    <>
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Total Donations</p>
-                        <p className="text-2xl font-bold text-primary">
-                          {user.stats.donations}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Completed</p>
-                        <p className="text-lg font-bold text-success">
-                          {user.stats.completed}
-                        </p>
-                      </div>
-                    </>
+            {/* Verification Status */}
+            <Card className="p-6 border-slate-200">
+              <h3 className="font-bold text-slate-900 mb-5">
+                Document Verification
+              </h3>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Citizenship</span>
+                  {user.documents.citizenship ? (
+                    <Shield className="h-6 w-6 text-green-600" />
                   ) : (
-                    <>
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Total Requests</p>
-                        <p className="text-2xl font-bold text-primary">
-                          {user.stats.requests}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Completed</p>
-                        <p className="text-lg font-bold text-success">
-                          {user.stats.completed}
-                        </p>
-                      </div>
-                    </>
+                    <span className="text-sm text-slate-500">Not submitted</span>
                   )}
                 </div>
-              </Card>
-            </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">PAN Card</span>
+                  {user.documents.pan ? (
+                    <Shield className="h-6 w-6 text-green-600" />
+                  ) : (
+                    <span className="text-sm text-slate-500">Not submitted</span>
+                  )}
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Driving License</span>
+                  {user.documents.drivingLicense ? (
+                    <Shield className="h-6 w-6 text-green-600" />
+                  ) : (
+                    <span className="text-sm text-slate-500">Optional</span>
+                  )}
+                </div>
+              </div>
+            </Card>
 
-            {/* Main Content Area */}
-            <div className="md:col-span-2">
-              <Tabs defaultValue="about" className="space-y-6">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="about">About</TabsTrigger>
-                  <TabsTrigger value="reviews">Reviews</TabsTrigger>
-                  <TabsTrigger value="history">History</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="about">
-                  <Card className="p-6 border-border">
-                    <h3 className="font-bold text-foreground mb-4">Bio</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {user.bio}
-                    </p>
-
-                    <div className="mt-6 pt-6 border-t border-border">
-                      <p className="text-xs text-muted-foreground mb-2">Member since</p>
-                      <p className="text-sm font-medium text-foreground">
-                        {new Date(user.joinedDate).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
+            {/* Stats */}
+            <Card className="p-6 border-slate-200">
+              <h3 className="font-bold text-slate-900 mb-5">
+                Activity Stats
+              </h3>
+              <div className="space-y-5">
+                {user.role === "donor" ? (
+                  <>
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">
+                        Total Donations
                       </p>
+                      <p className="text-3xl font-bold text-green-600">{user.stats.donations}</p>
                     </div>
-                  </Card>
-                </TabsContent>
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">
+                        Successfully Completed
+                      </p>
+                      <p className="text-2xl font-bold text-green-600">{user.stats.completed}</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">
+                        Total Requests
+                      </p>
+                      <p className="text-3xl font-bold text-green-600">{user.stats.requests}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">
+                        Successfully Received
+                      </p>
+                      <p className="text-2xl font-bold text-green-600">{user.stats.completed}</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </Card>
+          </div>
 
-                <TabsContent value="reviews">
-                  <Card className="p-6 border-border">
-                    <h3 className="font-bold text-foreground mb-4">Reviews</h3>
-                    <div className="space-y-4">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="border-b border-border pb-4 last:border-b-0">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <p className="text-sm font-medium text-foreground">
-                                Reviewer {i}
-                              </p>
-                              <p className="text-xs text-muted-foreground">2 days ago</p>
-                            </div>
-                            <div className="flex gap-1">
-                              {[...Array(5)].map((_, j) => (
-                                <Star
-                                  key={j}
-                                  className={`h-4 w-4 ${
-                                    j < 5 - i
-                                      ? "text-warning fill-warning"
-                                      : "text-muted-foreground"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            Great {user.role}! Very helpful and reliable. Would recommend to others.
-                          </p>
-                        </div>
+          {/* Tabs Content */}
+          <div className="md:col-span-2">
+            <Tabs defaultValue="about" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-8 bg-slate-100">
+                <TabsTrigger value="about">About</TabsTrigger>
+                <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                <TabsTrigger value="history">History</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="about">
+                <Card className="p-8 border-slate-200">
+                  <h3 className="text-2xl font-bold text-slate-900 mb-4">
+                    About Me
+                  </h3>
+                  <p className="text-slate-600 leading-relaxed text-lg">
+                    {user.bio}
+                  </p>
+
+                  <div className="mt-8 pt-8 border-t border-slate-200">
+                    <p className="text-sm text-slate-500 mb-2">
+                      Member since
+                    </p>
+                    <p className="text-lg font-medium text-slate-900">
+                      {new Date(user.joinedDate).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </p>
+                  </div>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="reviews">
+                <Card className="p-8 border-slate-200">
+                  <h3 className="text-2xl font-bold text-slate-900 mb-6">
+                    Community Reviews
+                  </h3>
+
+                  {/* Review Filter - Radio Buttons */}
+                  <div className="mb-8">
+                    <p className="text-sm font-medium text-slate-700 mb-4">Filter by rating:</p>
+                    <div className="flex flex-wrap gap-3">
+                      {[
+                        { value: "all", label: "All Reviews" },
+                        { value: "5", label: "5 Stars" },
+                        { value: "4", label: "4 Stars" },
+                        { value: "3below", label: "3 Stars & Below" },
+                      ].map(({ value, label }) => (
+                        <label
+                          key={value}
+                          className={`flex items-center gap-2 px-5 py-3 rounded-full border cursor-pointer transition-all ${
+                            reviewFilter === value
+                              ? "bg-green-600 text-white border-green-600 shadow-sm"
+                              : "bg-white border-slate-300 hover:border-slate-400"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="reviewFilter"
+                            value={value}
+                            checked={reviewFilter === value}
+                            onChange={(e) => setReviewFilter(e.target.value)}
+                            className="sr-only"
+                          />
+                          <span className="font-medium">{label}</span>
+                        </label>
                       ))}
                     </div>
-                  </Card>
-                </TabsContent>
+                  </div>
 
-                <TabsContent value="history">
-                  <Card className="p-6 border-border">
-                    <h3 className="font-bold text-foreground mb-4">Activity History</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {user.role === "donor"
-                        ? "View your donation history"
-                        : "View your request history"}
-                    </p>
-                    <Button className="mt-4">
-                      <Award className="mr-2 h-4 w-4" />
-                      View {user.role === "donor" ? "Donations" : "Requests"}
-                    </Button>
-                  </Card>
-                </TabsContent>
-              </Tabs>
-            </div>
+                  <div className="space-y-6">
+                    {filteredReviews.length === 0 ? (
+                      <p className="text-center text-slate-500 py-8">
+                        No reviews match the selected filter.
+                      </p>
+                    ) : (
+                      filteredReviews.map((review, i) => (
+                        <div key={i} className="pb-6 border-b border-slate-200 last:border-0">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <p className="font-medium text-slate-900">
+                                Anonymous User
+                              </p>
+                              <p className="text-sm text-slate-500 mt-1">
+                                {review.date}
+                              </p>
+                            </div>
+                            <div className="flex gap-1">
+                              {renderStars(review.rating)}
+                            </div>
+                          </div>
+                          <p className="text-slate-600">
+                            {review.text}
+                          </p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="history">
+                <Card className="p-8 border-slate-200 text-center">
+                  <Award className="h-16 w-16 text-green-600 mx-auto mb-6" />
+                  <h3 className="text-2xl font-bold text-slate-900 mb-4">
+                    Activity History
+                  </h3>
+                  <p className="text-slate-600 mb-8">
+                    View all past {user.role === "donor" ? "donations" : "requests"} and completed transactions.
+                  </p>
+                  <Button size="lg" className="bg-green-600 hover:bg-green-700">
+                    View Full History
+                  </Button>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </div>
