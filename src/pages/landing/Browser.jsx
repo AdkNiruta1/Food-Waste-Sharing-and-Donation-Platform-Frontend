@@ -63,7 +63,7 @@ export default function BrowseFood() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+      
 
       {/* Search and Filter Section */}
       <section className="border-b border-border bg-card">

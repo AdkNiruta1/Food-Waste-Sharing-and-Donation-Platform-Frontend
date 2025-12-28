@@ -78,7 +78,7 @@ export default function About() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <Header />
+      
 
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-green-500/10 to-green-500/5 border-b border-slate-200">

@@ -96,7 +96,7 @@ export default function CreateFood() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <Header />
+      
       <div className="flex-1 container mx-auto max-w-4xl px-4 py-12">
         {/* Page Header */}
         <div className="mb-10 text-center md:text-left">

@@ -55,7 +55,7 @@ export default function AdminVerifyDocuments() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <Header />
+      
       <div className="flex-1 flex items-center justify-center px-4 py-20">
         <Card className="max-w-3xl w-full p-10 border-slate-200">
           <div className="flex items-center justify-center gap-3 mb-10">

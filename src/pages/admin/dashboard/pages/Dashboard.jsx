@@ -126,7 +126,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <Header />
+      
 
       {/* Header Section */}
       <div className="border-b border-slate-200 bg-slate-50">

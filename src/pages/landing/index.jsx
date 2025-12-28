@@ -55,7 +55,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      
 
       {/* Hero Section */}
       <section className="relative py-20 px-4 md:py-32 overflow-hidden">

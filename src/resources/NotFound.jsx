@@ -19,7 +19,7 @@ const NotFound = () => {
   return (
     // Page not found layout
     <div className="min-h-screen flex flex-col">
-      <Header />
+      
       <div className="flex-1 flex items-center justify-center px-4 py-20">
         <Card className="max-w-md w-full p-12 text-center border-2 border-dashed border-border">
           <div className="flex justify-center mb-6">

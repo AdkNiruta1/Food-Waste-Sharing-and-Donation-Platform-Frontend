@@ -160,7 +160,7 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+      
       <div className="flex-1 flex items-center justify-center px-4 py-20">
         <Card className="max-w-2xl w-full p-8">
           <div className="flex items-center justify-center gap-2 mb-8">

@@ -64,7 +64,7 @@ export default function UserProfile() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+      
 
       <div className="flex-1">
         {/* Header Section */}
