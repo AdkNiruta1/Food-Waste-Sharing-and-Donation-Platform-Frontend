@@ -17,6 +17,8 @@ Every day, large amounts of edible food are wasted while many people struggle to
 - Administrators to monitor, verify, and manage the platform
 
 Together, we aim to build a **sustainable, community-driven food sharing ecosystem**.
+![Food Waste Sharing Platform](public/images.png)
+![Food Waste Sharing Platform](public/imageOne.png)
 
 ---
 
