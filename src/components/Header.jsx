@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { Leaf, Menu, X, Bell, LogOut, User, Settings, Package } from "lucide-react";
 import { useState } from "react";
 import Logo from "../assets/logo.png";
-import { useAuth } from "../hooks/useMe";
+import { useAuth } from "../context/AuthContext";
 import { useLogout } from "../hooks/useLogout";
 
 export function Header() {
@@ -11,7 +11,7 @@ export function Header() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, loading, isAuthenticated, refetchUser } = useAuth();
   const { logout, loading: logoutLoading } = useLogout();
 
   const isLoggedIn = isAuthenticated;
@@ -28,6 +28,7 @@ const handleLogout = async (e) => {
     setIsOpen(false);
 
     await logout(); // POST /api/users/logout
+    refetchUser(); // Refresh user data after logout
     navigate("/login");
   } catch (err) {
     console.error("Logout failed:", err);

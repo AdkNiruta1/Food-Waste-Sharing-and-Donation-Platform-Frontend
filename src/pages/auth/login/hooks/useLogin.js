@@ -1,6 +1,6 @@
 // React hooks
 import { useState, useContext } from "react";
-import { loginUserService } from "../services/LoginServices";
+import { loginUserService } from "../services/loginServices";
 import { AppContext } from "../../../../context/ContextApp";
 
 /**
@@ -24,10 +24,6 @@ export const useLogin = () => {
     try {
       // Call the login service with user credentials
       const response = await loginUserService(payload);
-
-      // Show success toast notification
-      // showToast(response.message || "Login successful!", "success");
-
       // Return response to the caller
       return response;
     } catch (err) {

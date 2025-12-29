@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { verifyOtpService } from "../services/OtpServices";
+import { verifyOtpService } from "../services/otpServices";
 //hook to verify OTP
 export const useVerifiedOtp = () => {
   const [loading, setLoading] = useState(false);

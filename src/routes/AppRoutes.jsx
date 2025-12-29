@@ -17,6 +17,7 @@ import AdminVerifiedUsers from "../pages/admin/users/pages/AdminVerifiedUsers";
 import { Header } from "../components/Header";
 import UserProfile from "../components/UserProfile";
 import Notifications from "../components/Notifications";
+import ResubmitDocuments from "../components/ResubmitDocuments";
 
 export default function AppRoutes() {
   return (
@@ -33,7 +34,10 @@ export default function AppRoutes() {
         <Route path="/email-verification" element={<VerifyEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/browse" element={<BrowseFood />} />
-
+        <Route
+          path="/resubmit-documents/:token"
+          element={<ResubmitDocuments />}
+        />
         <Route element={<ProtectedRoute  />}>
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/notifications" element={<Notifications />} />

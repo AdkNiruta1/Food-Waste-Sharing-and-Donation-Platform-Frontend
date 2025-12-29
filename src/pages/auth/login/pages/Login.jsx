@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useLogin } from "../hooks/useLogin";
 import { Alert, AlertDescription } from "../../../../components/ui/alert";
 import { AppContext } from "../../../../context/ContextApp";
+import { useAuth } from "../../../../context/AuthContext";
 import { useContext } from "react";
 
 export default function Login() {
@@ -16,6 +17,7 @@ export default function Login() {
   const { Login, loading, error: loginError } = useLogin();
   const [error, setError] = useState(null);
   const appContext = useContext(AppContext);
+  const { refetchUser } = useAuth();
   const { showToast } = appContext;
 
   const [formData, setFormData] = useState({
@@ -46,16 +48,20 @@ export default function Login() {
         if (userVerified) {
           // Navigate based on user role and show appropriate toast
           if (role === "admin") {
+            refetchUser(); // Refresh user data after login
             navigate("/admin");
             showToast("Admin login successful.", "success");
 
           }
           // Navigate based on user role and show appropriate toast
           else if (role === "donor") {
+            refetchUser(); // Refresh user data after login
+
             navigate("/donor-dashboard");
             showToast("Donor login successful.", "success");
           }
           else if (role === "recipient") {
+            refetchUser(); // Refresh user data after login
             navigate("/recipient-dashboard");
             showToast("Recipient login successful.", "success");
           }
