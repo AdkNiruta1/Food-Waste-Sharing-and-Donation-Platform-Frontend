@@ -325,7 +325,7 @@ export default function AdminVerifiedUsers() {
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <Button variant="outline" onClick={() => handleViewDetails(user)} size="sm">View Profile</Button>
-                          <Button variant="outline" size="sm">Activity Log</Button>
+                          <Button variant="outline" onClick={() => navigate("/admin/user/" + user._id + "/activity-logs")} className="border-green-300 text-green-700 hover:bg-green-50" size="sm">Activity Log</Button>
                         </div>
                       </>
                     )}

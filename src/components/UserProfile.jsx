@@ -1,14 +1,27 @@
 import { useState } from "react";
-import { Header } from "../components/Header";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
-import { Edit2, Mail, Phone, MapPin, Star, Shield, Award } from "lucide-react";
+import { Edit2, Mail, Phone, MapPin, Star, Shield, Award, X, } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { useAuth } from "../hooks/useMe"; // your auth hook
 import defaultProfileImage from "/image.png";
+import { useUpdateProfile } from "../hooks/useUpdateProfile.js";
+import { useAuth } from "../context/AuthContext.jsx";
+import { useUpdatePhoto } from "../hooks/useUpdatePhoto.js";
+import { IMAGE_URL } from "../constants/constants.js";
+
 export default function UserProfile() {
-  const { user: currentUser, loading } = useAuth();
+  const { user: currentUser, loading, refetchUser } = useAuth();
   const [reviewFilter, setReviewFilter] = useState("all"); // review filter
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { updateProfile, loading: saving } = useUpdateProfile(); // hook for update
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    address: "",
+    bio: "",
+  });
+  const [previewImage, setPreviewImage] = useState(null);
+  const { updatePhoto, loading: uploading } = useUpdatePhoto();
 
   // Display a loader while fetching user
   if (loading) {
@@ -30,6 +43,34 @@ export default function UserProfile() {
 
   const user = currentUser;
   const isCurrentUser = true; // since we only show the logged-in user
+  // Open modal and prefill form
+  const handleOpenModal = () => {
+    setFormData({
+      name: user.name || "",
+      phone: user.phone || "",
+      address: user.address || "",
+      bio: user.bio || "",
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => setIsModalOpen(false);
+
+  const handleChange = (e) =>
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
+  const handleSave = async () => {
+    try {
+      const updatedUser = await updateProfile(formData);
+      await refetchUser(); // wait for user refresh
+      if (updatedUser) {
+        setIsModalOpen(false); // close modal only after user is updated
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
 
   // Dummy reviews for now, you can later fetch from backend
   const mockReviews = [
@@ -51,13 +92,12 @@ export default function UserProfile() {
     [...Array(5)].map((_, i) => (
       <Star
         key={i}
-        className={`h-5 w-5 ${
-          i < Math.floor(rating)
-            ? "fill-yellow-400 text-yellow-400"
-            : i < rating
+        className={`h-5 w-5 ${i < Math.floor(rating)
+          ? "fill-yellow-400 text-yellow-400"
+          : i < rating
             ? "fill-yellow-400 text-yellow-400"
             : "text-slate-300"
-        }`}
+          }`}
       />
     ));
 
@@ -69,16 +109,51 @@ export default function UserProfile() {
           <div className="flex flex-col md:flex-row items-start md:items-end gap-8">
             {/* Profile Image */}
             <div className="relative">
+              {uploading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full z-10">
+                  <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
+
+
               <img
-                src={user.profileImage ? user.profileImage : defaultProfileImage}
+                src={previewImage || IMAGE_URL +'/'+ user.profilePicture || defaultProfileImage}
                 alt={user.name}
                 className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white shadow-xl"
               />
+
               {user.accountVerified === "verified" && (
-                <div className="absolute bottom-0 right-0 w-10 h-10 bg-green-600 rounded-full flex items-center justify-center shadow-lg">
+                <div className="absolute bottom-0 right-0 w-10 h-10 bg-green-600 rounded-full flex items-center justify-center shadow-lg z-20">
                   <Shield className="h-6 w-6 text-white" />
                 </div>
               )}
+
+              {/* File input */}
+              <label className="absolute bottom-0 left-0 w-10 h-10 bg-green-600 rounded-full flex items-center justify-center shadow-lg cursor-pointer z-20">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      const file = e.target.files[0];
+                      setPreviewImage(URL.createObjectURL(file));
+
+                      const formData = new FormData();
+                      formData.append("profilePicture", file);
+
+                      try {
+                        await updatePhoto(formData);
+                        await refetchUser();
+                        setPreviewImage(null);
+                      } catch (err) {
+                        console.error("Photo upload failed:", err);
+                      }
+                    }
+                  }}
+                />
+                <Edit2 className="h-5 w-5 text-white" />
+              </label>
             </div>
 
             {/* User Info */}
@@ -99,12 +174,12 @@ export default function UserProfile() {
                 </span>
               </div>
 
-              <p className="text-lg text-slate-600 max-w-2xl">{user.bio}</p>
+              {/* <p className="text-lg text-slate-600 max-w-2xl">{user.bio}</p> */}
             </div>
 
             {/* Edit Button */}
             {isCurrentUser && (
-              <Button size="lg" className="bg-green-600 hover:bg-green-700">
+              <Button onClick={handleOpenModal} size="lg" className="bg-green-600 hover:bg-green-700">
                 <Edit2 className="mr-2 h-5 w-5" />
                 Edit Profile
               </Button>
@@ -112,6 +187,71 @@ export default function UserProfile() {
           </div>
         </div>
       </div>
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <Card className="w-full max-w-lg p-8 relative">
+            <button
+              onClick={handleCloseModal}
+              className="absolute top-4 right-4 text-slate-500 hover:text-slate-700"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <h2 className="text-2xl font-bold mb-6">Edit Profile</h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+                <input
+                  type="text"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Address</label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Bio</label>
+                <textarea
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2"
+                  rows={4}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end mt-6 gap-4">
+              <Button variant="outline" onClick={handleCloseModal}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave} disabled={saving}>
+                {saving ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="container mx-auto max-w-6xl px-4 py-10">
@@ -251,11 +391,10 @@ export default function UserProfile() {
                       ].map(({ value, label }) => (
                         <label
                           key={value}
-                          className={`flex items-center gap-2 px-5 py-3 rounded-full border cursor-pointer transition-all ${
-                            reviewFilter === value
-                              ? "bg-green-600 text-white border-green-600 shadow-sm"
-                              : "bg-white border-slate-300 hover:border-slate-400"
-                          }`}
+                          className={`flex items-center gap-2 px-5 py-3 rounded-full border cursor-pointer transition-all ${reviewFilter === value
+                            ? "bg-green-600 text-white border-green-600 shadow-sm"
+                            : "bg-white border-slate-300 hover:border-slate-400"
+                            }`}
                         >
                           <input
                             type="radio"

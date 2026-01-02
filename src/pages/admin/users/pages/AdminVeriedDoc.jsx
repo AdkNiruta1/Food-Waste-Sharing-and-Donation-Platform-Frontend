@@ -73,11 +73,10 @@ export default function AdminVerifyDocuments() {
         <Card className="max-w-3xl w-full p-10 border-slate-200">
           <div className="flex items-center justify-center gap-3 mb-10">
             <Leaf className="h-8 w-8 text-green-600" />
-            <h1 className="text-3xl font-bold text-slate-900">
+            {userData.status === "pending" ? <h1 className="text-3xl font-bold text-slate-900">
               Document Verification
-            </h1>
+            </h1>: <h1 className="text-3xl font-bold text-slate-900">User Details</h1>}
           </div>
-
           {/* ================= APPROVED ================= */}
           {step === "approved" && (
             <div className="text-center py-10">

@@ -1,6 +1,6 @@
 
 import { useState, useContext } from "react";
-import { ResubmitServices } from "../services/ResubmitServices";
+import { ResubmitServices } from "../services/resubmitServices";
 import { AppContext } from "../context/ContextApp";
 
 export const useResubmit = () => {

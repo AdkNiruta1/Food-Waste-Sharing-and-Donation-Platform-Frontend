@@ -18,6 +18,7 @@ import { Header } from "../components/Header";
 import UserProfile from "../components/UserProfile";
 import Notifications from "../components/Notifications";
 import ResubmitDocuments from "../components/ResubmitDocuments";
+import AdminUserActivityLogs from "../pages/admin/users/pages/AdminViewUserLogs";
 
 export default function AppRoutes() {
   return (
@@ -49,6 +50,7 @@ export default function AppRoutes() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/manage-users" element={<AdminVerifiedUsers />} />
           <Route path="/admin/verify-documents" element={<AdminVerifyDocuments />} />
+          <Route path="/admin/user/:userId/activity-logs" element={<AdminUserActivityLogs />} />
         </Route>
 
         {/* Recipient */}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LogoutService } from "../services/LogoutService";
+import { LogoutService } from "../services/logoutService";
 
 export const useLogout = () => {
   const [loading, setLoading] = useState(false);
