@@ -2,58 +2,42 @@ import { useState } from "react";
 import { Header } from "../components/Header";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
-import { useParams } from "react-router-dom";
 import { Edit2, Mail, Phone, MapPin, Star, Shield, Award } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-
-const mockUsers = {
-  "d1": {
-    id: "d1",
-    name: "Raj Kumar",
-    email: "raj@example.com",
-    phone: "9841000001",
-    role: "donor",
-    rating: 4.8,
-    totalRatings: 24,
-    bio: "Passionate about reducing food waste and helping the community. Regular donor of fresh vegetables and cooked meals.",
-    location: "Thamel, Kathmandu",
-    joinedDate: "2024-01-15",
-    profileImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-    verificationStatus: "verified",
-    documents: { citizenship: true, pan: true, drivingLicense: false },
-    stats: { donations: 48, completed: 45, cancelled: 2 },
-  },
-  "rec1": {
-    id: "rec1",
-    name: "Anita Sharma",
-    email: "anita@example.com",
-    phone: "9841000002",
-    role: "recipient",
-    rating: 4.5,
-    totalRatings: 12,
-    bio: "Grateful community member helping to feed my family. Always respectful and punctual.",
-    location: "Kupondole, Lalitpur",
-    joinedDate: "2024-02-20",
-    profileImage: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
-    verificationStatus: "verified",
-    documents: { citizenship: true, pan: false, drivingLicense: false },
-    stats: { requests: 18, completed: 16, cancelled: 1 },
-  },
-};
-
-const mockReviews = [
-  { rating: 5, text: "Very reliable donor! Food was fresh and pickup was smooth. Highly recommend.", date: "1 week ago" },
-  { rating: 4, text: "Punctual and respectful recipient. Great communication throughout.", date: "2 weeks ago" },
-  { rating: 5, text: "Excellent experience. Generous portion and well-organized.", date: "1 month ago" },
-  { rating: 3, text: "Good overall, but pickup time was slightly delayed.", date: "2 months ago" },
-];
-
+import { useAuth } from "../hooks/useMe"; // your auth hook
+import defaultProfileImage from "/image.png";
 export default function UserProfile() {
-  const { userId = "d1" } = useParams();
-  const user = mockUsers[userId] || mockUsers["d1"];
-  const isCurrentUser = true; // In real app: compare with logged-in user
+  const { user: currentUser, loading } = useAuth();
+  const [reviewFilter, setReviewFilter] = useState("all"); // review filter
 
-  const [reviewFilter, setReviewFilter] = useState("all"); // "all" | "5" | "4" | "3below"
+  // Display a loader while fetching user
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-lg text-slate-600">Loading profile...</p>
+      </div>
+    );
+  }
+
+  // If no user is returned, show message
+  if (!currentUser) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-lg text-red-600">User not found or not authenticated.</p>
+      </div>
+    );
+  }
+
+  const user = currentUser;
+  const isCurrentUser = true; // since we only show the logged-in user
+
+  // Dummy reviews for now, you can later fetch from backend
+  const mockReviews = [
+    { rating: 5, text: "Very reliable donor! Food was fresh and pickup was smooth. Highly recommend.", date: "1 week ago" },
+    { rating: 4, text: "Punctual and respectful recipient. Great communication throughout.", date: "2 weeks ago" },
+    { rating: 5, text: "Excellent experience. Generous portion and well-organized.", date: "1 month ago" },
+    { rating: 3, text: "Good overall, but pickup time was slightly delayed.", date: "2 months ago" },
+  ];
 
   const filteredReviews = mockReviews.filter((review) => {
     if (reviewFilter === "all") return true;
@@ -63,8 +47,8 @@ export default function UserProfile() {
     return true;
   });
 
-  const renderStars = (rating) => {
-    return [...Array(5)].map((_, i) => (
+  const renderStars = (rating) =>
+    [...Array(5)].map((_, i) => (
       <Star
         key={i}
         className={`h-5 w-5 ${
@@ -76,22 +60,21 @@ export default function UserProfile() {
         }`}
       />
     ));
-  };
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Hero Header */}
-      <div className="bg-gradient-to-r from-green-500/10 to-green-500/5 border-b border-slate-200">
+      <div className="bg-linear-to-r from-green-500/10 to-green-500/5 border-b border-slate-200">
         <div className="container mx-auto max-w-6xl px-4 py-12">
           <div className="flex flex-col md:flex-row items-start md:items-end gap-8">
             {/* Profile Image */}
             <div className="relative">
               <img
-                src={user.profileImage}
+                src={user.profileImage ? user.profileImage : defaultProfileImage}
                 alt={user.name}
                 className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white shadow-xl"
               />
-              {user.verificationStatus === "verified" && (
+              {user.accountVerified === "verified" && (
                 <div className="absolute bottom-0 right-0 w-10 h-10 bg-green-600 rounded-full flex items-center justify-center shadow-lg">
                   <Shield className="h-6 w-6 text-white" />
                 </div>
@@ -107,25 +90,19 @@ export default function UserProfile() {
               <div className="flex flex-wrap items-center gap-6 mb-4">
                 <div className="flex items-center gap-2">
                   {renderStars(user.rating)}
-                  <span className="font-semibold text-slate-900 ml-2">
-                    {user.rating}
-                  </span>
-                  <span className="text-sm text-slate-600">
-                    ({user.totalRatings} reviews)
-                  </span>
+                  <span className="font-semibold text-slate-900 ml-2">{user.rating}</span>
+                  <span className="text-sm text-slate-600">({user.totalRatings} reviews)</span>
                 </div>
 
                 <span className="px-4 py-2 rounded-full text-sm font-medium bg-green-100 text-green-700">
-                  {user.role === "donor" ? "Food Donor" : "Food Recipient"}
+                  {user.role === "admin" ? "Admin" : user.role === "donor" ? "Food Donor" : "Food Recipient"}
                 </span>
               </div>
 
-              <p className="text-lg text-slate-600 max-w-2xl">
-                {user.bio}
-              </p>
+              <p className="text-lg text-slate-600 max-w-2xl">{user.bio}</p>
             </div>
 
-            {/* Edit Button (only for own profile) */}
+            {/* Edit Button */}
             {isCurrentUser && (
               <Button size="lg" className="bg-green-600 hover:bg-green-700">
                 <Edit2 className="mr-2 h-5 w-5" />
@@ -143,9 +120,7 @@ export default function UserProfile() {
           <div className="space-y-6">
             {/* Contact Info */}
             <Card className="p-6 border-slate-200">
-              <h3 className="font-bold text-slate-900 mb-5">
-                Contact Information
-              </h3>
+              <h3 className="font-bold text-slate-900 mb-5">Contact Information</h3>
               <div className="space-y-5">
                 <div className="flex items-center gap-4">
                   <Mail className="h-5 w-5 text-green-600" />
@@ -165,21 +140,19 @@ export default function UserProfile() {
                   <MapPin className="h-5 w-5 text-green-600" />
                   <div>
                     <p className="text-xs text-slate-500">Location</p>
-                    <p className="font-medium text-slate-900">{user.location}</p>
+                    <p className="font-medium text-slate-900">{user.address}</p>
                   </div>
                 </div>
               </div>
             </Card>
 
-            {/* Verification Status */}
+            {/* Document Verification */}
             <Card className="p-6 border-slate-200">
-              <h3 className="font-bold text-slate-900 mb-5">
-                Document Verification
-              </h3>
+              <h3 className="font-bold text-slate-900 mb-5">Document Verification</h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-slate-600">Citizenship</span>
-                  {user.documents.citizenship ? (
+                  {user.documents?.citizenship ? (
                     <Shield className="h-6 w-6 text-green-600" />
                   ) : (
                     <span className="text-sm text-slate-500">Not submitted</span>
@@ -187,7 +160,7 @@ export default function UserProfile() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-slate-600">PAN Card</span>
-                  {user.documents.pan ? (
+                  {user.documents?.pan ? (
                     <Shield className="h-6 w-6 text-green-600" />
                   ) : (
                     <span className="text-sm text-slate-500">Not submitted</span>
@@ -195,10 +168,10 @@ export default function UserProfile() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-slate-600">Driving License</span>
-                  {user.documents.drivingLicense ? (
+                  {user.documents?.drivingLicense ? (
                     <Shield className="h-6 w-6 text-green-600" />
                   ) : (
-                    <span className="text-sm text-slate-500">Optional</span>
+                    <span className="text-sm text-slate-500">Not submitted</span>
                   )}
                 </div>
               </div>
@@ -206,38 +179,28 @@ export default function UserProfile() {
 
             {/* Stats */}
             <Card className="p-6 border-slate-200">
-              <h3 className="font-bold text-slate-900 mb-5">
-                Activity Stats
-              </h3>
+              <h3 className="font-bold text-slate-900 mb-5">Activity Stats</h3>
               <div className="space-y-5">
                 {user.role === "donor" ? (
                   <>
                     <div>
-                      <p className="text-sm text-slate-600 mb-1">
-                        Total Donations
-                      </p>
-                      <p className="text-3xl font-bold text-green-600">{user.stats.donations}</p>
+                      <p className="text-sm text-slate-600 mb-1">Total Donations</p>
+                      <p className="text-3xl font-bold text-green-600">{user.stats?.donations}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-slate-600 mb-1">
-                        Successfully Completed
-                      </p>
-                      <p className="text-2xl font-bold text-green-600">{user.stats.completed}</p>
+                      <p className="text-sm text-slate-600 mb-1">Successfully Completed</p>
+                      <p className="text-2xl font-bold text-green-600">{user.stats?.completed}</p>
                     </div>
                   </>
                 ) : (
                   <>
                     <div>
-                      <p className="text-sm text-slate-600 mb-1">
-                        Total Requests
-                      </p>
-                      <p className="text-3xl font-bold text-green-600">{user.stats.requests}</p>
+                      <p className="text-sm text-slate-600 mb-1">Total Requests</p>
+                      <p className="text-3xl font-bold text-green-600">{user.stats?.requests}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-slate-600 mb-1">
-                        Successfully Received
-                      </p>
-                      <p className="text-2xl font-bold text-green-600">{user.stats.completed}</p>
+                      <p className="text-sm text-slate-600 mb-1">Successfully Received</p>
+                      <p className="text-2xl font-bold text-green-600">{user.stats?.completed}</p>
                     </div>
                   </>
                 )}
@@ -256,19 +219,13 @@ export default function UserProfile() {
 
               <TabsContent value="about">
                 <Card className="p-8 border-slate-200">
-                  <h3 className="text-2xl font-bold text-slate-900 mb-4">
-                    About Me
-                  </h3>
-                  <p className="text-slate-600 leading-relaxed text-lg">
-                    {user.bio}
-                  </p>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-4">About Me</h3>
+                  <p className="text-slate-600 leading-relaxed text-lg">{user.bio}</p>
 
                   <div className="mt-8 pt-8 border-t border-slate-200">
-                    <p className="text-sm text-slate-500 mb-2">
-                      Member since
-                    </p>
+                    <p className="text-sm text-slate-500 mb-2">Member since</p>
                     <p className="text-lg font-medium text-slate-900">
-                      {new Date(user.joinedDate).toLocaleDateString("en-US", {
+                      {new Date(user.createdAt).toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "long",
                         day: "numeric",
@@ -280,11 +237,9 @@ export default function UserProfile() {
 
               <TabsContent value="reviews">
                 <Card className="p-8 border-slate-200">
-                  <h3 className="text-2xl font-bold text-slate-900 mb-6">
-                    Community Reviews
-                  </h3>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-6">Community Reviews</h3>
 
-                  {/* Review Filter - Radio Buttons */}
+                  {/* Review Filter */}
                   <div className="mb-8">
                     <p className="text-sm font-medium text-slate-700 mb-4">Filter by rating:</p>
                     <div className="flex flex-wrap gap-3">
@@ -326,20 +281,12 @@ export default function UserProfile() {
                         <div key={i} className="pb-6 border-b border-slate-200 last:border-0">
                           <div className="flex items-start justify-between mb-3">
                             <div>
-                              <p className="font-medium text-slate-900">
-                                Anonymous User
-                              </p>
-                              <p className="text-sm text-slate-500 mt-1">
-                                {review.date}
-                              </p>
+                              <p className="font-medium text-slate-900">Anonymous User</p>
+                              <p className="text-sm text-slate-500 mt-1">{review.date}</p>
                             </div>
-                            <div className="flex gap-1">
-                              {renderStars(review.rating)}
-                            </div>
+                            <div className="flex gap-1">{renderStars(review.rating)}</div>
                           </div>
-                          <p className="text-slate-600">
-                            {review.text}
-                          </p>
+                          <p className="text-slate-600">{review.text}</p>
                         </div>
                       ))
                     )}
@@ -350,9 +297,7 @@ export default function UserProfile() {
               <TabsContent value="history">
                 <Card className="p-8 border-slate-200 text-center">
                   <Award className="h-16 w-16 text-green-600 mx-auto mb-6" />
-                  <h3 className="text-2xl font-bold text-slate-900 mb-4">
-                    Activity History
-                  </h3>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-4">Activity History</h3>
                   <p className="text-slate-600 mb-8">
                     View all past {user.role === "donor" ? "donations" : "requests"} and completed transactions.
                   </p>

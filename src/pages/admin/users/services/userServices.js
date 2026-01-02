@@ -15,11 +15,11 @@ export const getUserByIdService = (id) => {
 };
 // Service to verify a user by ID
 export const verifyUserService = (id) => {
-  return authClient.put(`verify-user/${id}`);
+  return authClient.put({}, `verify-user/${id}`);
 };
 // Service to reject a user by ID
-export const rejectUserService = (id) => {
-  return authClient.put(`reject-user/${id}`);
+export const rejectUserService = (id, data) => {
+  return authClient.put(data, `reject-user/${id}`);
 };
 // Service to delete a user by ID
 export const deleteUserService = (id) => {

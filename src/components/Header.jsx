@@ -16,9 +16,9 @@ export function Header() {
 
   const isLoggedIn = isAuthenticated;
   const isEmailVerified = user?.emailVerified;
-  const isStatusVerified = user?.verified;
-  const userName = user?.emailVerified ? user?.name : "John Doe";
-  const userRole = user?.emailVerified ? user?.role : "donor";
+  const isStatusVerified = user?.accountVerified;
+  const userName = user?.emailVerified === "verified" && isStatusVerified === "verified" ? user?.name : "John Doe";
+  const userRole = user?.emailVerified === "verified" && isStatusVerified === "verified" ? user?.role : "donor";
 
 const handleLogout = async (e) => {
   e?.preventDefault(); //VERY IMPORTANT
@@ -65,7 +65,7 @@ const handleLogout = async (e) => {
             )}
 
             {/* Donor */}
-            {isAuthenticated && isEmailVerified && isStatusVerified && userRole === "donor" && (
+            {isAuthenticated && isEmailVerified ==="verified" && isStatusVerified === "verified" && userRole === "donor" && (
               <>
                 <Link to="/donor-dashboard" className={`text-sm font-medium pb-1 transition-colors ${isActive("/donor-dashboard")}`}>Dashboard</Link>
                 <Link to="/browse" className={`text-sm font-medium pb-1 transition-colors ${isActive("/browse")}`}>Browse Food</Link>
@@ -74,7 +74,7 @@ const handleLogout = async (e) => {
             )}
 
             {/* Recipient */}
-            {isAuthenticated && isEmailVerified && isStatusVerified && userRole === "recipient" && (
+            {isAuthenticated && isEmailVerified ==="verified" && isStatusVerified === "verified" && userRole === "recipient" && (
               <>
                 <Link to="/" className={`text-sm font-medium pb-1 transition-colors ${isActive("/")}`}>Home</Link>
                 <Link to="/browse" className={`text-sm font-medium pb-1 transition-colors ${isActive("/browse")}`}>Browse Food</Link>
@@ -84,7 +84,7 @@ const handleLogout = async (e) => {
             )}
 
             {/* Admin */}
-            {isAuthenticated && isEmailVerified && isStatusVerified && userRole === "admin" && (
+            {isAuthenticated && isEmailVerified ==="verified" && isStatusVerified === "verified" && userRole === "admin" && (
               <>
                 <Link to="/admin" className={`text-sm font-medium pb-1 transition-colors ${isActive("/admin")}`}>Dashboard</Link>
                 <Link to="/manage-users" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-users")}`}>Manage Users</Link>
@@ -99,7 +99,7 @@ const handleLogout = async (e) => {
 
           {/* Right Section - Desktop */}
           <div className="hidden md:flex items-center gap-3">
-            {isAuthenticated && isEmailVerified && isStatusVerified ? (
+            {isAuthenticated && isEmailVerified === "verified" && isStatusVerified === "verified" ? (
               <>
                 {/* Notifications */}
                 <Link to="/notifications">
@@ -195,7 +195,7 @@ const handleLogout = async (e) => {
                 </>
               )}
 
-              {isLoggedIn && isStatusVerified && isEmailVerified && userRole === "donor" && (
+              {isLoggedIn && isStatusVerified === "verified" && isEmailVerified === "verified" && userRole === "donor" && (
                 <>
                   <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Home</Link>
                   <Link to="/browse" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Browse Food</Link>
@@ -204,7 +204,7 @@ const handleLogout = async (e) => {
                 </>
               )}
 
-              {isLoggedIn && isStatusVerified && isEmailVerified && userRole === "recipient" && (
+              {isLoggedIn && isStatusVerified === "verified" && isEmailVerified === "verified" && userRole === "recipient" && (
                 <>
                   <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Home</Link>
                   <Link to="/browse" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Browse Food</Link>
@@ -213,14 +213,14 @@ const handleLogout = async (e) => {
                 </>
               )}
 
-              {isLoggedIn && isStatusVerified && isEmailVerified && userRole === "admin" && (
+              {isLoggedIn && isStatusVerified === "verified" && isEmailVerified === "verified" && userRole === "admin" && (
                 <>
                   <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Home</Link>
                   <Link to="/admin" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Dashboard</Link>
                 </>
               )}
 
-              {isAuthenticated && isStatusVerified && isEmailVerified && (
+              {isAuthenticated && isStatusVerified === "verified" && isEmailVerified === "verified" && (
                 <>
                   <div className="border-t border-slate-200 my-4" />
                   <Link to="/notifications" onClick={() => setIsOpen(false)} className="flex items-center gap-3 text-lg font-medium text-slate-900 hover:text-green-600">
@@ -236,7 +236,7 @@ const handleLogout = async (e) => {
               )}
 
               <div className="border-t border-slate-200 pt-4 space-y-3">
-                {isAuthenticated && isStatusVerified && isEmailVerified ? (
+                {isAuthenticated && isStatusVerified === "verified" && isEmailVerified === "verified" ? (
                   <button
                    onClick={(e) => handleLogout(e)}
                     disabled={logoutLoading}

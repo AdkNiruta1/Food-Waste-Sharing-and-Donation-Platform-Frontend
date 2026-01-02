@@ -9,9 +9,8 @@ export default function ProtectedRoute({ roles }) {
   if (loading) {
     return <div className="text-center p-10">Checking authentication...</div>;
   }
-
   // If user is not authenticated, redirect to home/login page
-  if (!isAuthenticated) {
+  if (!isAuthenticated || user.accountVerified !== "verified" || user.emailVerified !== "verified") {
     return <Navigate to="/" replace />;
   }
 

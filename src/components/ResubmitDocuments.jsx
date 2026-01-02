@@ -4,18 +4,22 @@ import { Card } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Alert, AlertDescription } from "../components/ui/alert";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Leaf, Upload, AlertCircle, CheckCircle, Shield } from "lucide-react";
 import { useState } from "react";
+import { useResubmit } from "../hooks/useResubmit";
 
 export default function ResubmitDocuments() {
-  const navigate = useNavigate();
+ const navigate = useNavigate();
+  const { token } = useParams(); // 🔥 resubmit token from URL
+  const { resubmitUser, loading } = useResubmit();
+
   const [files, setFiles] = useState({
     citizenship: null,
     pan: null,
     drivingLicense: null,
   });
-  const [uploading, setUploading] = useState(false);
+
   const [submitted, setSubmitted] = useState(false);
 
   const handleFileChange = (e, type) => {
@@ -25,26 +29,50 @@ export default function ResubmitDocuments() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!files.citizenship) {
-      alert("Citizenship document is required.");
-      return;
-    }
+  /* =========================
+     SUBMIT HANDLER
+  ========================== */
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    setUploading(true);
+  if (!files.citizenship) {
+    return alert("Citizenship document is required");
+  }
 
-    // Simulate upload delay
-    setTimeout(() => {
-      setUploading(false);
-      setSubmitted(true);
+  const formData = new FormData();
 
-      // Redirect after success message
-      setTimeout(() => {
-        navigate("/login");
-      }, 3000);
-    }, 2000);
-  };
+  if (files.citizenship) {
+    formData.append("citizenship", files.citizenship);
+  }
+  if (files.pan) {
+    formData.append("pan", files.pan);
+  }
+  if (files.drivingLicense) {
+    formData.append("drivingLicense", files.drivingLicense);
+  }
+
+  try {
+    await resubmitUser(formData, token);
+    setSubmitted(true);
+    setTimeout(() => navigate("/login"), 3000);
+  } catch {
+    // toast handled by hook
+  }
+};
+
+  if (!token) {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <Card className="p-10 text-center max-w-md">
+        <AlertCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
+        <h2 className="text-xl font-bold mb-2">Invalid Link</h2>
+        <p className="text-slate-600">
+          This resubmission link is invalid or has expired.
+        </p>
+      </Card>
+    </div>
+  );
+}
 
   if (submitted) {
     return (
@@ -230,10 +258,10 @@ export default function ResubmitDocuments() {
               <Button
                 type="submit"
                 size="lg"
-                disabled={uploading || !files.citizenship}
+                disabled={loading || !files.citizenship}
                 className="px-10 bg-red-600 hover:bg-red-700"
               >
-                {uploading ? "Submitting..." : "Submit for Review"}
+                  {loading ? "Submitting..." : "Submit for Review"}
               </Button>
             </div>
           </form>

@@ -6,10 +6,10 @@ export const useRejectUser = () => {
   const [loading, setLoading] = useState(false);
   const { showToast } = useContext(AppContext);
 
-  const rejectUser = async (id) => {
+  const rejectUser = async (id, data) => {
     setLoading(true);
     try {
-      const res = await rejectUserService(id);
+      const res = await rejectUserService(id, data);
       showToast("User rejected successfully", "success");
       return res;
     } catch (err) {

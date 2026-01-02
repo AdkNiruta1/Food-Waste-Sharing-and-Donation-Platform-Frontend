@@ -146,7 +146,7 @@ export default function Register() {
 // Call register service
     await register(formDataPayload);
 // Navigate to dashboard on success
-    navigate("/dashboard");
+    navigate("/login");
   } catch (err) {
     console.error(err);
   }

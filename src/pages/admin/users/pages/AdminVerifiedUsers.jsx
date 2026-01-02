@@ -38,8 +38,8 @@ export default function AdminVerifiedUsers() {
 
   // Frontend-only classification
   const getUserStatus = (user) => {
-    if (user.verified === true) return "approved";
-    if (user.rejected) return "rejected"; // assuming you add this field later
+    if (user.accountVerified === "verified") return "approved";
+    if (user.accountVerified === "rejected") return "rejected"; // assuming you add this field later
     return "pending"; // default: not verified and no rejection
   };
 
@@ -58,8 +58,8 @@ export default function AdminVerifiedUsers() {
 
   // Count for tabs
   const pendingCount = allUsers.filter(u => getUserStatus(u) === "pending").length;
-  const approvedCount = allUsers.filter(u => u.verified === true).length;
-  const rejectedCount = allUsers.filter(u => u.rejectionReason).length;
+  const approvedCount = allUsers.filter(u => getUserStatus(u) === "approved").length;
+  const rejectedCount = allUsers.filter(u => getUserStatus(u) === "rejected").length;
 
   const handleViewDetails = (user) => {
     const status = getUserStatus(user);
@@ -324,7 +324,7 @@ export default function AdminVerifiedUsers() {
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                          <Button variant="outline" size="sm">View Profile</Button>
+                          <Button variant="outline" onClick={() => handleViewDetails(user)} size="sm">View Profile</Button>
                           <Button variant="outline" size="sm">Activity Log</Button>
                         </div>
                       </>

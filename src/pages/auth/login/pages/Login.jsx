@@ -44,8 +44,8 @@ export default function Login() {
       // Extract email from response or fallback to form data
       const email = data.data.email || formData.email;
 // Navigate based on verification status and role
-      if (emailVerified) {
-        if (userVerified) {
+      if (emailVerified === "verified") {
+        if (userVerified === "verified") {
           // Navigate based on user role and show appropriate toast
           if (role === "admin") {
             refetchUser(); // Refresh user data after login
