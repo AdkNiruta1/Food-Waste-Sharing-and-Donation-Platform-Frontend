@@ -178,7 +178,7 @@ export default function AdminVerifyDocuments() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => window.open(`${IMAGE_URL}/${file}`, "_blank")}
+                            onClick={() => window.open(`${IMAGE_URL}${file}`, "_blank")}
                           >
                             View
                           </Button>
@@ -188,7 +188,7 @@ export default function AdminVerifyDocuments() {
                           <p className="text-xs text-slate-500 mt-2">PDF Document</p>
                         ) : (
                           <img
-                            src={`${IMAGE_URL}/${file}`}
+                            src={`${IMAGE_URL}${file}`}
                             alt={label}
                             className="mt-3 rounded border max-h-40 object-contain"
                           />

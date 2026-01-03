@@ -14,15 +14,17 @@ import {
   Filter,
   Leaf,
 } from "lucide-react";
-import { mockFoodPosts } from "../../lib/mockData";
+import { useEffect } from "react";
+import { useGetFood } from "../recipient/browser/hooks/useGetFood";
+import { IMAGE_URL } from "../../constants/constants";
 
 const FOOD_TYPES = [
-  { value: "vegetables", label: "🥬 Vegetables" },
-  { value: "fruits", label: "🍎 Fruits" },
-  { value: "cooked", label: "🍲 Cooked Food" },
-  { value: "dairy", label: "🥛 Dairy" },
-  { value: "baked", label: "🍞 Baked" },
-  { value: "other", label: "📦 Other" },
+  { value: "vegetables", label: "Vegetables" },
+  { value: "fruits", label: "Fruits" },
+  { value: "cooked", label: "Cooked Food" },
+  { value: "dairy", label: "Dairy" },
+  { value: "baked", label: "Baked Goods" },
+  { value: "other", label: "Other" },
 ];
 
 const DISTRICTS = [
@@ -31,6 +33,10 @@ const DISTRICTS = [
   "Bhaktapur",
   "Kavre",
   "Nuwakot",
+  "Sunsari",
+  "Kaski",
+  "Morang",
+  "Illam"
 ];
 
 export default function BrowseFood() {
@@ -38,92 +44,117 @@ export default function BrowseFood() {
   const [selectedType, setSelectedType] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const { foods, pagination, loading, fetchFoodDonation } = useGetFood();
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    fetchFoodDonation(page, 9);
+  }, [page]);
 
   const filteredPosts = useMemo(() => {
-    return mockFoodPosts.filter((post) => {
+    return foods.filter((post) => {
       const matchesSearch =
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         post.description.toLowerCase().includes(searchQuery.toLowerCase());
+
       const matchesType = !selectedType || post.type === selectedType;
-      const matchesDistrict =
-        !selectedDistrict || post.location.district === selectedDistrict;
+      const matchesDistrict = !selectedDistrict || post.district === selectedDistrict;
 
       return matchesSearch && matchesType && matchesDistrict;
     });
-  }, [searchQuery, selectedType, selectedDistrict]);
+  }, [foods, searchQuery, selectedType, selectedDistrict]);
+
 
   const isExpiringSoon = (expiryDate) => {
     const expiry = new Date(expiryDate);
-    const today = new Date();
+    const today = new Date("2026-01-03"); // Current date: January 03, 2026
     const daysUntilExpiry = Math.floor(
       (expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
     );
     return daysUntilExpiry <= 1;
   };
+  { loading && <p className="text-center">Loading food...</p> }
+
+  {
+    !loading && filteredPosts.length === 0 && (
+      <p className="text-center">No food donations found</p>
+    )
+  }
+
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      
 
-      {/* Search and Filter Section */}
-      <section className="border-b border-border bg-card">
+    <div className="min-h-screen flex flex-col bg-white">
+
+      {/* Hero Header */}
+      <div className="bg-gradient-to-r from-green-500/10 to-green-500/5 border-b border-slate-200">
+        <div className="container mx-auto max-w-6xl px-4 py-16 text-center">
+          <Leaf className="h-16 w-16 text-green-600 mx-auto mb-6" />
+          <h1 className="text-5xl font-bold text-slate-900 mb-4">
+            Find Available Food Donations
+          </h1>
+          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+            Browse surplus food shared by generous donors in your area. Request what you need — it's free and simple.
+          </p>
+        </div>
+      </div>
+
+      {/* Search & Filters */}
+      <section className="border-b border-slate-200 bg-slate-50">
         <div className="container mx-auto max-w-6xl px-4 py-8">
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Search Bar */}
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+            <div className="relative max-w-2xl mx-auto">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-500" />
               <Input
                 type="text"
-                placeholder="Search food donations..."
+                placeholder="Search by food name, description, or donor..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-12"
+                className="pl-14 h-14 text-lg"
               />
             </div>
 
-            {/* Filter Toggle and Info */}
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
-                Showing {filteredPosts.length} donations
-              </div>
+            {/* Filter Toggle & Count */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <p className="text-slate-600">
+                Showing <strong>{filteredPosts.length}</strong> donation{filteredPosts.length !== 1 ? "s" : ""}
+              </p>
+
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors md:hidden"
+                className="flex items-center gap-2 text-green-600 hover:text-green-700 font-medium md:hidden"
               >
-                <Filter className="h-4 w-4" />
+                <Filter className="h-5 w-5" />
                 {showFilters ? "Hide" : "Show"} Filters
               </button>
             </div>
 
             {/* Filters */}
-            <div
-              className={`grid md:grid-cols-2 gap-6 ${
-                showFilters ? "block" : "hidden md:grid"
-              }`}
-            >
+            <div className={`space-y-8 ${showFilters ? "block" : "hidden md:block"}`}>
               {/* District Filter */}
-              <div className="space-y-3">
-                <Label className="text-sm font-semibold">Location (District)</Label>
-                <div className="flex flex-wrap gap-2">
+              <div>
+                <Label className="text-base font-semibold text-slate-900 mb-4 block">
+                  Location (District)
+                </Label>
+                <div className="flex flex-wrap gap-3">
                   <button
                     onClick={() => setSelectedDistrict("")}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                      selectedDistrict === ""
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-foreground hover:bg-muted/80"
-                    }`}
+                    className={`px-6 py-3 rounded-full font-medium transition-all ${selectedDistrict === ""
+                      ? "bg-green-600 text-white shadow-md"
+                      : "bg-white border border-slate-300 text-slate-900 hover:bg-slate-100"
+                      }`}
                   >
-                    All
+                    All Districts
                   </button>
                   {DISTRICTS.map((district) => (
                     <button
                       key={district}
                       onClick={() => setSelectedDistrict(district)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                        selectedDistrict === district
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-foreground hover:bg-muted/80"
-                      }`}
+                      className={`px-6 py-3 rounded-full font-medium transition-all ${selectedDistrict === district
+                        ? "bg-green-600 text-white shadow-md"
+                        : "bg-white border border-slate-300 text-slate-900 hover:bg-slate-100"
+                        }`}
                     >
                       {district}
                     </button>
@@ -132,16 +163,17 @@ export default function BrowseFood() {
               </div>
 
               {/* Food Type Filter */}
-              <div className="space-y-3">
-                <Label className="text-sm font-semibold">Food Type</Label>
-                <div className="flex flex-wrap gap-2">
+              <div>
+                <Label className="text-base font-semibold text-slate-900 mb-4 block">
+                  Food Type
+                </Label>
+                <div className="flex flex-wrap gap-3">
                   <button
                     onClick={() => setSelectedType("")}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                      selectedType === ""
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-foreground hover:bg-muted/80"
-                    }`}
+                    className={`px-6 py-3 rounded-full font-medium transition-all ${selectedType === ""
+                      ? "bg-green-600 text-white shadow-md"
+                      : "bg-white border border-slate-300 text-slate-900 hover:bg-slate-100"
+                      }`}
                   >
                     All Types
                   </button>
@@ -149,11 +181,10 @@ export default function BrowseFood() {
                     <button
                       key={value}
                       onClick={() => setSelectedType(value)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                        selectedType === value
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-foreground hover:bg-muted/80"
-                      }`}
+                      className={`px-6 py-3 rounded-full font-medium transition-all ${selectedType === value
+                        ? "bg-green-600 text-white shadow-md"
+                        : "bg-white border border-slate-300 text-slate-900 hover:bg-slate-100"
+                        }`}
                     >
                       {label}
                     </button>
@@ -165,96 +196,96 @@ export default function BrowseFood() {
         </div>
       </section>
 
-      {/* Food Posts Grid */}
+      {/* Food Listings */}
       <section className="flex-1 container mx-auto max-w-6xl px-4 py-12">
         {filteredPosts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <Leaf className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold text-foreground mb-2">
-              No donations found
+          <div className="text-center py-20">
+            <Leaf className="h-20 w-20 text-slate-400 mx-auto mb-6" />
+            <h3 className="text-2xl font-bold text-slate-900 mb-4">
+              No food donations found
             </h3>
-            <p className="text-muted-foreground mb-6 max-w-md">
-              Try adjusting your filters or search terms to find food donations.
+            <p className="text-lg text-slate-600 mb-8 max-w-md mx-auto">
+              Try adjusting your search or filters. New donations are posted regularly!
             </p>
             <Button
+              size="lg"
               onClick={() => {
                 setSearchQuery("");
                 setSelectedType("");
                 setSelectedDistrict("");
               }}
+              className="bg-green-600 hover:bg-green-700"
             >
-              Clear Filters
+              Clear All Filters
             </Button>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredPosts.map((post) => (
-              <Link key={post.id} to={`/food/${post.id}`}>
-                <Card className="h-full overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border-border group">
+              <Link key={post.id} to={`/login`} className="block">
+                <Card className="h-full overflow-hidden border-slate-200 hover:shadow-xl transition-all duration-300 group">
                   {/* Image */}
-                  <div className="relative h-48 overflow-hidden bg-muted">
+                  <div className="relative h-64 overflow-hidden bg-slate-100">
                     <img
-                      src={post.imageUrl}
+                      src={IMAGE_URL + post.photo || "https://via.placeholder.com/400x300?text=No+Image"}
                       alt={post.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                     {isExpiringSoon(post.expiryDate) && (
-                      <div className="absolute top-3 right-3 bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-xs font-semibold">
-                        Expires Soon
+                      <div className="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                        Expires Soon!
                       </div>
                     )}
-                    <div className="absolute top-3 left-3 bg-background/90 px-3 py-1 rounded-full text-xs font-semibold text-primary">
-                      {post.status}
+                    <div className="absolute top-4 left-4 bg-green-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                      Available
                     </div>
                   </div>
 
                   {/* Content */}
-                  <div className="p-4 space-y-4">
-                    {/* Title and Donor */}
+                  <div className="p-6 space-y-5">
                     <div>
-                      <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
+                      <h3 className="text-2xl font-bold text-slate-900 group-hover:text-green-600 transition-colors">
                         {post.title}
                       </h3>
-                      <div className="flex items-center gap-1 mt-2">
-                        <span className="text-sm text-muted-foreground">
-                          by {post.donorName}
+                      <div className="flex items-center gap-2 mt-3">
+                        <span className="text-slate-600">by</span>
+                        <span className="font-semibold text-slate-900">
+                          {post.donor.name}
                         </span>
-                        <Star className="h-3 w-3 fill-warning text-warning" />
-                        <span className="text-xs text-muted-foreground">
-                          {post.donorRating}
-                        </span>
+                        <div className="flex items-center gap-1">
+                          <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
+                          <span className="font-medium">{post.donorRating}</span>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Description */}
-                    <p className="text-sm text-muted-foreground line-clamp-2">
+                    <p className="text-slate-600 line-clamp-2">
                       {post.description}
                     </p>
 
-                    {/* Info Grid */}
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Package className="h-4 w-4 text-primary" />
-                        {post.quantity} {post.unit}
+                    <div className="space-y-3 text-sm">
+                      <div className="flex items-center gap-3">
+                        <Package className="h-5 w-5 text-green-600" />
+                        <span className="font-medium text-slate-900">
+                          {post.quantity} {post.unit}
+                        </span>
                       </div>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Clock className="h-4 w-4 text-primary" />
-                        Expires: {new Date(post.expiryDate).toLocaleDateString()}
+                      <div className="flex items-center gap-3">
+                        <Clock className="h-5 w-5 text-green-600" />
+                        <span className="font-medium text-slate-900">
+                          Best before: {new Date(post.expiryDate).toLocaleDateString()}
+                        </span>
                       </div>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <MapPin className="h-4 w-4 text-primary" />
-                        {post.location.city}, {post.location.district}
+                      <div className="flex items-center gap-3">
+                        <MapPin className="h-5 w-5 text-green-600" />
+                        <span className="font-medium text-slate-900">
+                          {post.city}, {post.district}
+                        </span>
                       </div>
                     </div>
 
-                    {/* Request Button */}
-                    <Button
-                      className="w-full mt-4"
-                      onClick={(e) => {
-                        e.preventDefault();
-                      }}
-                    >
-                      Request Donation
+                    <Button className="w-full bg-green-600 hover:bg-green-700 text-lg py-6">
+                      Request This Food
                     </Button>
                   </div>
                 </Card>
@@ -262,6 +293,28 @@ export default function BrowseFood() {
             ))}
           </div>
         )}
+        {pagination && (
+          <div className="flex justify-center gap-4 mt-12">
+            <Button
+              disabled={!pagination.hasPrev}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              Previous
+            </Button>
+
+            <span className="px-4 py-2 font-semibold">
+              Page {pagination.page} of {pagination.totalPages}
+            </span>
+
+            <Button
+              disabled={!pagination.hasNext}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Next
+            </Button>
+          </div>
+        )}
+
       </section>
     </div>
   );

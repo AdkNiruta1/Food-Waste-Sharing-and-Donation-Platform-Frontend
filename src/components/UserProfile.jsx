@@ -117,7 +117,7 @@ export default function UserProfile() {
 
 
               <img
-                src={previewImage || IMAGE_URL +'/'+ user.profilePicture || defaultProfileImage}
+                src={previewImage || user?.profilePicture ? IMAGE_URL + user?.profilePicture : defaultProfileImage }
                 alt={user.name}
                 className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white shadow-xl"
               />

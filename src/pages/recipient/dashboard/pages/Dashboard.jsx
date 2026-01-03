@@ -18,22 +18,22 @@ import { mockFoodPosts } from "../../../../lib/mockData";
 export default function RecipientDashboard() {
   const [activeTab, setActiveTab] = useState("active");
 
-  // Mock user requests
+  // Mock user requests (filter posts that have requests from this recipient)
   const userRequests = [
     {
       id: "req1",
       postId: "1",
       recipientId: "rec1",
-      status: "Pending",
-      requestedAt: "2024-12-12T15:00:00Z",
+      status: "pending",
+      requestedAt: "2025-04-01T15:00:00Z",
       post: mockFoodPosts.find((p) => p.id === "1"),
     },
     {
       id: "req2",
       postId: "3",
       recipientId: "rec1",
-      status: "Accepted",
-      requestedAt: "2024-12-12T13:00:00Z",
+      status: "accepted",
+      requestedAt: "2025-04-01T13:00:00Z",
       post: mockFoodPosts.find((p) => p.id === "3"),
     },
   ];
@@ -41,54 +41,52 @@ export default function RecipientDashboard() {
   const stats = [
     {
       label: "Active Requests",
-      value: "2",
-      change: "1 pending approval",
+      value: userRequests.length.toString(),
+      change: `${userRequests.filter(r => r.status === "pending").length} pending approval`,
       icon: <Clock className="h-6 w-6" />,
-      color: "text-primary",
+      color: "text-orange-600",
     },
     {
-      label: "Completed",
+      label: "Completed Pickups",
       value: "5",
-      change: "100% completion rate",
+      change: "100% success rate",
       icon: <CheckCircle className="h-6 w-6" />,
-      color: "text-success",
+      color: "text-green-600",
     },
     {
-      label: "Saved Amount",
+      label: "Estimated Savings",
       value: "₹2,450",
-      change: "From 5 donations",
+      change: "From received donations",
       icon: <Heart className="h-6 w-6" />,
-      color: "text-warning",
+      color: "text-green-600",
     },
     {
       label: "Your Rating",
       value: "4.5",
-      change: "Reliable recipient",
+      change: "Reliable & respectful",
       icon: <TrendingUp className="h-6 w-6" />,
-      color: "text-secondary",
+      color: "text-yellow-600",
     },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      
-
+    <div className="min-h-screen flex flex-col bg-white">
       {/* Header Section */}
-      <div className="border-b border-border bg-card">
-        <div className="container mx-auto max-w-6xl px-4 py-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="border-b border-slate-200 bg-slate-50">
+        <div className="container mx-auto max-w-6xl px-4 py-10">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div>
-              <h1 className="text-4xl font-bold text-foreground mb-2">
+              <h1 className="text-4xl font-bold text-slate-900 mb-2">
                 Recipient Dashboard
               </h1>
-              <p className="text-lg text-muted-foreground">
-                Track your food requests and donations received
+              <p className="text-lg text-slate-600">
+                Track your food requests and received donations
               </p>
             </div>
             <Link to="/browse">
-              <Button size="lg">
+              <Button size="lg" className="bg-green-600 hover:bg-green-700">
                 <Package className="mr-2 h-5 w-5" />
-                Browse More Food
+                Browse Available Food
               </Button>
             </Link>
           </div>
@@ -97,223 +95,231 @@ export default function RecipientDashboard() {
 
       {/* Stats Grid */}
       <div className="container mx-auto max-w-6xl px-4 py-8">
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="grid md:grid-cols-4 gap-6 mb-10">
           {stats.map((stat, index) => (
-            <Card key={index} className="p-6 border-border">
+            <Card key={index} className="p-6 border-slate-200">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">
+                  <p className="text-sm text-slate-600 mb-1">
                     {stat.label}
                   </p>
-                  <p className="text-3xl font-bold text-foreground">
+                  <p className="text-3xl font-bold text-slate-900">
                     {stat.value}
                   </p>
                 </div>
                 <div className={`${stat.color} opacity-80`}>{stat.icon}</div>
               </div>
-              <p className="text-xs text-muted-foreground">{stat.change}</p>
+              <p className="text-xs text-slate-600">{stat.change}</p>
             </Card>
           ))}
         </div>
 
         {/* Tabs */}
-        <div className="space-y-6">
-          <div className="flex gap-4 border-b border-border">
+        <div className="space-y-8">
+          <div className="flex gap-8 border-b border-slate-200 overflow-x-auto">
             <button
               onClick={() => setActiveTab("active")}
-              className={`px-4 py-3 font-medium text-sm transition-colors ${
+              className={`pb-4 px-2 font-medium text-lg transition-colors border-b-2 whitespace-nowrap ${
                 activeTab === "active"
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "text-green-600 border-green-600"
+                  : "text-slate-600 hover:text-slate-900 border-transparent"
               }`}
             >
-              Active Requests (2)
+              Active Requests ({userRequests.length})
             </button>
             <button
               onClick={() => setActiveTab("history")}
-              className={`px-4 py-3 font-medium text-sm transition-colors ${
+              className={`pb-4 px-2 font-medium text-lg transition-colors border-b-2 whitespace-nowrap ${
                 activeTab === "history"
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "text-green-600 border-green-600"
+                  : "text-slate-600 hover:text-slate-900 border-transparent"
               }`}
             >
-              History (5)
+              Pickup History (5)
             </button>
             <button
               onClick={() => setActiveTab("saved")}
-              className={`px-4 py-3 font-medium text-sm transition-colors ${
+              className={`pb-4 px-2 font-medium text-lg transition-colors border-b-2 whitespace-nowrap ${
                 activeTab === "saved"
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "text-green-600 border-green-600"
+                  : "text-slate-600 hover:text-slate-900 border-transparent"
               }`}
             >
               Saved Listings
             </button>
           </div>
 
-          {/* Active Requests */}
+          {/* Active Requests Tab */}
           {activeTab === "active" && (
-            <div className="space-y-4">
-              {userRequests.map((request) =>
-                request.post ? (
-                  <Card key={request.id} className="p-6 border-border">
-                    <div className="grid md:grid-cols-5 gap-6 items-start">
+            <div className="space-y-6">
+              {userRequests.length === 0 ? (
+                <Card className="p-16 text-center border-slate-200">
+                  <Clock className="h-16 w-16 text-slate-400 mx-auto mb-6" />
+                  <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                    No active requests
+                  </h3>
+                  <p className="text-slate-600 mb-8">
+                    Browse available food and make a request when you find something.
+                  </p>
+                  <Link to="/browse">
+                    <Button size="lg" className="bg-green-600 hover:bg-green-700">
+                      Browse Food Now
+                    </Button>
+                  </Link>
+                </Card>
+              ) : (
+                userRequests.map((request) => (
+                  <Card
+                    key={request.id}
+                    className="p-6 border-slate-200 hover:shadow-lg transition-shadow"
+                  >
+                    <div className="grid lg:grid-cols-5 gap-6 items-start">
                       {/* Image */}
-                      <div>
+                      <div className="lg:col-span-1">
                         <img
-                          src={request.post.imageUrl}
-                          alt={request.post.title}
-                          className="w-full h-32 object-cover rounded-lg"
+                          src={request.post?.imageUrl || "https://via.placeholder.com/300x200?text=No+Image"}
+                          alt={request.post?.title}
+                          className="w-full h-44 object-cover rounded-lg"
                         />
                       </div>
 
-                      {/* Food Details */}
-                      <div className="md:col-span-2 space-y-3">
+                      {/* Food & Donor Details */}
+                      <div className="lg:col-span-2 space-y-4">
                         <div>
                           <Link
-                            to={`/food/${request.post.id}`}
-                            className="text-lg font-bold text-foreground hover:text-primary transition-colors"
+                            to={`/food/${request.post?.id}`}
+                            className="text-2xl font-bold text-slate-900 hover:text-green-600 transition-colors"
                           >
-                            {request.post.title}
+                            {request.post?.title || "Unknown Food"}
                           </Link>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {request.post.description}
+                          <p className="text-slate-600 mt-2 line-clamp-2">
+                            {request.post?.description}
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-3 text-sm">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-foreground font-medium">
-                            {request.post.donorName}
-                          </span>
-                          <span className="text-muted-foreground">
-                            ({request.post.donorRating}★)
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-3 text-sm">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-foreground">
-                            {request.post.location.city},{" "}
-                            {request.post.location.district}
-                          </span>
+                        <div className="space-y-3 text-sm">
+                          <div className="flex items-center gap-3">
+                            <User className="h-5 w-5 text-slate-500" />
+                            <div>
+                              <p className="text-slate-600">Donated by</p>
+                              <p className="font-medium text-slate-900">
+                                {request.post?.donorName} ({request.post?.donorRating}★)
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <MapPin className="h-5 w-5 text-slate-500" />
+                            <div>
+                              <p className="text-slate-600">Location</p>
+                              <p className="font-medium text-slate-900">
+                                {request.post?.location.city}, {request.post?.location.district}
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                       {/* Status & Actions */}
-                      <div className="md:col-span-2 space-y-3">
+                      <div className="lg:col-span-2 space-y-5">
                         <div>
-                          <p className="text-sm text-muted-foreground mb-2">
-                            Request Status
+                          <p className="text-sm text-slate-600 mb-2">
+                            Your Request Status
                           </p>
-                          <div
-                            className={`inline-block px-4 py-2 rounded-full text-sm font-semibold ${
-                              request.status === "Pending"
-                                ? "bg-warning/20 text-warning"
-                                : request.status === "Accepted"
-                                  ? "bg-success/20 text-success"
-                                  : "bg-muted text-muted-foreground"
-                            }`}
-                          >
-                            {request.status === "Pending"
-                              ? "⏳ Awaiting Approval"
-                              : request.status === "Accepted"
-                                ? "✓ Approved"
-                                : request.status}
-                          </div>
+                          <span className={`inline-block px-5 py-2 rounded-full text-sm font-semibold ${
+                            request.status === "pending"
+                              ? "bg-orange-100 text-orange-700"
+                              : "bg-green-100 text-green-700"
+                          }`}>
+                            {request.status === "pending"
+                              ? "⏳ Awaiting Donor Approval"
+                              : "✓ Approved – Ready for Pickup"}
+                          </span>
                         </div>
 
-                        <div className="space-y-2">
-                          <Link to={`/food/${request.post.id}`}>
-                            <Button variant="outline" className="w-full">
-                              View Details
+                        <div className="space-y-3">
+                          <Link to={`/food/${request.post?.id}`} className="block">
+                            <Button variant="outline" className="w-full border-slate-300">
+                              View Donation Details
                             </Button>
                           </Link>
-                          <Button
-                            variant="outline"
-                            className="w-full text-destructive hover:text-destructive"
-                          >
-                            Cancel Request
-                          </Button>
+                          {request.status === "pending" && (
+                            <Button variant="outline" className="w-full text-red-600 hover:bg-red-50">
+                              Cancel Request
+                            </Button>
+                          )}
+                          {request.status === "accepted" && (
+                            <Button className="w-full bg-green-600 hover:bg-green-700">
+                              <MessageSquare className="mr-2 h-5 w-5" />
+                              Message Donor
+                            </Button>
+                          )}
                         </div>
 
-                        {request.status === "Accepted" && (
-                          <div className="bg-success/10 text-success rounded-lg p-3 text-xs font-medium">
-                            <MessageSquare className="h-4 w-4 inline mr-1" />
-                            Contact donor to arrange pickup
+                        {request.status === "accepted" && (
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm">
+                            <p className="font-medium text-green-700">
+                              Coordinate pickup time and location with the donor via messages.
+                            </p>
                           </div>
                         )}
                       </div>
                     </div>
                   </Card>
-                ) : null
+                ))
               )}
             </div>
           )}
 
           {/* History Tab */}
           {activeTab === "history" && (
-            <div className="space-y-4">
-              <Card className="p-6 border-border">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-bold text-foreground text-lg">
-                      Fresh Tomatoes
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      From Raj Kumar
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <div className="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-success/20 text-success">
-                      ✓ Completed
+            <div className="space-y-6">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Card key={i} className="p-6 border-slate-200">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-slate-900">
+                        Fresh Tomatoes & Vegetables
+                      </h3>
+                      <p className="text-slate-600 mt-1">
+                        Received from Raj Kumar · Thamel, Kathmandu
+                      </p>
+                      <div className="flex items-center gap-4 mt-3 text-sm">
+                        <span className="text-slate-500">Picked up:</span>
+                        <span className="font-medium text-slate-900">
+                          April {10 - i}, 2025
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Picked up 2024-12-10
-                    </p>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-6 border-border">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-bold text-foreground text-lg">
-                      Organic Apples
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      From Maya Gurung
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <div className="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-success/20 text-success">
-                      ✓ Completed
+                    <div className="text-right">
+                      <div className="inline-block px-4 py-2 rounded-full text-sm font-semibold bg-green-100 text-green-700 mb-3">
+                        ✓ Successfully Received
+                      </div>
+                      <Button variant="outline" size="sm" className="border-slate-300">
+                        View Details
+                      </Button>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Picked up 2024-12-08
-                    </p>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              ))}
             </div>
           )}
 
-          {/* Saved Listings */}
+          {/* Saved Listings Tab */}
           {activeTab === "saved" && (
-            <div className="space-y-4">
-              <Card className="p-12 text-center border-border border-dashed">
-                <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  No saved listings yet
-                </h3>
-                <p className="text-muted-foreground mb-6">
-                  Save your favorite donations to request later
-                </p>
-                <Link to="/browse">
-                  <Button>Browse Food Donations</Button>
-                </Link>
-              </Card>
-            </div>
+            <Card className="p-20 text-center border-slate-200">
+              <Heart className="h-20 w-20 text-slate-400 mx-auto mb-6" />
+              <h3 className="text-2xl font-bold text-slate-900 mb-4">
+                No saved donations yet
+              </h3>
+              <p className="text-lg text-slate-600 mb-10 max-w-md mx-auto">
+                Save food listings you're interested in to request them later.
+              </p>
+              <Link to="/browse">
+                <Button size="lg" className="bg-green-600 hover:bg-green-700">
+                  Browse & Save Food
+                </Button>
+              </Link>
+            </Card>
           )}
         </div>
       </div>

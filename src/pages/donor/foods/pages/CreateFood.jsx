@@ -1,36 +1,46 @@
 import { useState } from "react";
-import { Header } from "@/components/Header";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "../../../../components/ui/button";
+import { Card } from "../../../../components/ui/card";
+import { Input } from "../../../../components/ui/input";
+import { Label } from "../../../../components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Upload, Leaf } from "lucide-react";
-
+import { useCreatePost } from '../hooks/useCreatePost'
 const FOOD_TYPES = [
-  { value: "vegetables", label: "🥬 Vegetables" },
-  { value: "fruits", label: "🍎 Fruits" },
   { value: "cooked", label: "🍲 Cooked Food" },
-  { value: "dairy", label: "🥛 Dairy" },
-  { value: "baked", label: "🍞 Baked Goods" },
-  { value: "other", label: "📦 Other" },
+  { value: "other", label: "📦 Other" }, // optional for anything else
 ];
 
 const UNITS = ["kg", "lbs", "items", "portions", "liters", "bottles"];
 
-const DISTRICTS = ["Kathmandu", "Lalitpur", "Bhaktapur", "Kavre", "Nuwakot"];
+const DISTRICTS = [
+  "Kathmandu",
+  "Lalitpur",
+  "Bhaktapur",
+  "Kavre",
+  "Nuwakot",
+  "Sunsari",
+  "Kaski",
+  "Morang",
+  "Illam"
+];
 
 const CITIES = {
-  Kathmandu: ["Kathmandu", "Thamel", "Baneshwor", "Koteshwor", "Patan"],
-  Lalitpur: ["Lalitpur", "Pulchowk", "Jawalakhel", "Kupondole"],
+  Kathmandu: ["Kathmandu", "Thamel", "Baneshwor", "Koteshwor", "Maharajgunj"],
+  Lalitpur: ["Patan", "Pulchowk", "Jawalakhel", "Kupondole"],
   Bhaktapur: ["Bhaktapur", "Suryabinayak", "Thimi"],
   Kavre: ["Dhulikhel", "Banepa", "Panauti"],
   Nuwakot: ["Bidur", "Trishuli"],
+  Sunsari: ["Dharan", "Itahari", "Inaruwa"],
+  Kaski: ["Pokhara", "Lekhnath"],
+  Morang: ["Biratnagar", "Rangeli", "Letang"],
+  Illam: ["Illam", "Fikkal", "Suryodaya"]
 };
+
 
 export default function CreateFood() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState({
     title: "",
     description: "",
     type: "vegetables",
@@ -39,10 +49,44 @@ export default function CreateFood() {
     expiryDate: "",
     district: "Kathmandu",
     city: "Kathmandu",
-    address: "",
     pickupInstructions: "",
+    geoLocation: { lat: null, lng: null }, // <-- new
   });
+
   const [errors, setErrors] = useState({});
+  const { createPost, loading } = useCreatePost();
+  const fetchGeoLocation = () => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject("Geolocation is not supported by your browser");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const coords = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+          setFormData((prev) => ({ ...prev, geoLocation: coords }));
+          resolve(coords);
+        },
+        (error) => {
+          console.error("Error fetching location:", error);
+          reject(error);
+        }
+      );
+    });
+  };
+  const [sendLoading, setsendLoading] = useState(false);
+  const handleFileChange = (file) => {
+    if (!file) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      photo: file,
+    }));
+  };
 
   const handleChange = (
     e
@@ -78,7 +122,6 @@ export default function CreateFood() {
     else if (new Date(formData.expiryDate) <= new Date()) {
       newErrors.expiryDate = "Expiry date must be in the future";
     }
-    if (!formData.address.trim()) newErrors.address = "Address is required";
     if (!formData.pickupInstructions.trim())
       newErrors.pickupInstructions = "Pickup instructions are required";
 
@@ -86,17 +129,37 @@ export default function CreateFood() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // first prevent default
+    setsendLoading(true); // then show loading
 
-    alert("Food donation posted successfully!");
-    navigate("/donor-dashboard");
+    if (!validateForm()) {
+      setsendLoading(false); // stop loading if validation fails
+      return;
+    }
+
+    let coords;
+    try {
+      coords = await fetchGeoLocation(); // wait for location
+    } catch (err) {
+      console.warn("Location not fetched, continuing without it.");
+      coords = { lat: null, lng: null };
+    }
+
+    try {
+      await createPost({ ...formData, geoLocation: coords });
+      navigate("/donor-dashboard");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setsendLoading(false); // always reset loading
+    }
   };
+
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      
+
       <div className="flex-1 container mx-auto max-w-4xl px-4 py-12">
         {/* Page Header */}
         <div className="mb-10 text-center md:text-left">
@@ -159,11 +222,10 @@ export default function CreateFood() {
                     {FOOD_TYPES.map(({ value, label }) => (
                       <label
                         key={value}
-                        className={`flex items-center justify-center gap-3 p-5 rounded-lg border-2 cursor-pointer transition-all ${
-                          formData.type === value
-                            ? "border-green-600 bg-green-50 shadow-sm"
-                            : "border-slate-300 hover:border-slate-400 bg-white"
-                        }`}
+                        className={`flex items-center justify-center gap-3 p-5 rounded-lg border-2 cursor-pointer transition-all ${formData.type === value
+                          ? "border-green-600 bg-green-50 shadow-sm"
+                          : "border-slate-300 hover:border-slate-400 bg-white"
+                          }`}
                       >
                         <input
                           type="radio"
@@ -270,20 +332,6 @@ export default function CreateFood() {
                   </select>
                 </div>
               </div>
-
-              <div>
-                <Label htmlFor="address">Full Address *</Label>
-                <Input
-                  id="address"
-                  name="address"
-                  placeholder="House number, street, landmark"
-                  value={formData.address}
-                  onChange={handleChange}
-                  className="mt-2"
-                />
-                {errors.address && <p className="text-red-600 text-sm mt-1">{errors.address}</p>}
-              </div>
-
               <div>
                 <Label htmlFor="pickupInstructions">Pickup Instructions *</Label>
                 <textarea
@@ -307,20 +355,37 @@ export default function CreateFood() {
             <section className="space-y-6">
               <div className="flex items-center gap-3">
                 <Upload className="h-7 w-7 text-green-600" />
-                <h2 className="text-2xl font-bold text-slate-900">
-                  Add Photo (Optional)
-                </h2>
+                <h2 className="text-2xl font-bold text-slate-900">Add Photo (Optional)</h2>
               </div>
-              <div className="border-2 border-dashed border-slate-300 rounded-xl p-10 text-center hover:border-green-500 transition-colors cursor-pointer">
+
+              <div
+                className="border-2 border-dashed border-slate-300 rounded-xl p-10 text-center hover:border-green-500 transition-colors cursor-pointer"
+                onClick={() => document.getElementById("food-photo").click()} // open file picker
+                onDragOver={(e) => e.preventDefault()} // allow drag
+                onDrop={(e) => {
+                  e.preventDefault();
+                  handleFileChange(e.dataTransfer.files[0]);
+                }}
+              >
                 <Upload className="h-14 w-14 text-slate-400 mx-auto mb-4" />
-                <p className="font-medium text-slate-700 mb-1">
-                  Click to upload or drag and drop
-                </p>
-                <p className="text-sm text-slate-500">
-                  PNG, JPG up to 10MB · Helps recipients see the food
-                </p>
+                <p className="font-medium text-slate-700 mb-1">Click to upload or drag and drop</p>
+                <p className="text-sm text-slate-500">PNG, JPG up to 10MB · Helps recipients see the food</p>
+
+                {/* Hidden file input */}
+                <input
+                  id="food-photo"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handleFileChange(e.target.files[0])}
+                />
               </div>
+
+              {formData.photo && (
+                <p className="mt-2 text-green-700">Selected file: {formData.photo.name}</p>
+              )}
             </section>
+
 
             {/* Submit */}
             <div className="flex justify-end gap-4 pt-6">
@@ -338,7 +403,7 @@ export default function CreateFood() {
                 size="lg"
                 className="px-10 bg-green-600 hover:bg-green-700"
               >
-                Post Donation
+                {loading || sendLoading ? "Loading..." : "Post Donation"}
               </Button>
             </div>
           </form>

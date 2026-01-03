@@ -9,13 +9,16 @@ import { Bell, CheckCircle, Inbox, Trash2 } from "lucide-react";
 import { useGetNotification } from "../hooks/useGetNotification";
 import { useDeleteNotification } from "../hooks/useDeleteNotification";
 import { useMarkNotification } from "../hooks/useMarkNotification";
+import { useMarkAllNotification } from "../hooks/useMarkAllNotification";
 
 export default function Notifications() {
   const navigate = useNavigate();
 
   const { getNotifications, notifications, loading } = useGetNotification();
   const { deleteNotification } = useDeleteNotification();
-  const { markNotificationAsRead, markAllNotificationsAsRead } = useMarkNotification();
+  const { markNotificationAsRead } = useMarkNotification();
+  const { markAllNotificationsAsRead } = useMarkAllNotification();
+
 
   const [tabValue, setTabValue] = useState("all"); // control tabs
 
@@ -49,7 +52,7 @@ export default function Notifications() {
   };
 
   const handleNotificationClick = async (notification) => {
-    if (!notification.read) await handleMarkAsRead(notification.id);
+    if (!notification.read) await handleMarkAsRead(notification._id);
 
     switch (notification.type) {
       case "request":
@@ -113,7 +116,7 @@ export default function Notifications() {
                     variant="ghost"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleMarkAsRead(notification.id);
+                      handleMarkAsRead(notification._id);
                     }}
                     className="text-green-600 hover:bg-green-100"
                   >
@@ -125,7 +128,7 @@ export default function Notifications() {
                   variant="ghost"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleDelete(notification.id);
+                    handleDelete(notification._id);
                   }}
                   className="text-red-600 hover:bg-red-100"
                 >

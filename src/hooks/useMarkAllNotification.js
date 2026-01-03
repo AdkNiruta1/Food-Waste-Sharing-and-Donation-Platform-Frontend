@@ -2,7 +2,7 @@ import { useState, useContext } from "react";
 import { markAllNotificationsAsReadService } from "../services/notificationService";
 import { AppContext } from "../context/ContextApp";
 
-export const useMarkNotification = () => {
+export const useMarkAllNotification = () => {
   const [loading, setLoading] = useState(false);
   const { showToast } = useContext(AppContext);
 

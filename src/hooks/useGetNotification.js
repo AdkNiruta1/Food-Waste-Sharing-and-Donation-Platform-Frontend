@@ -15,7 +15,6 @@ export const useGetNotification = () => {
       const res = await notificationServices(page, limit);
       setNotifications(res.data.notifications);
       setPagination(res.data.pagination);
-      showToast("Notifications fetched successfully", "success");
       return res.data;
     } catch (err) {
       showToast(err.message || "Failed to fetch notifications", "error");

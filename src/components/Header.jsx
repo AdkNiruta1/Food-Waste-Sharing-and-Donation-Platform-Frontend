@@ -5,6 +5,7 @@ import { useState } from "react";
 import Logo from "../assets/logo.png";
 import { useAuth } from "../context/AuthContext";
 import { useLogout } from "../hooks/useLogout";
+import { IMAGE_URL } from "../constants/constants";
 
 export function Header() {
   const navigate = useNavigate();
@@ -20,20 +21,20 @@ export function Header() {
   const userName = user?.emailVerified === "verified" && isStatusVerified === "verified" ? user?.name : "John Doe";
   const userRole = user?.emailVerified === "verified" && isStatusVerified === "verified" ? user?.role : "donor";
 
-const handleLogout = async (e) => {
-  e?.preventDefault(); //VERY IMPORTANT
+  const handleLogout = async (e) => {
+    e?.preventDefault(); //VERY IMPORTANT
 
-  try {
-    setIsProfileOpen(false);
-    setIsOpen(false);
+    try {
+      setIsProfileOpen(false);
+      setIsOpen(false);
 
-    await logout(); // POST /api/users/logout
-    refetchUser(); // Refresh user data after logout
-    navigate("/login");
-  } catch (err) {
-    console.error("Logout failed:", err);
-  }
-};
+      await logout(); // POST /api/users/logout
+      refetchUser(); // Refresh user data after logout
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  };
 
 
   const isActive = (path) => {
@@ -47,7 +48,7 @@ const handleLogout = async (e) => {
       <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur supports-backdrop-filter:bg-white/80">
         <nav className="container mx-auto px-4  flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 font-bold text-xl text-green-600">
+          <Link  className="flex items-center gap-2 font-bold text-xl text-green-600">
             <img src={Logo} className="h-25 w-25" />
             <span>Annapurna Bhandar</span>
           </Link>
@@ -65,26 +66,24 @@ const handleLogout = async (e) => {
             )}
 
             {/* Donor */}
-            {isAuthenticated && isEmailVerified ==="verified" && isStatusVerified === "verified" && userRole === "donor" && (
+            {isAuthenticated && isEmailVerified === "verified" && isStatusVerified === "verified" && userRole === "donor" && (
               <>
                 <Link to="/donor-dashboard" className={`text-sm font-medium pb-1 transition-colors ${isActive("/donor-dashboard")}`}>Dashboard</Link>
-                <Link to="/browse" className={`text-sm font-medium pb-1 transition-colors ${isActive("/browse")}`}>Browse Food</Link>
                 <Link to="/donation-history" className={`text-sm font-medium pb-1 transition-colors ${isActive("/donation-history")}`}>My Donations</Link>
               </>
             )}
 
             {/* Recipient */}
-            {isAuthenticated && isEmailVerified ==="verified" && isStatusVerified === "verified" && userRole === "recipient" && (
+            {isAuthenticated && isEmailVerified === "verified" && isStatusVerified === "verified" && userRole === "recipient" && (
               <>
-                <Link to="/" className={`text-sm font-medium pb-1 transition-colors ${isActive("/")}`}>Home</Link>
-                <Link to="/browse" className={`text-sm font-medium pb-1 transition-colors ${isActive("/browse")}`}>Browse Food</Link>
-                <Link to="/request-history" className={`text-sm font-medium pb-1 transition-colors ${isActive("/request-history")}`}>My Requests</Link>
                 <Link to="/recipient-dashboard" className={`text-sm font-medium pb-1 transition-colors ${isActive("/recipient-dashboard")}`}>Dashboard</Link>
+                <Link to="/food-browse" className={`text-sm font-medium pb-1 transition-colors ${isActive("/food-browse")}`}>Browse Food</Link>
+                <Link to="/request-history" className={`text-sm font-medium pb-1 transition-colors ${isActive("/request-history")}`}>My Requests</Link>
               </>
             )}
 
             {/* Admin */}
-            {isAuthenticated && isEmailVerified ==="verified" && isStatusVerified === "verified" && userRole === "admin" && (
+            {isAuthenticated && isEmailVerified === "verified" && isStatusVerified === "verified" && userRole === "admin" && (
               <>
                 <Link to="/admin" className={`text-sm font-medium pb-1 transition-colors ${isActive("/admin")}`}>Dashboard</Link>
                 <Link to="/manage-users" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-users")}`}>Manage Users</Link>
@@ -116,7 +115,13 @@ const handleLogout = async (e) => {
                     className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
                   >
                     <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                      <User className="h-5 w-5 text-green-600" />
+                      {
+                        user.profilePicture ? (
+                          <img src={IMAGE_URL + user.profilePicture} alt="Profile" className="w-full h-full object-cover rounded-full" />
+                        ) : (
+                          <User className="h-5 w-5 text-green-600" />
+                        )
+                      }
                     </div>
                     <span className="text-sm font-medium text-slate-900">{userName}</span>
                   </button>
@@ -186,7 +191,7 @@ const handleLogout = async (e) => {
           <div className="md:hidden border-t border-slate-200 bg-white">
             <div className="container mx-auto px-4 py-6 space-y-4">
               {/* Mobile Links */}
-              {!isAuthenticated &&  (
+              {!isAuthenticated && (
                 <>
                   <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Home</Link>
                   <Link to="/browse" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Browse Food</Link>
@@ -197,26 +202,28 @@ const handleLogout = async (e) => {
 
               {isLoggedIn && isStatusVerified === "verified" && isEmailVerified === "verified" && userRole === "donor" && (
                 <>
-                  <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Home</Link>
-                  <Link to="/browse" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Browse Food</Link>
-                  <Link to="/donation-history" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">My Donations</Link>
                   <Link to="/donor-dashboard" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Dashboard</Link>
+                  <Link to="/donation-history" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">My Donations</Link>
                 </>
               )}
 
               {isLoggedIn && isStatusVerified === "verified" && isEmailVerified === "verified" && userRole === "recipient" && (
                 <>
-                  <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Home</Link>
+                  <Link to="/recipient-dashboard" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Dashboard</Link>
                   <Link to="/browse" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Browse Food</Link>
                   <Link to="/request-history" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">My Requests</Link>
-                  <Link to="/recipient-dashboard" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Dashboard</Link>
                 </>
               )}
 
               {isLoggedIn && isStatusVerified === "verified" && isEmailVerified === "verified" && userRole === "admin" && (
                 <>
-                  <Link to="/" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Home</Link>
-                  <Link to="/admin" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Dashboard</Link>
+                  <Link to="/admin" className={`text-sm font-medium pb-1 transition-colors ${isActive("/admin")}`}>Dashboard</Link>
+                  <Link to="/manage-users" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-users")}`}>Manage Users</Link>
+                  <Link to="/manage-requests" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-requests")}`}>Manage Requests</Link>
+                  <Link to="/manage-reports" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-reports")}`}>Manage Reports</Link>
+                  <Link to="/manage-notifications" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-notifications")}`}>Manage Notifications</Link>
+                  <Link to="/manage-reviews" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-reviews")}`}>Manage Reviews</Link>
+
                 </>
               )}
 
@@ -238,7 +245,7 @@ const handleLogout = async (e) => {
               <div className="border-t border-slate-200 pt-4 space-y-3">
                 {isAuthenticated && isStatusVerified === "verified" && isEmailVerified === "verified" ? (
                   <button
-                   onClick={(e) => handleLogout(e)}
+                    onClick={(e) => handleLogout(e)}
                     disabled={logoutLoading}
                     className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 last:rounded-b-lg disabled:opacity-50"
                   >

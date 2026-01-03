@@ -5,6 +5,8 @@ import About from "../pages/landing/About";
 import Contact from "../pages/landing/Contact";
 import ProtectedRoute from "./ProtectedRoute";
 import BrowseFood from "../pages/landing/Browser";
+import ReciverBrowseFood from "../pages/recipient/browser/pages/BrowserFood";
+
 import AdminDashboard from "../pages/admin/dashboard/pages/Dashboard";
 import DonorDashboard from "../pages/donor/dashboard/pages/Dashboard";
 import RecipientDashboard from "../pages/recipient/dashboard/pages/Dashboard";
@@ -19,6 +21,8 @@ import UserProfile from "../components/UserProfile";
 import Notifications from "../components/Notifications";
 import ResubmitDocuments from "../components/ResubmitDocuments";
 import AdminUserActivityLogs from "../pages/admin/users/pages/AdminViewUserLogs";
+import CreateFood from "../pages/donor/foods/pages/CreateFood";
+import FoodDetail from "../pages/recipient/browser/pages/ViewFoodDeatils";
 
 export default function AppRoutes() {
   return (
@@ -55,12 +59,17 @@ export default function AppRoutes() {
 
         {/* Recipient */}
         <Route element={<ProtectedRoute roles={["recipient"]} />}>
-          <Route path="/recipient-dashboard" element={<RecipientDashboard />} />
+          <Route path="/recipient-dashboard" element={<RecipientDashboard />} />\
+          <Route path="/food-browse" element={<ReciverBrowseFood />} />
+          <Route path="/food-browse/:foodId" element={<FoodDetail />} />
+
         </Route>
 
         {/* Donor */}
         <Route element={<ProtectedRoute roles={["donor"]} />}>
           <Route path="/donor-dashboard" element={<DonorDashboard />} />
+          <Route path="/create-food" element={<CreateFood />} />
+
         </Route>
 
         <Route path="*" element={<NotFound />} />
