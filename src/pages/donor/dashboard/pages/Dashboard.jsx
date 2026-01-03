@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "../../../../components/Header";
 import { Button } from "../../../../components/ui/button";
 import { Card } from "../../../../components/ui/card";
@@ -14,13 +14,19 @@ import {
   MessageSquare,
   User,
 } from "lucide-react";
-import { mockFoodPosts } from "../../../../lib/mockData";
-
+import { useGetMyFood } from "../hooks/useGetMyDonation";
+import { IMAGE_URL } from "../../../../constants/constants";
 export default function DonorDashboard() {
   const [activeTab, setActiveTab] = useState("posts");
+  const { foods, loading, fetchMyFoodDonation } = useGetMyFood();
+
+  // Fetch donations on mount
+  useEffect(() => {
+    fetchMyFoodDonation();
+  }, []);
 
   // Filter posts donated by current user (mock)
-  const donorPosts = mockFoodPosts.filter((p) => p.donorId === "d1");
+  const donorPosts = foods;
 
   const stats = [
     {
@@ -32,7 +38,7 @@ export default function DonorDashboard() {
     },
     {
       label: "Total Requests",
-      value: donorPosts.reduce((sum, p) => sum + p.requests.length, 0).toString(),
+      value: donorPosts.reduce((sum, p) => sum + p.length, 0).toString(),
       change: "+1 pending",
       icon: <MessageSquare className="h-6 w-6" />,
       color: "text-orange-600",
@@ -54,6 +60,7 @@ export default function DonorDashboard() {
   ];
 
   return (
+    loading ? <div>Loading...</div> :
     <div className="min-h-screen flex flex-col bg-white">
       {/* Header Section */}
       <div className="border-b border-slate-200 bg-slate-50">
@@ -119,7 +126,7 @@ export default function DonorDashboard() {
                   : "text-slate-600 hover:text-slate-900 border-transparent"
               }`}
             >
-              Incoming Requests ({donorPosts.reduce((sum, p) => sum + p.requests.length, 0)})
+              Incoming Requests ({donorPosts.reduce((sum, p) => sum + p.length, 0)})
             </button>
             <button
               onClick={() => setActiveTab("analytics")}
@@ -162,7 +169,7 @@ export default function DonorDashboard() {
                       {/* Image */}
                       <div className="lg:col-span-1">
                         <img
-                          src={post.imageUrl || "https://via.placeholder.com/300x200?text=No+Image"}
+                          src={IMAGE_URL+ post.photo || "https://via.placeholder.com/300x200?text=No+Image"}
                           alt={post.title}
                           className="w-full h-48 object-cover rounded-lg"
                         />
@@ -212,7 +219,7 @@ export default function DonorDashboard() {
 
                       {/* Actions */}
                       <div className="lg:col-span-1 space-y-3">
-                        <Link to={`/food/${post.id}`} className="block">
+                        <Link to={`/food/${post._id}`} className="block">
                           <Button variant="outline" className="w-full border-slate-300">
                             View Details
                           </Button>
@@ -226,7 +233,7 @@ export default function DonorDashboard() {
                           Delete
                         </Button>
 
-                        {post.requests.length > 0 && (
+                        {post.length > 0 && (
                           <div className="bg-orange-100 text-orange-700 rounded-lg p-3 text-center">
                             <p className="text-sm font-semibold">
                               {post.requests.length} pending request{post.requests.length > 1 ? "s" : ""}
@@ -244,7 +251,7 @@ export default function DonorDashboard() {
           {/* Incoming Requests Tab */}
           {activeTab === "requests" && (
             <div className="space-y-6">
-              {donorPosts.flatMap((post) => post.requests).length === 0 ? (
+              {donorPosts.flatMap((post) => post).length !== 0 ? (
                 <Card className="p-16 text-center border-slate-200">
                   <MessageSquare className="h-16 w-16 text-slate-400 mx-auto mb-6" />
                   <h3 className="text-2xl font-bold text-slate-900 mb-3">
@@ -256,7 +263,7 @@ export default function DonorDashboard() {
                 </Card>
               ) : (
                 donorPosts.flatMap((post) =>
-                  post.requests.map((request) => (
+                  post.map((request) => (
                     <Card
                       key={request.id}
                       className="p-6 border-slate-200 hover:shadow-lg transition-shadow"

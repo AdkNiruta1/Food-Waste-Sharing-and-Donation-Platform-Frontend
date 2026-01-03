@@ -79,6 +79,7 @@ export function Header() {
                 <Link to="/recipient-dashboard" className={`text-sm font-medium pb-1 transition-colors ${isActive("/recipient-dashboard")}`}>Dashboard</Link>
                 <Link to="/food-browse" className={`text-sm font-medium pb-1 transition-colors ${isActive("/food-browse")}`}>Browse Food</Link>
                 <Link to="/request-history" className={`text-sm font-medium pb-1 transition-colors ${isActive("/request-history")}`}>My Requests</Link>
+                
               </>
             )}
 
@@ -87,7 +88,6 @@ export function Header() {
               <>
                 <Link to="/admin" className={`text-sm font-medium pb-1 transition-colors ${isActive("/admin")}`}>Dashboard</Link>
                 <Link to="/manage-users" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-users")}`}>Manage Users</Link>
-                <Link to="/manage-requests" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-requests")}`}>Manage Requests</Link>
                 <Link to="/manage-reports" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-reports")}`}>Manage Reports</Link>
                 <Link to="/manage-notifications" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-notifications")}`}>Manage Notifications</Link>
                 <Link to="/manage-reviews" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-reviews")}`}>Manage Reviews</Link>
@@ -136,11 +136,19 @@ export function Header() {
                         <User className="h-4 w-4 inline mr-2" /> View Profile
                       </Link>
                       <Link
-                        to="/edit-profile"
+                        to="/change-password"
                         className="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-100"
                         onClick={() => setIsProfileOpen(false)}
                       >
-                        <Settings className="h-4 w-4 inline mr-2" /> Edit Profile
+                        <Settings className="h-4 w-4 inline mr-2" /> 
+                        Change Password
+                      </Link>
+                      <Link
+                        to="/change-email"
+                        className="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-100"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        <Settings className="h-4 w-4 inline mr-2" /> Change Email
                       </Link>
                       <Link
                         to={userRole === "donor" ? "/donation-history" : userRole === "recipient" ? "/request-history" : "/admin"}
@@ -219,7 +227,6 @@ export function Header() {
                 <>
                   <Link to="/admin" className={`text-sm font-medium pb-1 transition-colors ${isActive("/admin")}`}>Dashboard</Link>
                   <Link to="/manage-users" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-users")}`}>Manage Users</Link>
-                  <Link to="/manage-requests" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-requests")}`}>Manage Requests</Link>
                   <Link to="/manage-reports" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-reports")}`}>Manage Reports</Link>
                   <Link to="/manage-notifications" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-notifications")}`}>Manage Notifications</Link>
                   <Link to="/manage-reviews" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-reviews")}`}>Manage Reviews</Link>

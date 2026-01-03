@@ -54,13 +54,6 @@ export default function RecipientDashboard() {
       color: "text-green-600",
     },
     {
-      label: "Estimated Savings",
-      value: "₹2,450",
-      change: "From received donations",
-      icon: <Heart className="h-6 w-6" />,
-      color: "text-green-600",
-    },
-    {
       label: "Your Rating",
       value: "4.5",
       change: "Reliable & respectful",
@@ -126,26 +119,6 @@ export default function RecipientDashboard() {
               }`}
             >
               Active Requests ({userRequests.length})
-            </button>
-            <button
-              onClick={() => setActiveTab("history")}
-              className={`pb-4 px-2 font-medium text-lg transition-colors border-b-2 whitespace-nowrap ${
-                activeTab === "history"
-                  ? "text-green-600 border-green-600"
-                  : "text-slate-600 hover:text-slate-900 border-transparent"
-              }`}
-            >
-              Pickup History (5)
-            </button>
-            <button
-              onClick={() => setActiveTab("saved")}
-              className={`pb-4 px-2 font-medium text-lg transition-colors border-b-2 whitespace-nowrap ${
-                activeTab === "saved"
-                  ? "text-green-600 border-green-600"
-                  : "text-slate-600 hover:text-slate-900 border-transparent"
-              }`}
-            >
-              Saved Listings
             </button>
           </div>
 

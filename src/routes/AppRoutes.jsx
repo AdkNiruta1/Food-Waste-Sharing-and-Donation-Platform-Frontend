@@ -23,6 +23,7 @@ import ResubmitDocuments from "../components/ResubmitDocuments";
 import AdminUserActivityLogs from "../pages/admin/users/pages/AdminViewUserLogs";
 import CreateFood from "../pages/donor/foods/pages/CreateFood";
 import FoodDetail from "../pages/recipient/browser/pages/ViewFoodDeatils";
+import RequestHistory from "../pages/recipient/RequestFood/pages/RequestHistory";
 
 export default function AppRoutes() {
   return (
@@ -62,6 +63,8 @@ export default function AppRoutes() {
           <Route path="/recipient-dashboard" element={<RecipientDashboard />} />\
           <Route path="/food-browse" element={<ReciverBrowseFood />} />
           <Route path="/food-browse/:foodId" element={<FoodDetail />} />
+          <Route path="/request-history" element={<RequestHistory />} />
+
 
         </Route>
 

@@ -8,7 +8,15 @@ import { useUpdateProfile } from "../hooks/useUpdateProfile.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useUpdatePhoto } from "../hooks/useUpdatePhoto.js";
 import { IMAGE_URL } from "../constants/constants.js";
-
+import {
+  LogIn,
+  LogOut,
+  UserPlus,
+  ShieldCheck,
+  Clock,
+} from "lucide-react";
+import { useEffect } from "react";
+import { useGetMyLogs } from "../hooks/useGetActivityLog.js";
 export default function UserProfile() {
   const { user: currentUser, loading, refetchUser } = useAuth();
   const [reviewFilter, setReviewFilter] = useState("all"); // review filter
@@ -40,6 +48,42 @@ export default function UserProfile() {
       </div>
     );
   }
+  const getActionIcon = (action) => {
+    if (action.includes("Logged In"))
+      return <LogIn className="h-5 w-5 text-green-600" />;
+
+    if (action.includes("Logged Out"))
+      return <LogOut className="h-5 w-5 text-orange-600" />;
+
+    if (action.includes("Registered"))
+      return <UserPlus className="h-5 w-5 text-blue-600" />;
+
+    return <Clock className="h-5 w-5 text-slate-500" />;
+  };
+  const buildMessage = (log) => {
+    switch (log.action) {
+      case "User Logged In":
+        return "You logged into your account";
+      case "User Logged Out":
+        return "You logged out from your account";
+      case "User Registered":
+        return "Your account was successfully created";
+      default:
+        return log.action;
+    }
+  };
+
+
+  const getStatusBadge = (status) => {
+    const base = "px-3 py-1 rounded-full text-xs font-medium";
+    if (status === "success")
+      return `${base} bg-green-100 text-green-700`;
+    if (status === "pending")
+      return `${base} bg-orange-100 text-orange-700`;
+    if (status === "failed")
+      return `${base} bg-red-100 text-red-700`;
+    return `${base} bg-slate-100 text-slate-600`;
+  };
 
   const user = currentUser;
   const isCurrentUser = true; // since we only show the logged-in user
@@ -101,6 +145,94 @@ export default function UserProfile() {
       />
     ));
 
+  function ActivityLogs() {
+    const { logs, pagination, loading, fetchMyLogs } = useGetMyLogs();
+
+    useEffect(() => {
+      fetchMyLogs(1, 10);
+    }, []);
+
+    if (loading) {
+      return (
+        <div className="text-center py-12 text-slate-500">
+          Loading activity logs...
+        </div>
+      );
+    }
+
+    if (!logs?.length) {
+      return (
+        <div className="text-center py-16">
+          <Clock className="h-14 w-14 text-slate-300 mx-auto mb-4" />
+          <p className="text-slate-600 text-lg font-medium">
+            No activity recorded
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="relative pl-6 space-y-8">
+        {/* Vertical line */}
+        <div className="absolute left-2 top-0 bottom-0 w-px bg-slate-200" />
+
+        {logs.map((log) => (
+          <div key={log._id} className="relative flex gap-5">
+            {/* Icon */}
+            <div className="relative z-10 w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm">
+              {getActionIcon(log.action)}
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-5 hover:shadow-md transition">
+              <h4 className="font-semibold text-slate-900 mb-1">
+                {log.action}
+              </h4>
+
+              <p className="text-slate-600 text-sm mb-3">
+                {buildMessage(log)}
+              </p>
+
+              {/* Metadata */}
+              {log.metadata && (
+                <div className="text-xs text-slate-500 space-y-1 mb-2">
+                  {log.metadata.ip && <p>IP: {log.metadata.ip}</p>}
+                  {log.metadata.userAgent && (
+                    <p className="truncate">
+                      Device: {log.metadata.userAgent}
+                    </p>
+                  )}
+                  {log.metadata.role && (
+                    <p>Role: {log.metadata.role}</p>
+                  )}
+                </div>
+              )}
+
+              <p className="text-xs text-slate-500">
+                {new Date(log.createdAt).toLocaleString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            </div>
+          </div>
+        ))}
+
+        {/* Pagination info */}
+        {pagination && (
+          <p className="text-center text-xs text-slate-500 pt-6">
+            Showing {logs.length} of {pagination.total} activities
+          </p>
+        )}
+      </div>
+    );
+  }
+
+
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Hero Header */}
@@ -117,7 +249,7 @@ export default function UserProfile() {
 
 
               <img
-                src={previewImage || user?.profilePicture ? IMAGE_URL + user?.profilePicture : defaultProfileImage }
+                src={previewImage || user?.profilePicture ? IMAGE_URL + user?.profilePicture : defaultProfileImage}
                 alt={user.name}
                 className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white shadow-xl"
               />
@@ -354,7 +486,7 @@ export default function UserProfile() {
               <TabsList className="grid w-full grid-cols-3 mb-8 bg-slate-100">
                 <TabsTrigger value="about">About</TabsTrigger>
                 <TabsTrigger value="reviews">Reviews</TabsTrigger>
-                <TabsTrigger value="history">History</TabsTrigger>
+                <TabsTrigger value="history">Activity Logs</TabsTrigger>
               </TabsList>
 
               <TabsContent value="about">
@@ -434,17 +566,15 @@ export default function UserProfile() {
               </TabsContent>
 
               <TabsContent value="history">
-                <Card className="p-8 border-slate-200 text-center">
-                  <Award className="h-16 w-16 text-green-600 mx-auto mb-6" />
-                  <h3 className="text-2xl font-bold text-slate-900 mb-4">Activity History</h3>
-                  <p className="text-slate-600 mb-8">
-                    View all past {user.role === "donor" ? "donations" : "requests"} and completed transactions.
-                  </p>
-                  <Button size="lg" className="bg-green-600 hover:bg-green-700">
-                    View Full History
-                  </Button>
+                <Card className="p-8 border-slate-200">
+                  <h3 className="text-2xl font-bold text-slate-900 mb-6">
+                    Activity Logs
+                  </h3>
+
+                  <ActivityLogs />
                 </Card>
               </TabsContent>
+
             </Tabs>
           </div>
         </div>
