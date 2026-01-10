@@ -69,7 +69,7 @@ export function Header() {
             {isAuthenticated && isEmailVerified === "verified" && isStatusVerified === "verified" && userRole === "donor" && (
               <>
                 <Link to="/donor-dashboard" className={`text-sm font-medium pb-1 transition-colors ${isActive("/donor-dashboard")}`}>Dashboard</Link>
-                <Link to="/donation-history" className={`text-sm font-medium pb-1 transition-colors ${isActive("/donation-history")}`}>My Donations</Link>
+                <Link to="/donation-history" className={`text-sm font-medium pb-1 transition-colors ${isActive("/donation-history")}`}>Donation History</Link>
               </>
             )}
 
@@ -211,7 +211,7 @@ export function Header() {
               {isLoggedIn && isStatusVerified === "verified" && isEmailVerified === "verified" && userRole === "donor" && (
                 <>
                   <Link to="/donor-dashboard" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Dashboard</Link>
-                  <Link to="/donation-history" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">My Donations</Link>
+                  <Link to="/donation-history" onClick={() => setIsOpen(false)} className="block text-lg font-medium text-slate-900 hover:text-green-600">Donation History</Link>
                 </>
               )}
 

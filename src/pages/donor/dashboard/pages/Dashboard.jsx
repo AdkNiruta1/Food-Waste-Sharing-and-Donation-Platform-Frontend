@@ -15,15 +15,29 @@ import {
   User,
 } from "lucide-react";
 import { useGetMyFood } from "../hooks/useGetMyDonation";
+import { useDeleteMyDonation } from "../hooks/useDeleteMyDonation";
+
 import { IMAGE_URL } from "../../../../constants/constants";
 export default function DonorDashboard() {
   const [activeTab, setActiveTab] = useState("posts");
   const { foods, loading, fetchMyFoodDonation } = useGetMyFood();
 
+  const { deleteMyDonation, loading: deleteLoading } = useDeleteMyDonation();
   // Fetch donations on mount
   useEffect(() => {
     fetchMyFoodDonation();
   }, []);
+
+  const handleDeleteDonation = async (id) => {
+    if (window.confirm("Are you sure you want to delete this donation?")) {
+      try {
+        await deleteMyDonation(id);
+        fetchMyFoodDonation();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
 
   // Filter posts donated by current user (mock)
   const donorPosts = foods;
@@ -126,7 +140,7 @@ export default function DonorDashboard() {
                   : "text-slate-600 hover:text-slate-900 border-transparent"
               }`}
             >
-              Incoming Requests ({donorPosts.reduce((sum, p) => sum + p.length, 0)})
+              Active Requests ({donorPosts.reduce((sum, p) => sum + p.length, 0)})
             </button>
             <button
               onClick={() => setActiveTab("analytics")}
@@ -219,18 +233,23 @@ export default function DonorDashboard() {
 
                       {/* Actions */}
                       <div className="lg:col-span-1 space-y-3">
-                        <Link to={`/food/${post._id}`} className="block">
+                        <Link to={`/food-details/${post._id}`} className="block">
                           <Button variant="outline" className="w-full border-slate-300">
                             View Details
                           </Button>
                         </Link>
-                        <Button variant="outline" className="w-full border-slate-300">
+                        <Button variant="outline" className="w-full border-slate-300"
+                        onClick={() => window.location.href = `/update-food/${post._id}`}
+                        >
                           <Edit className="mr-2 h-4 w-4" />
                           Edit Post
                         </Button>
-                        <Button variant="outline" className="w-full text-red-600 hover:bg-red-50">
+                        <Button variant="outline" className="w-full text-red-600 hover:bg-red-50"
+                        onClick={() => handleDeleteDonation(post._id)}
+                        disabled={deleteLoading}
+                        >
                           <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
+                          {deleteLoading ? "Deleting..." : "Delete Post"}
                         </Button>
 
                         {post.length > 0 && (

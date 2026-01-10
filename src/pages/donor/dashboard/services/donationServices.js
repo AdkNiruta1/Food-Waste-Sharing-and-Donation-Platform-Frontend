@@ -6,3 +6,7 @@ export const donationServices = () => {
 
   return client.get('my');
 };
+export const deleteDonationServices = (id) => {
+
+  return client.delete(`${id}`);
+};

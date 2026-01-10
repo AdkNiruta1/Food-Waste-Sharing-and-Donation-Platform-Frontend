@@ -22,8 +22,12 @@ import Notifications from "../components/Notifications";
 import ResubmitDocuments from "../components/ResubmitDocuments";
 import AdminUserActivityLogs from "../pages/admin/users/pages/AdminViewUserLogs";
 import CreateFood from "../pages/donor/foods/pages/CreateFood";
-import FoodDetail from "../pages/recipient/browser/pages/ViewFoodDeatils";
+import FoodDetail from "../pages/recipient/browser/pages/ViewFoodDetails";
 import RequestHistory from "../pages/recipient/RequestFood/pages/RequestHistory";
+import ChangeEmail from "../pages/auth/change-email/pages/ChangeEmail";
+import ChangePassword from "../pages/auth/change-password/pages/ChangePassword";
+import DonorFoodDetail from "../pages/donor/dashboard/pages/ViewDonationFoodDetails";
+import EditFood from "../pages/donor/foods/pages/EditFood";
 
 export default function AppRoutes() {
   return (
@@ -44,9 +48,11 @@ export default function AppRoutes() {
           path="/resubmit-documents/:token"
           element={<ResubmitDocuments />}
         />
-        <Route element={<ProtectedRoute  />}>
+        <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/change-email" element={<ChangeEmail />} />
+          <Route path="/change-password" element={<ChangePassword />} />
 
 
         </Route>
@@ -72,6 +78,10 @@ export default function AppRoutes() {
         <Route element={<ProtectedRoute roles={["donor"]} />}>
           <Route path="/donor-dashboard" element={<DonorDashboard />} />
           <Route path="/create-food" element={<CreateFood />} />
+          <Route path="/food-details/:foodId" element={<DonorFoodDetail />} />
+          <Route path="/update-food/:foodId" element={<EditFood />} />
+
+
 
         </Route>
 

@@ -24,3 +24,25 @@ export const createFoodServices = (formData) => {
     },
   });
 };
+export const editFoodServices = (id, formData) => {
+  const data = new FormData();
+
+  // Append all fields
+  for (const key in formData) {
+    if (key === "geoLocation") {
+      // append lat and lng separately
+      data.append("lat", formData.geoLocation.lat);
+      data.append("lng", formData.geoLocation.lng);
+    } else if (key === "photo" && formData.photo) {
+      data.append("photo", formData.photo); // file
+    } else {
+      data.append(key, formData[key]);
+    }
+  }
+
+  return client.put(data, id, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  })
+};

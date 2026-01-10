@@ -57,7 +57,9 @@ export default function ForgotPassword() {
       await sendOtp(email);
       setStep("otp");
       setResendTimer(60);
-    } catch {}
+    } catch {
+      setErrors({ email: "Failed to send OTP" });
+    }
   };
 
   /* 2️⃣ Verify OTP */
