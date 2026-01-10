@@ -76,7 +76,7 @@ export default function RecipientDashboard() {
                 Track your food requests and received donations
               </p>
             </div>
-            <Link to="/browse">
+            <Link to="/food-browse">
               <Button size="lg" className="bg-green-600 hover:bg-green-700">
                 <Package className="mr-2 h-5 w-5" />
                 Browse Available Food

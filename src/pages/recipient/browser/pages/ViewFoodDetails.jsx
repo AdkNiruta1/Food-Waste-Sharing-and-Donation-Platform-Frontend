@@ -2,7 +2,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Header } from "../../../../components/Header";
 import { Button } from "../../../../components/ui/button";
 import { Card } from "../../../../components/ui/card";
-import { useState } from "react";
 import {
   MapPin,
   Clock,
@@ -17,17 +16,25 @@ import {
 import { useEffect } from "react";
 import { useGetFoodDetails } from "../hooks/useGetFoodDetails";
 import { IMAGE_URL } from "../../../../constants/constants";
+import { useAuth } from "../../../../context/AuthContext";
 
 export default function FoodDetail() {
   const { foodId } = useParams();
   const navigate = useNavigate();
-  const [showRequestForm, setShowRequestForm] = useState(false);
-  const [requestMessage, setRequestMessage] = useState("");
   const { foods: post, loading, FoodDonationDeatils } = useGetFoodDetails();
+  const { user: currentUser } = useAuth();
 
   useEffect(() => {
     FoodDonationDeatils(foodId);
   }, [foodId]);
+  const requests = post?.requests || [];
+  const requestCount = requests.length;
+  const pendingRequests = requests.filter(
+    (r) => r.status === "pending"
+  );
+  const alreadyRequested = requests.some(
+    (r) => r.receiver === currentUser._id // adjust if populated
+  );
 
   if (loading) {
     return <p className="text-center mt-20">Loading...</p>;
@@ -70,8 +77,7 @@ export default function FoodDetail() {
   const handleRequest = (e) => {
     e.preventDefault();
     alert(`Request sent for "${post.title}"! The donor will be notified.`);
-    setShowRequestForm(false);
-    setRequestMessage("");
+
   };
 
   return (
@@ -147,10 +153,11 @@ export default function FoodDetail() {
                   <div className="p-5 bg-blue-50 rounded-xl border border-blue-200">
                     <p className="text-sm text-slate-600 mb-2">Requests</p>
                     <p className="text-3xl font-bold text-blue-600">
-                      {/* {post.requests.length} */}
+                      {requestCount}
                     </p>
                     <p className="text-sm text-slate-600">interested</p>
                   </div>
+
                   <div className="p-5 bg-purple-50 rounded-xl border border-purple-200">
                     <p className="text-sm text-slate-600 mb-2">Posted</p>
                     <p className="text-xl font-bold text-purple-600">
@@ -178,18 +185,43 @@ export default function FoodDetail() {
                     <MapPin className="h-7 w-7 text-green-600" />
                     Pickup Location
                   </h2>
-                  <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
-                    <p className="font-medium text-slate-900 mb-2">
+
+                  <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 space-y-4">
+                    <p className="font-medium text-slate-900">
                       {post.address || "Address provided upon request approval"}
                     </p>
                     <p className="text-slate-600">
                       {post.city}, {post.district}
                     </p>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${post.lat},${post.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button variant="outline" className="mt-4 w-full border-slate-300">
+                        Open in Google Maps
+                      </Button>
+                    </a>
+
+                    {/* Google Map iframe */}
+                    {post.lat && post.lng && (
+                      <div className="mt-4 rounded-xl overflow-hidden border border-slate-300">
+                        <iframe
+                          title="Pickup Location Map"
+                          width="100%"
+                          height="300"
+                          loading="lazy"
+                          oncli
+                          allowFullScreen
+                          referrerPolicy="no-referrer-when-downgrade"
+                          src={`https://www.google.com/maps?q=${post.lat},${post.lng}&z=15&output=embed`}
+                          className="w-full"
+                        />
+                      </div>
+                    )}
                   </div>
-                  <Button variant="outline" className="mt-4 w-full border-slate-300">
-                    View on Map (Coming Soon)
-                  </Button>
                 </div>
+
               </div>
             </Card>
           </div>
@@ -246,67 +278,33 @@ export default function FoodDetail() {
 
                 {/* Request Section */}
                 <div className="pt-6 border-t border-slate-200">
-                  {!showRequestForm ? (
-                    <Button
-                      className="w-full bg-green-600 hover:bg-green-700 text-lg py-7"
-                      disabled={post.status !== "available"}
-                      onClick={() => setShowRequestForm(true)}
-                    >
-                      {post.status === "available" ? (
-                        <>Request This Food</>
-                      ) : (
-                        <>Currently Unavailable</>
-                      )}
-                    </Button>
-                  ) : (
-                    <div className="space-y-5">
-                      <div>
-                        <label className="block text-base font-medium text-slate-900 mb-3">
-                          Message to Donor (Optional)
-                        </label>
-                        <textarea
-                          value={requestMessage}
-                          onChange={(e) => setRequestMessage(e.target.value)}
-                          placeholder="Tell the donor why you need this food and when you can pick it up..."
-                          className="w-full p-4 rounded-lg border border-slate-300 bg-white text-slate-900 resize-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                          rows={5}
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="border-slate-300"
-                          onClick={() => {
-                            setShowRequestForm(false);
-                            setRequestMessage("");
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          onClick={handleRequest}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <CheckCircle className="mr-2 h-5 w-5" />
-                          Send Request
-                        </Button>
-                      </div>
-                    </div>
-                  )}
+                  <Button
+                    className="w-full bg-green-600 hover:bg-green-700 text-lg py-7 cursor-pointer"
+                    disabled={post.status !== "available" || alreadyRequested}
+                    onClick={() => handleRequest(post._id)}
+                  >
+                    {alreadyRequested
+                      ? "Request Already Sent"
+                      : post.status === "available"
+                        ? "Request This Food"
+                        : "Currently Unavailable"}
+                  </Button>
+
                 </div>
 
                 {/* Pending Requests Notice */}
-                {/* {post.requests.length > 0 && (
+                {requestCount > 0 && (
                   <div className="bg-orange-50 border border-orange-200 rounded-lg p-5 text-center">
                     <p className="text-sm font-medium text-orange-700 mb-1">
-                      {post.requests.length} pending request{post.requests.length > 1 ? "s" : ""}
+                      {pendingRequests.length} pending request
+                      {pendingRequests.length !== 1 && "s"}
                     </p>
                     <p className="text-xs text-orange-600">
                       Donor will choose who to accept
                     </p>
                   </div>
-                )} */}
+                )}
+
 
                 {/* Contact Button */}
                 <Button variant="outline" className="w-full border-slate-300">
