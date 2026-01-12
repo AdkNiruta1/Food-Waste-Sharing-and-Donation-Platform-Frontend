@@ -9,3 +9,6 @@ export const FoodServices = (page = 1, limit = 10) => {
 export const getFoodDetailsService = (foodId) => {
   return client.get(`${foodId}`);
 };
+export const requestFoodService = (data) => {
+  return client.post(data, `request`);
+};

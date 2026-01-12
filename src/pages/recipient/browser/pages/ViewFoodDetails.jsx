@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { Header } from "../../../../components/Header";
 import { Button } from "../../../../components/ui/button";
 import { Card } from "../../../../components/ui/card";
@@ -17,11 +17,14 @@ import { useEffect } from "react";
 import { useGetFoodDetails } from "../hooks/useGetFoodDetails";
 import { IMAGE_URL } from "../../../../constants/constants";
 import { useAuth } from "../../../../context/AuthContext";
+import { useRequestFood } from "../hooks/useRequestFood";
 
 export default function FoodDetail() {
   const { foodId } = useParams();
   const navigate = useNavigate();
   const { foods: post, loading, FoodDonationDeatils } = useGetFoodDetails();
+  const { error, loading: loadingRequest, requestFood } = useRequestFood();
+
   const { user: currentUser } = useAuth();
 
   useEffect(() => {
@@ -32,8 +35,10 @@ export default function FoodDetail() {
   const pendingRequests = requests.filter(
     (r) => r.status === "pending"
   );
+
+
   const alreadyRequested = requests.some(
-    (r) => r.receiver === currentUser._id // adjust if populated
+    (r) => r.receiver._id === currentUser._id // adjust if populated
   );
 
   if (loading) {
@@ -43,6 +48,7 @@ export default function FoodDetail() {
   if (!post) {
     return <p className="text-center mt-20">Food not found</p>;
   }
+
 
 
   if (!post) {
@@ -76,7 +82,7 @@ export default function FoodDetail() {
 
   const handleRequest = (e) => {
     e.preventDefault();
-    alert(`Request sent for "${post.title}"! The donor will be notified.`);
+    requestFood({ foodPostId: post._id });
 
   };
 
@@ -211,7 +217,6 @@ export default function FoodDetail() {
                           width="100%"
                           height="300"
                           loading="lazy"
-                          oncli
                           allowFullScreen
                           referrerPolicy="no-referrer-when-downgrade"
                           src={`https://www.google.com/maps?q=${post.lat},${post.lng}&z=15&output=embed`}
@@ -237,12 +242,20 @@ export default function FoodDetail() {
                   </h3>
                   <div className="flex items-center gap-4 mb-4">
                     <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                      <User className="h-10 w-10 text-green-600" />
+                      {post?.donor?.profilePicture ? (
+                        <img
+                          src={IMAGE_URL + post?.donor?.profilePicture}
+                          alt={post?.donor?.name}
+                          className="w-16 h-16 rounded-full object-cover"
+                        />
+                      ) : <User className="h-10 w-10 text-green-600" />}
                     </div>
                     <div>
                       <h2 className="text-xl font-bold text-slate-900">
                         {post?.donor?.name}
                       </h2>
+
+
                       <div className="flex items-center gap-2 mt-1">
                         <div className="flex">
                           {[...Array(5)].map((_, i) => (
@@ -259,12 +272,21 @@ export default function FoodDetail() {
                           {5}
                         </span>
                       </div>
+
                     </div>
                   </div>
                   <div className="space-y-3 text-sm mt-6 pt-6 border-t border-slate-200">
                     <div className="flex justify-between">
+                      <span className="text-slate-600">Email</span>
+                      <span className="font-semibold ">
+                        {post?.donor?.email || "N/A"}
+                      </span>
+                    </div>
+                    
+
+                    <div className="flex justify-between">
                       <span className="text-slate-600">Total Donations</span>
-                      <span className="font-semibold text-green-600">12</span>
+                      <span className="font-semibold text-green-600">{post?.donor?.totalDonations || "N/A"}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-600">Member Since</span>
@@ -275,22 +297,34 @@ export default function FoodDetail() {
                     </div>
                   </div>
                 </div>
-
-                {/* Request Section */}
                 <div className="pt-6 border-t border-slate-200">
+                  <Button variant="secondary"
+                    className="w-full text-lg py-7 cursor-pointer"
+                  >
+                    <Link to={`tel:${post?.donor?.phone}`}>Contact Donor</Link>
+                    
+                  </Button>
+
+                </div>
+                {/* Request Section */}
+                <div className="border-slate-200">
                   <Button
-                    className="w-full bg-green-600 hover:bg-green-700 text-lg py-7 cursor-pointer"
+                    className="w-full  bg-green-600 hover:bg-green-700 text-lg py-7 cursor-pointer"
+                    variant="default"
                     disabled={post.status !== "available" || alreadyRequested}
-                    onClick={() => handleRequest(post._id)}
+                    onClick={(e) => handleRequest(e)}
                   >
                     {alreadyRequested
                       ? "Request Already Sent"
                       : post.status === "available"
-                        ? "Request This Food"
+                        ? loadingRequest ? "Requesting..." : "Request Donation"
                         : "Currently Unavailable"}
                   </Button>
 
                 </div>
+                {error
+                  && (<p className="text-sm text-red-600 mt-2 text-center">{error}</p>
+                  )}
 
                 {/* Pending Requests Notice */}
                 {requestCount > 0 && (
@@ -303,14 +337,7 @@ export default function FoodDetail() {
                       Donor will choose who to accept
                     </p>
                   </div>
-                )}
-
-
-                {/* Contact Button */}
-                <Button variant="outline" className="w-full border-slate-300">
-                  <MessageSquare className="mr-2 h-5 w-5" />
-                  Message Donor (After Approval)
-                </Button>
+                )}          
               </div>
             </Card>
           </div>
