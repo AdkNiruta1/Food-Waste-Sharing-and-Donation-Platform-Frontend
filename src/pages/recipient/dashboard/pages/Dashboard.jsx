@@ -15,9 +15,12 @@ import {
 } from "lucide-react";
 import { useGetFoodRequestList } from "../hooks/useGetFoodRequestList";
 import { IMAGE_URL } from "../../../../constants/constants";
+import { useCancelFoodRequest } from "../hooks/useCancelFoodRequest";
 export default function RecipientDashboard() {
   const [activeTab, setActiveTab] = useState("active");
   const { foods: userRequests, loading, error, fetchFoodRequestList } = useGetFoodRequestList();
+  const { cancelFoodRequest, loading: cancelLoading, error: cancelError } = useCancelFoodRequest();
+
 
   useEffect(() => {
     fetchFoodRequestList();
@@ -45,6 +48,16 @@ export default function RecipientDashboard() {
       color: "text-yellow-600",
     },
   ];
+  const filteredRequests = userRequests.filter(request => request.status === "pending" || request.status === "accepted");
+  const handleCancelRequest = async (id) => {
+    try {
+      await cancelFoodRequest(
+        {"requestId": id});
+      fetchFoodRequestList();
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     loading ? (
@@ -110,14 +123,14 @@ export default function RecipientDashboard() {
                   : "text-slate-600 hover:text-slate-900 border-transparent"
                   }`}
               >
-                Active Requests ({userRequests.length})
+                Active Requests ({filteredRequests.length})
               </button>
             </div>
 
             {/* Active Requests Tab */}
             {activeTab === "active" && (
               <div className="space-y-6">
-                {userRequests.length === 0 ? (
+                {filteredRequests.length === 0 ? (
                   <Card className="p-16 text-center border-slate-200">
                     <Clock className="h-16 w-16 text-slate-400 mx-auto mb-6" />
                     <h3 className="text-2xl font-bold text-slate-900 mb-3">
@@ -133,7 +146,7 @@ export default function RecipientDashboard() {
                     </Link>
                   </Card>
                 ) : (
-                  userRequests.map((request) => (
+                  filteredRequests.map((request) => (
                     <Card
                       key={request._id}
                       className="p-6 border-slate-200 hover:shadow-lg transition-shadow"
@@ -201,15 +214,18 @@ export default function RecipientDashboard() {
                           </div>
 
                           <div className="space-y-3">
-                            <Link to={`/food-donations/details/${request.foodPost?._id}`} className="block">
+                            <Link to={`/food-donations/details/${request._id}`} className="block">
                               <Button variant="outline" className="w-full border-slate-300">
                                 View Donation Details
                               </Button>
                             </Link>
                             {request.status === "pending" && (
-                              <Button variant="outline" className="w-full text-red-600 hover:bg-red-50">
-                                Cancel Request
+                              <Button variant="outline" className="w-full text-red-600 hover:bg-red-50" onClick={() => handleCancelRequest(request._id)}>
+                                {cancelLoading ? "Cancelling..." : "Cancel Request"}
                               </Button>
+                            )}
+                            {cancelError && (
+                              <p className="text-red-600 text-sm">{cancelError}</p>
                             )}
                             {request.status === "accepted" && (
                               <Button asChild className="w-full bg-green-600 hover:bg-green-700">

@@ -8,6 +8,6 @@ export const getListFoodRequestsService = () => {
 export const getFoodRequestDetailsService = (id) => {
   return client.get(`${id}/requests-details`);
 }
-export const cancelFoodRequestService = (id) => {
-  return client.get(`$/request/cancel/${id}`);
+export const cancelFoodRequestService = (data) => {
+  return client.post(data,`/request/cancel`);
 }

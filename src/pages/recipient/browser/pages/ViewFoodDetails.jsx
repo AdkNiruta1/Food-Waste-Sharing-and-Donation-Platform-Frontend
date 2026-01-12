@@ -37,9 +37,9 @@ export default function FoodDetail() {
   );
 
 
-  const alreadyRequested = requests.some(
-    (r) => r.receiver._id === currentUser._id // adjust if populated
-  );
+const alreadyRequested = requests.some(
+  (r) => r.receiver._id === currentUser._id && r.status !== "cancelled"
+);
 
   if (loading) {
     return <p className="text-center mt-20">Loading...</p>;
