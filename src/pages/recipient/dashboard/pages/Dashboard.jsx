@@ -42,7 +42,7 @@ export default function RecipientDashboard() {
     },
     {
       label: "Your Rating",
-      value: `${(userRequests.reduce((acc, req) => acc + (req.foodPost?.donor.rating || 0), 0) / (userRequests.length || 1)).toFixed(1)} ★`,
+      value: `${(userRequests.reduce((acc, req) => acc + (req.foodPost?.receiver?.rating || 0), 0) / (userRequests.length || 1)).toFixed(1)} ★`,
       change: "Reliable & respectful",
       icon: <TrendingUp className="h-6 w-6" />,
       color: "text-yellow-600",

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Button } from "../../../../components/ui/button";
 import { Card } from "../../../../components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
@@ -13,48 +13,40 @@ import {
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../../components/ui/tabs";
 import { useGetFoodRequestList } from "../../dashboard/hooks/useGetFoodRequestList";
+import { IMAGE_URL } from "../../../../constants/constants";
 
 
 export default function RequestHistory() {
   const navigate = useNavigate();
-  const [showCancelMessage, setShowCancelMessage] = useState(null);
-  const [cancelMessage, setCancelMessage] = useState("");
   const { foods: userRequests, loading, error, fetchFoodRequestList } = useGetFoodRequestList();
 
-  const completedRequests = userRequests?.filter((r) => r.status === "completed");
-  const acceptedRequests = userRequests?.filter((r) => r.status === "accepted");
-  const pendingRequests = userRequests?.filter((r) => r.status === "pending");
-  const cancelledRequests = userRequests?.filter((r) => r.status === "cancelled");
+  const completedRequests = userRequests?.filter((r) => r?.status === "completed");
+  const acceptedRequests = userRequests?.filter((r) => r?.status === "accepted");
+  const pendingRequests = userRequests?.filter((r) => r?.status === "pending");
+  const cancelledRequests = userRequests?.filter((r) => r?.status === "cancelled");
   useEffect(() => {
     fetchFoodRequestList();
   },[]);
   const handleRateFood = (id) => {
-    navigate(`/rate-food/${id}`);
+    navigate(`/food-donations/rating/${id}`);
   };
 
   const handleViewDonor = (donorId) => {
     navigate(`/profile/${donorId}`);
   };
 
-  const handleSubmitCancelMessage = (id) => {
-    if (cancelMessage.trim()) {
-      alert("Your message has been sent to the donor.");
-      setCancelMessage("");
-      setShowCancelMessage(null);
-    }
-  };
 
   const renderRequestCard = (request) => (
     <Card
-      key={request.id}
+      key={request?._id}
       className="p-6 md:p-8 border-slate-200 hover:shadow-lg transition-shadow"
     >
       <div className="grid lg:grid-cols-4 gap-6 items-start">
         {/* Image */}
         <div className="lg:col-span-1">
           <img
-            src={request.foodImage}
-            alt={request.foodTitle}
+            src={IMAGE_URL + request?.foodPost?.photo}
+            alt={request?.foodPost?.title}
             className="w-full h-48 object-cover rounded-xl shadow-md"
           />
         </div>
@@ -63,38 +55,40 @@ export default function RequestHistory() {
         <div className="lg:col-span-2 space-y-5">
           <div>
             <h3 className="text-2xl font-bold text-slate-900">
-              {request.foodTitle}
+              {request?.foodPost?.title}
             </h3>
             <p className="text-slate-600 mt-2">
-              {request.foodDescription}
+              {request?.foodPost?.description}
             </p>
           </div>
 
           {/* Donor Info */}
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-              <User className="h-7 w-7 text-green-600" />
+              {request?.foodPost?.donor?.profilePicture ?<img src={IMAGE_URL + request?.foodPost?.donor?.profilePicture} className="w-12 h-12 object-cover rounded-full" alt="" />: <User className="h-8 w-8 text-green-600" />}
             </div>
             <div>
               <p className="text-sm text-slate-600">Donated by</p>
               <button
-                onClick={() => handleViewDonor(request.donorId)}
+                onClick={() => handleViewDonor(request?.foodPost?.donor?._id)}
                 className="font-semibold text-lg text-slate-900 hover:text-green-600 transition-colors"
               >
-                {request.donorName}
+                {request?.foodPost?.donor?.name}
               </button>
               <div className="flex items-center gap-1 mt-1">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className={`h-5 w-5 ${i < Math.floor(request.donorRating)
+                    className={`h-5 w-5 ${i < Math.floor(request?.foodPost?.donor?.rating || "N/A")
                         ? "fill-yellow-500 text-yellow-500"
                         : "text-slate-300"
                       }`}
                   />
                 ))}
                 <span className="ml-2 font-medium text-slate-900">
-                  {request.donorRating}
+                  {request.foodPost?.donor?.rating
+                    ? request.foodPost?.donor?.rating.toFixed(1)
+                    : "N/A"}
                 </span>
               </div>
             </div>
@@ -105,13 +99,13 @@ export default function RequestHistory() {
             <div>
               <p className="text-slate-600 mb-1">Quantity</p>
               <p className="font-semibold text-slate-900">
-                {request.quantity} {request.unit}
+                {request?.foodPost?.quantity} {request?.foodPost?.unit}
               </p>
             </div>
             <div>
               <p className="text-slate-600 mb-1">Requested</p>
               <p className="font-semibold text-slate-900">
-                {new Date(request.requestedAt).toLocaleDateString()}
+                {new Date(request?.foodPost?.createdAt).toLocaleDateString()}
               </p>
             </div>
             <div>
@@ -124,7 +118,7 @@ export default function RequestHistory() {
                       ? "bg-orange-100 text-orange-700"
                       : "bg-red-100 text-red-700"
                 }`}>
-                {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                {request?.foodPost?.status}
               </span>
             </div>
           </div>
@@ -139,7 +133,7 @@ export default function RequestHistory() {
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className={`h-5 w-5 ${i < request.rating
+                    className={`h-5 w-5 ${i < request?.foodPost?.donor?.rating
                         ? "fill-yellow-500 text-yellow-500"
                         : "text-slate-300"
                       }`}
@@ -159,7 +153,7 @@ export default function RequestHistory() {
                 Cancelled
               </p>
               <p className="text-sm text-slate-700">
-                {request.cancelReason}
+                Reason: {request?.foodPost?.cancelReason || "No reason provided."}
               </p>
             </div>
           )}
@@ -167,32 +161,32 @@ export default function RequestHistory() {
 
         {/* Actions */}
         <div className="lg:col-span-1 space-y-4">
-          <div className={`p-4 rounded-xl text-center font-semibold text-lg ${request.status === "completed"
+          <div className={`p-4 rounded-xl text-center font-semibold text-lg ${request?.status === "completed"
               ? "bg-green-100 text-green-700"
-              : request.status === "accepted"
+              : request?.status === "accepted"
                 ? "bg-blue-100 text-blue-700"
-                : request.status === "pending"
+                : request?.status === "pending"
                   ? "bg-orange-100 text-orange-700"
                   : "bg-red-100 text-red-700"
             }`}>
-            {request.status === "completed" && <CheckCircle className="h-8 w-8 mx-auto mb-2" />}
-            {request.status === "accepted" && <CheckCircle className="h-8 w-8 mx-auto mb-2" />}
-            {request.status === "pending" && <Clock className="h-8 w-8 mx-auto mb-2" />}
-            {request.status === "cancelled" && <XCircle className="h-8 w-8 mx-auto mb-2" />}
-            {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+            {request?.status === "completed" && <CheckCircle className="h-8 w-8 mx-auto mb-2" />}
+            {request?.status === "accepted" && <CheckCircle className="h-8 w-8 mx-auto mb-2" />}
+            {request?.status === "pending" && <Clock className="h-8 w-8 mx-auto mb-2" />}
+            {request?.status === "cancelled" && <XCircle className="h-8 w-8 mx-auto mb-2" />}
+            {request?.status.charAt(0).toUpperCase() + request?.status.slice(1)}
           </div>
 
-          {request.status === "completed" && !request.rating && (
+          {request?.status === "completed" && !request.rating && (
             <Button
               className="w-full bg-yellow-600 hover:bg-yellow-700"
-              onClick={() => handleRateFood(request.id)}
+              onClick={() => handleRateFood(request?._id)}
             >
               <Star className="mr-2 h-5 w-5" />
               Rate This Donation
             </Button>
           )}
 
-          {(request.status === "accepted" || request.status === "pending") && (
+          {(request?.status === "accepted" || request?.status === "pending") && (
             <Button
               variant="outline"
               className="w-full border-slate-300"
@@ -203,52 +197,22 @@ export default function RequestHistory() {
             </Button>
           )}
 
-          {request.status === "cancelled" && (
+          {request?.status === "cancelled" && (
             <Button
               variant="outline"
               className="w-full border-slate-300"
-              onClick={() => setShowCancelMessage(request.id)}
             >
-              <MessageSquare className="mr-2 h-5 w-5" />
-              Send Message
+              <a href={`tel:${request.foodPost?.donor?.phone}`}className="flex items-center justify-center">
+                <MessageSquare className="mr-2 h-5 w-5" />
+                Contact Donor
+              </a>
             </Button>
           )}
         </div>
       </div>
 
       {/* Message Form for Cancelled Requests */}
-      {showCancelMessage === request.id && (
-        <div className="mt-6 pt-6 border-t border-slate-200">
-          <label className="block text-sm font-medium text-slate-900 mb-3">
-            Send a message to the donor (optional)
-          </label>
-          <textarea
-            placeholder="Let the donor know you're still interested or ask questions..."
-            value={cancelMessage}
-            onChange={(e) => setCancelMessage(e.target.value)}
-            className="w-full p-4 rounded-lg border border-slate-300 bg-white text-slate-900 resize-none focus:ring-2 focus:ring-green-600"
-            rows={4}
-          />
-          <div className="flex gap-4 mt-4">
-            <Button
-              onClick={() => handleSubmitCancelMessage(request.id)}
-              className="flex-1 bg-green-600 hover:bg-green-700"
-            >
-              Send Message
-            </Button>
-            <Button
-              variant="outline"
-              className="flex-1 border-slate-300"
-              onClick={() => {
-                setShowCancelMessage(null);
-                setCancelMessage("");
-              }}
-            >
-              Cancel
-            </Button>
-          </div>
-        </div>
-      )}
+      
     </Card>
   );
 

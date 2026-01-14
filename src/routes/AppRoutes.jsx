@@ -29,6 +29,7 @@ import ChangePassword from "../pages/auth/change-password/pages/ChangePassword";
 import DonorFoodDetail from "../pages/donor/dashboard/pages/ViewDonationFoodDetails";
 import EditFood from "../pages/donor/foods/pages/EditFood";
 import FoodDetailViewer from "../pages/recipient/dashboard/pages/FoodRequestDetails";
+import RatingPage from "../pages/recipient/RequestFood/pages/RatingPage";
 
 export default function AppRoutes() {
   return (
@@ -72,6 +73,8 @@ export default function AppRoutes() {
           <Route path="/food-browse/:foodId" element={<FoodDetail />} />
           <Route path="/request-history" element={<RequestHistory />} />
           <Route path="/food-donations/details/:foodId" element={<FoodDetailViewer />} />
+          <Route path="/food-donations/rating/:foodId" element={<RatingPage />} />
+
         </Route>
 
         {/* Donor */}
