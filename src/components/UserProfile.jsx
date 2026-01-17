@@ -37,7 +37,8 @@ export default function UserProfile() {
     loading: ratingLoading,
     error,
     getUserRatings, } = useGetUserRatings();
-  useEffect(() => {
+
+    useEffect(() => {
     if (activeTab === "reviews" && currentUser?._id) {
       getUserRatings(currentUser._id);
     }

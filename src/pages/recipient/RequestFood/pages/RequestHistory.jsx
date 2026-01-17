@@ -23,6 +23,7 @@ export default function RequestHistory() {
   const completedRequests = userRequests?.filter((r) => r?.status === "completed");
   const acceptedRequests = userRequests?.filter((r) => r?.status === "accepted");
   const pendingRequests = userRequests?.filter((r) => r?.status === "pending");
+  const rejectedRequests = userRequests?.filter((r) => r?.status === "rejected");
   const cancelledRequests = userRequests?.filter((r) => r?.status === "cancelled");
   useEffect(() => {
     fetchFoodRequestList();
@@ -173,6 +174,7 @@ export default function RequestHistory() {
             {request?.status === "accepted" && <CheckCircle className="h-8 w-8 mx-auto mb-2" />}
             {request?.status === "pending" && <Clock className="h-8 w-8 mx-auto mb-2" />}
             {request?.status === "cancelled" && <XCircle className="h-8 w-8 mx-auto mb-2" />}
+            {request?.status === "rejected" && <XCircle className="h-8 w-8 mx-auto mb-2" />}
             {request?.status.charAt(0).toUpperCase() + request?.status.slice(1)}
           </div>
 
@@ -260,6 +262,9 @@ export default function RequestHistory() {
               <TabsTrigger value="pending">
                 Pending ({pendingRequests.length})
               </TabsTrigger>
+              <TabsTrigger value="rejected">
+                Rejected ({rejectedRequests.length})
+              </TabsTrigger>
               <TabsTrigger value="cancelled">
                 Cancelled ({cancelledRequests.length})
               </TabsTrigger>
@@ -322,6 +327,18 @@ export default function RequestHistory() {
                 </Card>
               ) : (
                 pendingRequests.map(renderRequestCard)
+              )}
+            </TabsContent>
+            <TabsContent value="rejected" className="space-y-8">
+              {rejectedRequests.length === 0 ? (
+                <Card className="p-16 text-center border-slate-200">
+                  <XCircle className="h-16 w-16 text-slate-400 mx-auto mb-6" />
+                  <p className="text-lg text-slate-600">
+                    No rejected requests
+                  </p>
+                </Card>
+              ) : (
+                rejectedRequests.map(renderRequestCard)
               )}
             </TabsContent>
 

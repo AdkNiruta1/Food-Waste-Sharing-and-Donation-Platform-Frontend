@@ -1,11 +1,12 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Leaf, Menu, X, Bell, LogOut, User, Settings, Package } from "lucide-react";
-import { useState } from "react";
+import { Menu, X, Bell, LogOut, User, Settings, Package } from "lucide-react";
+import { useEffect, useState } from "react";
 import Logo from "../assets/logo.png";
 import { useAuth } from "../context/AuthContext";
 import { useLogout } from "../hooks/useLogout";
 import { IMAGE_URL } from "../constants/constants";
+import { useGetNotification } from "../hooks/useGetNotification";
 
 export function Header() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export function Header() {
   const isStatusVerified = user?.accountVerified;
   const userName = user?.emailVerified === "verified" && isStatusVerified === "verified" ? user?.name : "John Doe";
   const userRole = user?.emailVerified === "verified" && isStatusVerified === "verified" ? user?.role : "donor";
+  const { getNotifications, loading: notificationLoading, notifications } = useGetNotification();
 
   const handleLogout = async (e) => {
     e?.preventDefault(); //VERY IMPORTANT
@@ -35,7 +37,11 @@ export function Header() {
       console.error("Logout failed:", err);
     }
   };
+  useEffect(() => {
+    getNotifications();
+  }, [user]);
 
+  const countunseenNotifications = notificationLoading ? 0 : notifications.filter((n) => !n.read).length;
 
   const isActive = (path) => {
     return location.pathname === path
@@ -48,7 +54,7 @@ export function Header() {
       <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur supports-backdrop-filter:bg-white/80">
         <nav className="container mx-auto px-4  flex items-center justify-between">
           {/* Logo */}
-          <Link  className="flex items-center gap-2 font-bold text-xl text-green-600">
+          <Link className="flex items-center gap-2 font-bold text-xl text-green-600">
             <img src={Logo} className="h-25 w-25" />
             <span>Annapurna Bhandar</span>
           </Link>
@@ -79,7 +85,7 @@ export function Header() {
                 <Link to="/recipient-dashboard" className={`text-sm font-medium pb-1 transition-colors ${isActive("/recipient-dashboard")}`}>Dashboard</Link>
                 <Link to="/food-browse" className={`text-sm font-medium pb-1 transition-colors ${isActive("/food-browse")}`}>Browse Food</Link>
                 <Link to="/request-history" className={`text-sm font-medium pb-1 transition-colors ${isActive("/request-history")}`}>My Requests</Link>
-                
+
               </>
             )}
 
@@ -104,9 +110,15 @@ export function Header() {
                 <Link to="/notifications">
                   <Button variant="ghost" size="sm" className="relative">
                     <Bell className="h-5 w-5" />
-                    <span className="absolute top-1 right-1 h-2 w-2 bg-red-600 rounded-full" />
+
+                    {countunseenNotifications > 0 && (
+                      <span className="absolute top-1 right-1 flex items-center justify-center h-4 w-4 bg-red-600 text-white text-[0.6rem] font-bold rounded-full border-2 border-white">
+                        {countunseenNotifications > 9 ? "9+" : countunseenNotifications}
+                      </span>
+                    )}
                   </Button>
                 </Link>
+
 
                 {/* Profile Dropdown */}
                 <div className="relative">
@@ -140,7 +152,7 @@ export function Header() {
                         className="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-100"
                         onClick={() => setIsProfileOpen(false)}
                       >
-                        <Settings className="h-4 w-4 inline mr-2" /> 
+                        <Settings className="h-4 w-4 inline mr-2" />
                         Change Password
                       </Link>
                       <Link
