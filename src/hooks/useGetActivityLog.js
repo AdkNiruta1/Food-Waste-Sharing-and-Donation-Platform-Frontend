@@ -11,12 +11,21 @@ export const useGetMyLogs = () => {
   const { showToast } = useContext(AppContext);
 
   const fetchMyLogs = async (page = 1, limit = 10) => {
+    // prevent duplicate calls
+    if (loading) return;
+
     setLoading(true);
     setError(null);
 
     try {
-      const res = await getMyLogsService( page, limit);
-      setLogs(res.data.logs);
+      const res = await getMyLogsService(page, limit);
+
+      setLogs((prev) =>
+        page === 1
+          ? res.data.logs              // reset on first page
+          : [...prev, ...res.data.logs] // append on scroll
+      );
+
       setPagination(res.data.pagination);
       return res;
     } catch (err) {

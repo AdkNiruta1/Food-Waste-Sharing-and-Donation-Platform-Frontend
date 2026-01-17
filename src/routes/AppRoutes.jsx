@@ -30,6 +30,8 @@ import DonorFoodDetail from "../pages/donor/dashboard/pages/ViewDonationFoodDeta
 import EditFood from "../pages/donor/foods/pages/EditFood";
 import FoodDetailViewer from "../pages/recipient/dashboard/pages/FoodRequestDetails";
 import RatingPage from "../pages/recipient/RequestFood/pages/RatingPage";
+import ReceiverViewDonorDetails from "../pages/recipient/RequestFood/pages/ReceiverViewDonorDetails";
+import ViewFoodRequestList from "../pages/donor/dashboard/pages/ViewFoodRequestLIst";
 
 export default function AppRoutes() {
   return (
@@ -74,6 +76,8 @@ export default function AppRoutes() {
           <Route path="/request-history" element={<RequestHistory />} />
           <Route path="/food-donations/details/:foodId" element={<FoodDetailViewer />} />
           <Route path="/food-donations/rating/:foodId" element={<RatingPage />} />
+          <Route path="/food-donations/donor/:id" element={<ReceiverViewDonorDetails />} />
+
 
         </Route>
 
@@ -83,6 +87,8 @@ export default function AppRoutes() {
           <Route path="/create-food" element={<CreateFood />} />
           <Route path="/food-details/:foodId" element={<DonorFoodDetail />} />
           <Route path="/update-food/:foodId" element={<EditFood />} />
+          <Route path="/donor/food/:foodId/requests" element={<ViewFoodRequestList />} />
+
         </Route>
 
         <Route path="*" element={<NotFound />} />

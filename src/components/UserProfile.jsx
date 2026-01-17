@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useEffect } from "react";
 import { useGetMyLogs } from "../hooks/useGetActivityLog.js";
+import { useGetUserRatings } from "../pages/recipient/RequestFood/hooks/useGetRating.js";
 export default function UserProfile() {
   const { user: currentUser, loading, refetchUser } = useAuth();
   const [reviewFilter, setReviewFilter] = useState("all"); // review filter
@@ -30,6 +31,18 @@ export default function UserProfile() {
   });
   const [previewImage, setPreviewImage] = useState(null);
   const { updatePhoto, loading: uploading } = useUpdatePhoto();
+  const [activeTab, setActiveTab] = useState("about");
+
+  const { ratings,
+    loading: ratingLoading,
+    error,
+    getUserRatings, } = useGetUserRatings();
+  useEffect(() => {
+    if (activeTab === "reviews" && currentUser?._id) {
+      getUserRatings(currentUser._id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, currentUser?._id]);
 
   // Display a loader while fetching user
   if (loading) {
@@ -40,6 +53,8 @@ export default function UserProfile() {
     );
   }
 
+
+
   // If no user is returned, show message
   if (!currentUser) {
     return (
@@ -48,6 +63,7 @@ export default function UserProfile() {
       </div>
     );
   }
+
   const getActionIcon = (action) => {
     if (action.includes("Logged In"))
       return <LogIn className="h-5 w-5 text-green-600" />;
@@ -72,19 +88,6 @@ export default function UserProfile() {
         return log.action;
     }
   };
-
-
-  const getStatusBadge = (status) => {
-    const base = "px-3 py-1 rounded-full text-xs font-medium";
-    if (status === "success")
-      return `${base} bg-green-100 text-green-700`;
-    if (status === "pending")
-      return `${base} bg-orange-100 text-orange-700`;
-    if (status === "failed")
-      return `${base} bg-red-100 text-red-700`;
-    return `${base} bg-slate-100 text-slate-600`;
-  };
-
   const user = currentUser;
   const isCurrentUser = true; // since we only show the logged-in user
   // Open modal and prefill form
@@ -115,16 +118,7 @@ export default function UserProfile() {
     }
   };
 
-
-  // Dummy reviews for now, you can later fetch from backend
-  const mockReviews = [
-    { rating: 5, text: "Very reliable donor! Food was fresh and pickup was smooth. Highly recommend.", date: "1 week ago" },
-    { rating: 4, text: "Punctual and respectful recipient. Great communication throughout.", date: "2 weeks ago" },
-    { rating: 5, text: "Excellent experience. Generous portion and well-organized.", date: "1 month ago" },
-    { rating: 3, text: "Good overall, but pickup time was slightly delayed.", date: "2 months ago" },
-  ];
-
-  const filteredReviews = mockReviews.filter((review) => {
+  const filteredReviews = ratings?.filter((review) => {
     if (reviewFilter === "all") return true;
     if (reviewFilter === "5") return review.rating === 5;
     if (reviewFilter === "4") return review.rating === 4;
@@ -147,12 +141,38 @@ export default function UserProfile() {
 
   function ActivityLogs() {
     const { logs, pagination, loading, fetchMyLogs } = useGetMyLogs();
+    const [page, setPage] = useState(1);
+    const limit = 10;
 
+    // Initial load
     useEffect(() => {
-      fetchMyLogs(1, 10);
+      fetchMyLogs(1, limit);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    if (loading) {
+    // Load next page
+    const loadMore = () => {
+      if (!pagination) return;
+      if (loading) return;
+
+      if (logs.length < pagination.total) {
+        const nextPage = page + 1;
+        setPage(nextPage);
+        fetchMyLogs(nextPage, limit);
+      }
+    };
+
+    // Scroll handler
+    const handleScroll = (e) => {
+      const { scrollTop, scrollHeight, clientHeight } = e.target;
+
+      // near bottom
+      if (scrollHeight - scrollTop <= clientHeight + 50) {
+        loadMore();
+      }
+    };
+
+    if (!logs?.length && loading) {
       return (
         <div className="text-center py-12 text-slate-500">
           Loading activity logs...
@@ -172,7 +192,10 @@ export default function UserProfile() {
     }
 
     return (
-      <div className="relative pl-6 space-y-8">
+      <div
+        onScroll={handleScroll}
+        className="relative pl-6 space-y-8 max-h-95 overflow-y-auto pr-4"
+      >
         {/* Vertical line */}
         <div className="absolute left-2 top-0 bottom-0 w-px bg-slate-200" />
 
@@ -184,7 +207,7 @@ export default function UserProfile() {
             </div>
 
             {/* Content */}
-            <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-5 hover:shadow-md transition">
+            <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-5">
               <h4 className="font-semibold text-slate-900 mb-1">
                 {log.action}
               </h4>
@@ -193,38 +216,24 @@ export default function UserProfile() {
                 {buildMessage(log)}
               </p>
 
-              {/* Metadata */}
-              {log.metadata && (
-                <div className="text-xs text-slate-500 space-y-1 mb-2">
-                  {log.metadata.ip && <p>IP: {log.metadata.ip}</p>}
-                  {log.metadata.userAgent && (
-                    <p className="truncate">
-                      Device: {log.metadata.userAgent}
-                    </p>
-                  )}
-                  {log.metadata.role && (
-                    <p>Role: {log.metadata.role}</p>
-                  )}
-                </div>
-              )}
-
               <p className="text-xs text-slate-500">
-                {new Date(log.createdAt).toLocaleString("en-US", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                {new Date(log.createdAt).toLocaleString()}
               </p>
             </div>
           </div>
         ))}
 
-        {/* Pagination info */}
-        {pagination && (
-          <p className="text-center text-xs text-slate-500 pt-6">
-            Showing {logs.length} of {pagination.total} activities
+        {/* Loading more */}
+        {loading && (
+          <p className="text-center text-xs text-slate-500 py-4">
+            Loading more...
+          </p>
+        )}
+
+        {/* End message */}
+        {pagination && logs.length >= pagination.total && (
+          <p className="text-center text-xs text-slate-400 py-4">
+            No more activity logs
           </p>
         )}
       </div>
@@ -449,45 +458,18 @@ export default function UserProfile() {
               </div>
             </Card>
 
-            {/* Stats */}
-            <Card className="p-6 border-slate-200">
-              <h3 className="font-bold text-slate-900 mb-5">Activity Stats</h3>
-              <div className="space-y-5">
-                {user.role === "donor" ? (
-                  <>
-                    <div>
-                      <p className="text-sm text-slate-600 mb-1">Total Donations</p>
-                      <p className="text-3xl font-bold text-green-600">{user.stats?.donations}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-slate-600 mb-1">Successfully Completed</p>
-                      <p className="text-2xl font-bold text-green-600">{user.stats?.completed}</p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div>
-                      <p className="text-sm text-slate-600 mb-1">Total Requests</p>
-                      <p className="text-3xl font-bold text-green-600">{user.stats?.requests}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-slate-600 mb-1">Successfully Received</p>
-                      <p className="text-2xl font-bold text-green-600">{user.stats?.completed}</p>
-                    </div>
-                  </>
-                )}
-              </div>
-            </Card>
+
           </div>
 
           {/* Tabs Content */}
           <div className="md:col-span-2">
-            <Tabs defaultValue="about" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3 mb-8 bg-slate-100">
                 <TabsTrigger value="about">About</TabsTrigger>
                 <TabsTrigger value="reviews">Reviews</TabsTrigger>
                 <TabsTrigger value="history">Activity Logs</TabsTrigger>
               </TabsList>
+
 
               <TabsContent value="about">
                 <Card className="p-8 border-slate-200">
@@ -507,66 +489,86 @@ export default function UserProfile() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="reviews">
-                <Card className="p-8 border-slate-200">
-                  <h3 className="text-2xl font-bold text-slate-900 mb-6">Community Reviews</h3>
+              <TabsContent value="reviews" >
+                {ratingLoading ? (
+                  <div className="flex justify-center items-center h-screen">
+                    <p className="text-lg text-slate-600">Loading reviews...</p>
+                  </div>
+                ) : error ? (
+                  <div className="text-center text-red-600 py-10">
+                    Error loading reviews: {error}
+                  </div>
+                ) : (
+                  <Card className="p-8 border-slate-200">
+                    <h3 className="text-2xl font-bold text-slate-900 mb-6">Community Reviews</h3>
 
-                  {/* Review Filter */}
-                  <div className="mb-8">
-                    <p className="text-sm font-medium text-slate-700 mb-4">Filter by rating:</p>
-                    <div className="flex flex-wrap gap-3">
-                      {[
-                        { value: "all", label: "All Reviews" },
-                        { value: "5", label: "5 Stars" },
-                        { value: "4", label: "4 Stars" },
-                        { value: "3below", label: "3 Stars & Below" },
-                      ].map(({ value, label }) => (
-                        <label
-                          key={value}
-                          className={`flex items-center gap-2 px-5 py-3 rounded-full border cursor-pointer transition-all ${reviewFilter === value
-                            ? "bg-green-600 text-white border-green-600 shadow-sm"
-                            : "bg-white border-slate-300 hover:border-slate-400"
-                            }`}
-                        >
-                          <input
-                            type="radio"
-                            name="reviewFilter"
-                            value={value}
-                            checked={reviewFilter === value}
-                            onChange={(e) => setReviewFilter(e.target.value)}
-                            className="sr-only"
-                          />
-                          <span className="font-medium">{label}</span>
-                        </label>
-                      ))}
+                    {/* Review Filter */}
+                    <div className="mb-8">
+                      <p className="text-sm font-medium text-slate-700 mb-4">Filter by rating:</p>
+                      <div className="flex flex-wrap gap-3">
+                        {[
+                          { value: "all", label: "All Reviews" },
+                          { value: "5", label: "5 Stars" },
+                          { value: "4", label: "4 Stars" },
+                          { value: "3below", label: "3 Stars & Below" },
+                        ].map(({ value, label }) => (
+                          <label
+                            key={value}
+                            className={`flex items-center gap-2 px-5 py-3 rounded-full border cursor-pointer transition-all ${reviewFilter === value
+                              ? "bg-green-600 text-white border-green-600 shadow-sm"
+                              : "bg-white border-slate-300 hover:border-slate-400"
+                              }`}
+                          >
+                            <input
+                              type="radio"
+                              name="reviewFilter"
+                              value={value}
+                              checked={reviewFilter === value}
+                              onChange={(e) => setReviewFilter(e.target.value)}
+                              className="sr-only"
+                            />
+                            <span className="font-medium">{label}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-6">
-                    {filteredReviews.length === 0 ? (
-                      <p className="text-center text-slate-500 py-8">
-                        No reviews match the selected filter.
-                      </p>
-                    ) : (
-                      filteredReviews.map((review, i) => (
-                        <div key={i} className="pb-6 border-b border-slate-200 last:border-0">
-                          <div className="flex items-start justify-between mb-3">
-                            <div>
-                              <p className="font-medium text-slate-900">Anonymous User</p>
-                              <p className="text-sm text-slate-500 mt-1">{review.date}</p>
+                    <div className="space-y-6">
+                      {filteredReviews.length === 0 ? (
+                        <p className="text-center text-slate-500 py-8">
+                          No reviews match the selected filter.
+                        </p>
+                      ) : (
+                        filteredReviews.map((review, i) => (
+                          <div key={i} className="pb-6 border-b border-slate-200 last:border-0">
+                            <div className="flex items-start justify-between mb-3">
+                              <div>
+                                <p className="font-medium text-slate-900">{review?.rater?.name}</p>
+                                <p className="text-sm text-slate-500 mt-1">
+                                  {new Date(review?.updatedAt).toLocaleString("en-US", {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </p>
+
+                              </div>
+                              <div className="flex gap-1">{renderStars(review?.rating)}</div>
                             </div>
-                            <div className="flex gap-1">{renderStars(review.rating)}</div>
+                            <p className="text-slate-600">{review?.comment}</p>
                           </div>
-                          <p className="text-slate-600">{review.text}</p>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </Card>
+                        ))
+                      )}
+                    </div>
+                  </Card>
+                )
+                }
               </TabsContent>
 
               <TabsContent value="history">
-                <Card className="p-8 border-slate-200">
+                <Card className="p-8 border-slate-200 h-125 overflow-y-auto">
                   <h3 className="text-2xl font-bold text-slate-900 mb-6">
                     Activity Logs
                   </h3>
@@ -574,6 +576,7 @@ export default function UserProfile() {
                   <ActivityLogs />
                 </Card>
               </TabsContent>
+
 
             </Tabs>
           </div>

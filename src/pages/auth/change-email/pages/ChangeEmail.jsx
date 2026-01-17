@@ -175,9 +175,9 @@ export default function ChangeEmail() {
           </>
         )}
 
-        <div className="mt-6 border-t pt-6 text-center text-sm">
-          <Link to="/login" className="text-primary font-medium">
-            Back to Login
+        <div className="mt-6 border-t pt-6 text-center text-sm cursor-pointer">
+          <Link to="/profile" className="text-primary font-medium">
+            Back to profile
           </Link>
         </div>
       </Card>

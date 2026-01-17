@@ -10,3 +10,11 @@ export const deleteDonationServices = (id) => {
 
   return client.delete(`${id}`);
 };
+
+export const AcceptDonationServices = ( data) => {
+  return client.post(data, "accept");
+}
+
+export const RejectDonationServices = ( data) => {
+  return client.post(data, "reject");
+}

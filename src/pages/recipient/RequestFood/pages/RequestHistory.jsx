@@ -32,7 +32,7 @@ export default function RequestHistory() {
   };
 
   const handleViewDonor = (donorId) => {
-    navigate(`/profile/${donorId}`);
+    navigate(`/food-donations/donor/${donorId}`);
   };
 
 
@@ -190,7 +190,7 @@ export default function RequestHistory() {
             <Button
               variant="outline"
               className="w-full border-slate-300"
-              onClick={() => handleViewDonor(request.donorId)}
+              onClick={() => handleViewDonor(request?.foodPost?.donor?._id)}
             >
               <User className="mr-2 h-5 w-5" />
               View Donor Profile

@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Header } from "../../../../components/Header";
 import { Button } from "../../../../components/ui/button";
 import { Card } from "../../../../components/ui/card";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   MapPin,
   Clock,
@@ -24,9 +24,6 @@ export default function DonorFoodDetail() {
   const { foods: post, loading, FoodDonationDeatils } =
     useGetFoodDetails();
 
-  const [showRequestForm, setShowRequestForm] = useState(false);
-  const [requestMessage, setRequestMessage] = useState("");
-
   useEffect(() => {
     FoodDonationDeatils(foodId);
   }, [foodId]);
@@ -46,12 +43,6 @@ export default function DonorFoodDetail() {
       </div>
     );
   }
-
-  const today = new Date();
-  const daysUntilExpiry = Math.ceil(
-    (new Date(post.expiryDate) - today) / (1000 * 60 * 60 * 24)
-  );
-  const isExpiringSoon = daysUntilExpiry <= 1;
 
   return (
     <div className="min-h-screen bg-white">
@@ -147,7 +138,7 @@ export default function DonorFoodDetail() {
                   variant="outline"
                   className="w-full"
                   onClick={() =>
-                    navigate(`/donor/food/${post._id}/edit`)
+                    navigate(`/update-food/${post._id}`)
                   }
                 >
                   Edit Donation
@@ -172,7 +163,7 @@ const Info = ({ label, value }) => (
 const Section = ({ title, icon: Icon, children }) => (
   <div className="mt-8">
     <h3 className="flex items-center gap-2 font-semibold mb-2">
-      <Icon className="h-5 w-5 text-green-600" /> {title}
+      {Icon && <Icon className="h-5 w-5 text-green-600" />} {title}
     </h3>
     <p className="text-slate-600">{children}</p>
   </div>
