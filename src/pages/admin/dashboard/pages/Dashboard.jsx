@@ -8,14 +8,10 @@ import {
   Package,
   TrendingUp,
   Download,
-  Shield,
   Lock,
   Unlock,
-  Search,
-  Eye,
-  Trash2,
+  Star,
 } from "lucide-react";
-import { mockFoodPosts } from "../../../../lib/mockData";
 import {
   LineChart,
   Line,
@@ -35,6 +31,8 @@ import { useExportFullReport } from "../hooks/useExportFullReport";
 import { useExportUserAnalytics } from "../hooks/useExportUsers";
 import { useExportFullMonthlyReport } from "../hooks/useExportReportLastMonth";
 import { useGetAllUsers } from "../../users/hooks/useGetAllUsers";
+import { useGetFoodPost } from "../hooks/useGetFoodPost";
+import { useGetDonationOverTime } from "../hooks/useGetDonationOverTime";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -43,57 +41,60 @@ export default function AdminDashboard() {
   const { error: exportUserError, loading: exportUserLoading, fetchExportUserAnalytics } = useExportUserAnalytics();
   const { error: exportReportError, loading: exportReportLoading, fetchExportFullReportMonthly } = useExportFullMonthlyReport();
   const { users, loading: usersLoading, fetchUsers } = useGetAllUsers();
+  const { error: foodPostError, loading: foodPostLoading, foodPost, fetchFoodPost } = useGetFoodPost();
+  const { error: donationError, loading: donationLoading, foodPost: donationPost, fetchDonationOverTime } = useGetDonationOverTime();
 
   useEffect(() => {
     fetchStats();
     fetchUsers();
+    fetchFoodPost();
+    fetchDonationOverTime();
   }, []);
   const stats = [
+
     {
       label: "Total Users",
-      value: loading ? "..." : dashboardStats?.totalUsers?.toString() || "0",
-      change: "+2 this month",
+      value: loading ? "—" : dashboardStats?.totalUsers?.toString() || "0",
+      change: loading ? "—" : "Registered users",
       icon: <Users className="h-6 w-6" />,
       color: "text-green-600",
     },
     {
       label: "Food Posts",
-      value: loading ? "..." : dashboardStats?.totalFoodPosts?.toString() || "0",
-      change: "+1 pending review",
+      value: loading ? "—" : dashboardStats?.totalFoodPosts?.toString() || "0",
+      change: loading ? "—" : "Active donations",
       icon: <Package className="h-6 w-6" />,
       color: "text-orange-600",
     },
     {
       label: "Total Requests",
-      value: loading ? "..." : dashboardStats?.totalRequests?.toString() || "0",
-      change: "78% success rate",
+      value: loading ? "—" : dashboardStats?.totalRequests?.toString() || "0",
+      change: loading ? "—" : "All time requests",
       icon: <TrendingUp className="h-6 w-6" />,
       color: "text-green-600",
     },
     {
       label: "Avg. Rating",
-      value: loading ? "..." : dashboardStats?.averageRating?.toFixed(1) || "N/A",
-      change: "Community satisfied",
-      icon: <Shield className="h-6 w-6" />,
+      value: loading ? "—" : dashboardStats?.averageRating?.toFixed(1) || "N/A",
+      change: loading ? "—" : "Based on user feedback",
+      icon: <Star className="h-6 w-6" />,
       color: "text-orange-600",
     },
   ];
+  const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-  // Filter users by search + role
-  // const filteredUsers = users.filter((user) => {
-  //   const matchesSearch =
-  //     user.name.toLowerCase().includes(searchUser.toLowerCase()) ||
-  //     user.email.toLowerCase().includes(searchUser.toLowerCase());
+  const normalizeDonationData = (apiData) => {
+    return WEEK_DAYS.map(day => {
+      const found = apiData?.find(d => d?.date === day);
+      return {
+        date: day,
+        donations: found ? found.donations : 0,
+      };
+    });
+  };
+  console.log(`donation post ${donationPost}`);
+  const chartData = normalizeDonationData(donationPost);
 
-  //   const matchesRole =
-  //     userRoleFilter === "all" || user.role.toLowerCase() === userRoleFilter;
-
-  //   return matchesSearch && matchesRole;
-  // });
-
-  // const filteredPosts = mockFoodPosts.filter((post) =>
-  //   post.title.toLowerCase().includes(searchPost.toLowerCase())
-  // );
 
   const generateCSV = () => {
     fetchExportFullReport();
@@ -171,36 +172,48 @@ export default function AdminDashboard() {
             <div className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Donations Over Time */}
-                <Card className="p-6 border-slate-200">
-                  <h3 className="text-xl font-bold text-slate-900 mb-4">
-                    Donations Over Time
-                  </h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart
-                      data={[
-                        { date: "Mon", donations: 4 },
-                        { date: "Tue", donations: 6 },
-                        { date: "Wed", donations: 5 },
-                        { date: "Thu", donations: 7 },
-                        { date: "Fri", donations: 9 },
-                        { date: "Sat", donations: 8 },
-                        { date: "Sun", donations: 10 },
-                      ]}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                      <XAxis dataKey="date" stroke="#64748b" />
-                      <YAxis stroke="#64748b" />
-                      <Tooltip />
-                      <Line
-                        type="monotone"
-                        dataKey="donations"
-                        stroke="#16a34a"
-                        strokeWidth={3}
-                        dot={{ fill: "#16a34a" }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </Card>
+                {donationLoading && (
+                  <div className="flex items-center justify-center h-[320px]">
+                    <p className="text-slate-500">Loading donations...</p>
+                  </div>
+                )}
+
+                {!donationLoading && donationError && (
+                  <div className="text-red-600 mt-2">
+                    {donationError}
+                  </div>
+                )}
+
+                {!donationLoading && !donationError && (
+                  <Card className="p-6 border-slate-200">
+                    <h3 className="text-xl font-bold text-slate-900 mb-4">
+                      Donations Over Time
+                    </h3>
+
+                    {donationPost?.length === 0 ? (
+                      <div className="flex items-center justify-center h-[250px] text-slate-500">
+                        No donation data available
+                      </div>
+                    ) : (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={chartData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                          <XAxis dataKey="date" />
+                          <YAxis allowDecimals={false} />
+                          <Tooltip />
+                          <Line
+                            type="monotone"
+                            dataKey="donations"
+                            stroke="#16a34a"
+                            strokeWidth={3}
+                            dot={{ r: 5 }}
+                          />
+                        </LineChart>
+
+                      </ResponsiveContainer>
+                    )}
+                  </Card>
+                )}
 
                 {/* Food Types Distribution */}
                 <Card className="p-6 border-slate-200">
@@ -263,24 +276,49 @@ export default function AdminDashboard() {
                     Recent Posts
                   </h3>
                   <div className="space-y-3">
-                    {mockFoodPosts.slice(0, 4).map((post) => (
-                      <div key={post.id} className="p-4 rounded-lg bg-slate-50">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-medium text-slate-900">
-                              {post.title}
-                            </p>
-                            <p className="text-xs text-slate-600 mt-1">
-                              by {post.donorName} • {new Date(post.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <span className="text-xs font-semibold px-3 py-1 rounded-full bg-green-100 text-green-700">
-                            {post.status}
-                          </span>
-                        </div>
+                    {foodPostLoading ? (
+                      <div className="text-center py-4 text-slate-600">Loading...</div>
+                    ) : foodPostError ? (
+                      <div className="text-center py-4">
+                        <p className="text-red-600 font-medium">{foodPostError}</p>
                       </div>
-                    ))}
+                    ) : foodPost && foodPost.length > 0 ? (
+                      foodPost
+                        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Recent first
+                        .slice(0, 4)
+                        .map((post) => (
+                          <div
+                            key={post.id}
+                            className="p-4 rounded-lg bg-slate-50 shadow-sm hover:shadow-md transition-shadow"
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="font-medium text-slate-900 text-lg">{post.title}</p>
+                                <p className="text-xs text-slate-600 mt-1">
+                                  by <span className="font-semibold">{post?.donor?.name}</span> •{" "}
+                                  {new Date(post.createdAt).toLocaleDateString()}
+                                </p>
+                              </div>
+                              <span
+                                className={`text-xs font-semibold px-3 py-1 rounded-full ${post.status === "available"
+                                  ? "bg-green-100 text-green-700"
+                                  : post.status === "accepted"
+                                    ? "bg-blue-100 text-blue-700"
+                                    : post.status === "completed"
+                                      ? "bg-gray-100 text-gray-700"
+                                      : "bg-orange-100 text-orange-700"
+                                  }`}
+                              >
+                                {post.status.charAt(0).toUpperCase() + post.status.slice(1)}
+                              </span>
+                            </div>
+                          </div>
+                        ))
+                    ) : (
+                      <p className="text-center py-4 text-slate-500">No food posts found.</p>
+                    )}
                   </div>
+
                 </Card>
 
                 <Card className="p-6 border-slate-200">

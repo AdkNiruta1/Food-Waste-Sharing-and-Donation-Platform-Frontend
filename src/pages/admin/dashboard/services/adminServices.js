@@ -26,3 +26,15 @@ export const exportFullReportMonthlyService = (month, year) => {
     responseType: "blob",
   });
 }
+
+export const getFoodPostsService = () => {
+  return authClient.get(`food-post/list`);
+}
+
+export const getFoodPostByIdService = (id) => {
+  return authClient.get(`food-post/${id}/details`);
+}
+
+export const getDonationsOverTimeService = () => {
+  return authClient.get(`donations-over-time`);
+}
