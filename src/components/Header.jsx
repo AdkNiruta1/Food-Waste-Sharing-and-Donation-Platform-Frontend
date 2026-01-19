@@ -93,10 +93,9 @@ export function Header() {
             {isAuthenticated && isEmailVerified === "verified" && isStatusVerified === "verified" && userRole === "admin" && (
               <>
                 <Link to="/admin" className={`text-sm font-medium pb-1 transition-colors ${isActive("/admin")}`}>Dashboard</Link>
-                <Link to="/manage-users" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-users")}`}>Manage Users</Link>
-                <Link to="/manage-reports" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-reports")}`}>Manage Reports</Link>
-                <Link to="/manage-notifications" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-notifications")}`}>Manage Notifications</Link>
-                <Link to="/manage-reviews" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-reviews")}`}>Manage Reviews</Link>
+                  <Link to="/manage-users" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-users")}`}>Manage Users</Link>
+                  <Link to="/manage-posts" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-posts")}`}>Manage Posts</Link>
+                  <Link to="/manage-contact" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-contact")}`}>Manage Contact</Link>
 
               </>
             )}
@@ -239,9 +238,8 @@ export function Header() {
                 <>
                   <Link to="/admin" className={`text-sm font-medium pb-1 transition-colors ${isActive("/admin")}`}>Dashboard</Link>
                   <Link to="/manage-users" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-users")}`}>Manage Users</Link>
-                  <Link to="/manage-reports" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-reports")}`}>Manage Reports</Link>
-                  <Link to="/manage-notifications" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-notifications")}`}>Manage Notifications</Link>
-                  <Link to="/manage-reviews" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-reviews")}`}>Manage Reviews</Link>
+                  <Link to="/manage-posts" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-posts")}`}>Manage Posts</Link>
+                  <Link to="/manage-contact" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-contact")}`}>Manage Contact</Link>
 
                 </>
               )}

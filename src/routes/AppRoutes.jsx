@@ -13,7 +13,7 @@ import Login from "../pages/auth/login/pages/Login";
 import VerifyEmail from "../pages/auth/login/pages/EmailVerified";
 import ForgotPassword from "../pages/auth/login/pages/ForgetPassword";
 import Register from "../pages/auth/Register/pages/Register";
-import AdminVerifyDocuments from "../pages/admin/users/pages/AdminVeriedDoc";
+import AdminVerifyDocuments from "../pages/admin/users/pages/AdminVerifyUsersDoc";
 import { Header } from "../components/Header";
 import UserProfile from "../components/UserProfile";
 import Notifications from "../components/Notifications";
@@ -35,6 +35,7 @@ import DonationHistory from "../pages/donor/DonationHistory/pages/DonationHistor
 import ViewRecipientProfile from "../pages/donor/DonationHistory/pages/ViewRecipientProfile";
 import DonorRatingPage from "../pages/donor/DonationHistory/pages/DonorRatingPage";
 import AdminManageUsers from "../pages/admin/users/pages/AdminManageUsers";
+import AdminManageFoodPosts from "../pages/admin/posts/pages/AdminViewPostList";
 
 export default function AppRoutes() {
   return (
@@ -69,6 +70,7 @@ export default function AppRoutes() {
           <Route path="/manage-users" element={<AdminManageUsers />} />
           <Route path="/admin/verify-documents" element={<AdminVerifyDocuments />} />
           <Route path="/admin/user/:userId/activity-logs" element={<AdminUserActivityLogs />} />
+          <Route path="/manage-posts" element={<AdminManageFoodPosts />} />
         </Route>
 
         {/* Recipient */}

@@ -52,7 +52,6 @@ export default function Index() {
     { number: "3", title: "Connect", description: "Request food or accept requests with ease" },
     { number: "4", title: "Share", description: "Complete the donation and help reduce food waste" },
   ];
-
   return (
     <div className="min-h-screen flex flex-col">
       
@@ -336,7 +335,7 @@ export default function Index() {
           </div>
           <div className="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-sm text-slate-600">
-              © 2025 Annapurna Bhandar. All rights reserved.
+              © {new Date().getFullYear()} Annapurna Bhandar. All rights reserved.
             </p>
             <div className="flex gap-6 mt-4 md:mt-0">
               <Star className="h-5 w-5 text-slate-500 hover:text-[#28bd5f] cursor-pointer transition-colors" />
