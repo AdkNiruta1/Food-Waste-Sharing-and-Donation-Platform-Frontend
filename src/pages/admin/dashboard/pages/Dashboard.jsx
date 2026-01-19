@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "../../../../components/Header";
 import { Button } from "../../../../components/ui/button";
 import { Card } from "../../../../components/ui/card";
@@ -30,38 +30,43 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { useGetDashboardStats } from "../hooks/useGetStats";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [searchUser, setSearchUser] = useState("");
   const [searchPost, setSearchPost] = useState("");
-  const [userRoleFilter, setUserRoleFilter] = useState("all"); // New: role filter
+  const [userRoleFilter, setUserRoleFilter] = useState("all"); 
+  const { stats: dashboardStats, loading, fetchStats } = useGetDashboardStats();
 
+  useEffect(() => {
+    fetchStats();
+  }, []);
   const stats = [
     {
       label: "Total Users",
-      value: mockUsers.length.toString(),
+      value: loading ? "..." : dashboardStats?.totalUsers?.toString() || "0",
       change: "+2 this month",
       icon: <Users className="h-6 w-6" />,
       color: "text-green-600",
     },
     {
       label: "Food Posts",
-      value: mockFoodPosts.length.toString(),
+      value: loading ? "..." : dashboardStats?.totalFoodPosts?.toString() || "0",
       change: "+1 pending review",
       icon: <Package className="h-6 w-6" />,
       color: "text-orange-600",
     },
     {
       label: "Total Requests",
-      value: mockFoodPosts.reduce((sum, p) => sum + p.requests.length, 0).toString(),
+      value: loading ? "..." : dashboardStats?.totalRequests?.toString() || "0",
       change: "78% success rate",
       icon: <TrendingUp className="h-6 w-6" />,
       color: "text-green-600",
     },
     {
       label: "Avg. Rating",
-      value: "4.6",
+      value: loading ? "..." : dashboardStats?.averageRating?.toFixed(1) || "N/A",
       change: "Community satisfied",
       icon: <Shield className="h-6 w-6" />,
       color: "text-orange-600",
@@ -514,7 +519,7 @@ export default function AdminDashboard() {
                   </Button>
                   <Button variant="outline" className="w-full border-slate-300">
                     <Download className="mr-2 h-5 w-5" />
-                    Export User Analytics (PDF)
+                    Export User Analytics CSV
                   </Button>
                   <Button variant="outline" className="w-full border-slate-300">
                     <Download className="mr-2 h-5 w-5" />
