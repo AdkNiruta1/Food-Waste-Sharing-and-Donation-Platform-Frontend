@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import { Header } from "../../../../components/Header";
 import { Button } from "../../../../components/ui/button";
 import { Card } from "../../../../components/ui/card";
-import { Input } from "../../../../components/ui/input";
 import {
   Users,
   Package,
@@ -33,6 +31,8 @@ import { useExportFullMonthlyReport } from "../hooks/useExportReportLastMonth";
 import { useGetAllUsers } from "../../users/hooks/useGetAllUsers";
 import { useGetFoodPost } from "../hooks/useGetFoodPost";
 import { useGetDonationOverTime } from "../hooks/useGetDonationOverTime";
+import { useGetFoodTypeDistrubution } from "../hooks/useGetFoodTypeDistrubution";
+import { useGetRequestOverView } from "../hooks/useGetRequestOverView";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -43,12 +43,16 @@ export default function AdminDashboard() {
   const { users, loading: usersLoading, fetchUsers } = useGetAllUsers();
   const { error: foodPostError, loading: foodPostLoading, foodPost, fetchFoodPost } = useGetFoodPost();
   const { error: donationError, loading: donationLoading, foodPost: donationPost, fetchDonationOverTime } = useGetDonationOverTime();
+  const { error: foodTypeError, loading: foodTypeLoading, foodType, fetchFoodTypeDistribution } = useGetFoodTypeDistrubution();
+  const { error: requestError, loading: requestLoading, request, fetchRequestOverView } = useGetRequestOverView();
 
   useEffect(() => {
     fetchStats();
     fetchUsers();
     fetchFoodPost();
     fetchDonationOverTime();
+    fetchFoodTypeDistribution();
+    fetchRequestOverView();
   }, []);
   const stats = [
 
@@ -92,9 +96,8 @@ export default function AdminDashboard() {
       };
     });
   };
-  console.log(`donation post ${donationPost}`);
-  const chartData = normalizeDonationData(donationPost);
 
+  const chartData = normalizeDonationData(donationPost);
 
   const generateCSV = () => {
     fetchExportFullReport();
@@ -216,59 +219,76 @@ export default function AdminDashboard() {
                 )}
 
                 {/* Food Types Distribution */}
-                <Card className="p-6 border-slate-200">
-                  <h3 className="text-xl font-bold text-slate-900 mb-4">
-                    Food Types Distribution
-                  </h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={[
-                          { name: "Vegetables", value: 40 },
-                          { name: "Fruits", value: 25 },
-                          { name: "Cooked Meals", value: 20 },
-                          { name: "Dairy & Bakery", value: 15 },
-                        ]}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, value }) => `${name}: ${value}%`}
-                        outerRadius={100}
-                        dataKey="value"
-                      >
-                        <Cell fill="#16a34a" />
-                        <Cell fill="#fb923c" />
-                        <Cell fill="#22c55e" />
-                        <Cell fill="#f97316" />
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </Card>
+                {foodTypeLoading && (
+                  <div className="flex items-center justify-center h-[320px]">
+                    <p className="text-slate-500">Loading food types...</p>
+                  </div>
+                )}
+
+                {!foodTypeLoading && foodTypeError && (
+                  <div className="text-red-600 mt-2">
+                    {foodTypeError}
+                  </div>
+                )}
+                {!foodTypeLoading && !foodTypeError && (
+                  <Card className="p-6 border-slate-200">
+                    <h3 className="text-xl font-bold text-slate-900 mb-4">
+                      Food Types Distribution
+                    </h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={foodType}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, value }) => `${name}: ${value}%`}
+                          outerRadius={100}
+                          dataKey="value"
+                        >
+                          <Cell fill="#16a34a" />
+                          <Cell fill="#fb923c" />
+
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </Card>
+                )}
               </div>
 
               {/* Request Status Chart */}
-              <Card className="p-6 border-slate-200">
-                <h3 className="text-xl font-bold text-slate-900 mb-4">
-                  Request Status Overview
-                </h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart
-                    data={[
-                      { status: "Pending", count: 3 },
-                      { status: "Accepted", count: 7 },
-                      { status: "Completed", count: 15 },
-                      { status: "Rejected", count: 2 },
-                    ]}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="status" stroke="#64748b" />
-                    <YAxis stroke="#64748b" />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#16a34a" radius={[8, 8, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </Card>
+              {requestLoading && (
+                <div className="flex items-center justify-center h-[320px]">
+                  <p className="text-slate-500">Loading request status...</p>
+                </div>
+              )}
+              {
+                requestError && (
+                  <div className="text-red-600 mt-2">
+                    {requestError}
+                  </div>
+                )
+              }
+              {!requestLoading && !requestError && (
+
+                <Card className="p-6 border-slate-200">
+                  <h3 className="text-xl font-bold text-slate-900 mb-4">
+                    Request Status Overview
+                  </h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart
+                      data={request}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                      <XAxis dataKey="status" stroke="#64748b" />
+                      <YAxis stroke="#64748b" />
+                      <Tooltip />
+                      <Bar dataKey="count" fill="#16a34a" radius={[8, 8, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Card>
+              )}
 
               <div className="grid md:grid-cols-2 gap-6">
                 <Card className="p-6 border-slate-200">

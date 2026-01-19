@@ -38,3 +38,11 @@ export const getFoodPostByIdService = (id) => {
 export const getDonationsOverTimeService = () => {
   return authClient.get(`donations-over-time`);
 }
+
+export const getFoodTypeDistributionService = () => {
+  return authClient.get(`food-type-distribution`);
+}
+
+export const getRequestStatusOverviewService = () => {
+  return authClient.get(`request-status-overview`);
+}
