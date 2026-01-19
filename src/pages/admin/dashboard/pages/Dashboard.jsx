@@ -15,7 +15,7 @@ import {
   Eye,
   Trash2,
 } from "lucide-react";
-import { mockFoodPosts, mockUsers } from "../../../../lib/mockData";
+import { mockFoodPosts } from "../../../../lib/mockData";
 import {
   LineChart,
   Line,
@@ -31,16 +31,22 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useGetDashboardStats } from "../hooks/useGetStats";
+import { useExportFullReport } from "../hooks/useExportFullReport";
+import { useExportUserAnalytics } from "../hooks/useExportUsers";
+import { useExportFullMonthlyReport } from "../hooks/useExportReportLastMonth";
+import { useGetAllUsers } from "../../users/hooks/useGetAllUsers";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
-  const [searchUser, setSearchUser] = useState("");
-  const [searchPost, setSearchPost] = useState("");
-  const [userRoleFilter, setUserRoleFilter] = useState("all"); 
   const { stats: dashboardStats, loading, fetchStats } = useGetDashboardStats();
+  const { error: exportError, loading: exportLoading, fetchExportFullReport } = useExportFullReport();
+  const { error: exportUserError, loading: exportUserLoading, fetchExportUserAnalytics } = useExportUserAnalytics();
+  const { error: exportReportError, loading: exportReportLoading, fetchExportFullReportMonthly } = useExportFullMonthlyReport();
+  const { users, loading: usersLoading, fetchUsers } = useGetAllUsers();
 
   useEffect(() => {
     fetchStats();
+    fetchUsers();
   }, []);
   const stats = [
     {
@@ -74,65 +80,27 @@ export default function AdminDashboard() {
   ];
 
   // Filter users by search + role
-  const filteredUsers = mockUsers.filter((user) => {
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchUser.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchUser.toLowerCase());
+  // const filteredUsers = users.filter((user) => {
+  //   const matchesSearch =
+  //     user.name.toLowerCase().includes(searchUser.toLowerCase()) ||
+  //     user.email.toLowerCase().includes(searchUser.toLowerCase());
 
-    const matchesRole =
-      userRoleFilter === "all" || user.role.toLowerCase() === userRoleFilter;
+  //   const matchesRole =
+  //     userRoleFilter === "all" || user.role.toLowerCase() === userRoleFilter;
 
-    return matchesSearch && matchesRole;
-  });
+  //   return matchesSearch && matchesRole;
+  // });
 
-  const filteredPosts = mockFoodPosts.filter((post) =>
-    post.title.toLowerCase().includes(searchPost.toLowerCase())
-  );
+  // const filteredPosts = mockFoodPosts.filter((post) =>
+  //   post.title.toLowerCase().includes(searchPost.toLowerCase())
+  // );
 
   const generateCSV = () => {
-    const headers = [
-      "Post ID",
-      "Donor",
-      "Food Type",
-      "Quantity",
-      "Status",
-      "Created Date",
-      "Requests Count",
-      "Location",
-    ];
-
-    const rows = mockFoodPosts.map((post) => [
-      post.id,
-      post.donorName,
-      post.type,
-      `${post.quantity} ${post.unit}`,
-      post.status,
-      new Date(post.createdAt).toLocaleDateString(),
-      post.requests.length,
-      `${post.location.city}, ${post.location.district}`,
-    ]);
-
-    const csvContent = [
-      headers.join(","),
-      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
-    ].join("\n");
-
-    const element = document.createElement("a");
-    element.setAttribute(
-      "href",
-      "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent)
-    );
-    element.setAttribute("download", `annapurna-bhandar-logs-${new Date().toISOString().split("T")[0]}.csv`);
-    element.style.display = "none";
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+    fetchExportFullReport();
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      
-
       {/* Header Section */}
       <div className="border-b border-slate-200 bg-slate-50">
         <div className="container mx-auto max-w-6xl px-4 py-8">
@@ -145,10 +113,17 @@ export default function AdminDashboard() {
                 Manage users, posts, and platform activities
               </p>
             </div>
-            <Button onClick={generateCSV} variant="outline" className="border-slate-300">
+            <Button
+              onClick={generateCSV}
+              variant="outline"
+              className="border-slate-300"
+              disabled={exportLoading}
+            >
               <Download className="mr-2 h-5 w-5" />
-              Export CSV
+              {exportLoading ? "Exporting..." : "Export CSV"}
             </Button>
+            {exportError && (<div className="text-red-600 mt-2">{exportError}</div>)}
+
           </div>
         </div>
       </div>
@@ -177,15 +152,14 @@ export default function AdminDashboard() {
         {/* Tabs */}
         <div className="space-y-6">
           <div className="flex gap-6 border-b border-slate-200 overflow-x-auto">
-            {["overview", "users", "posts", "reports"].map((tab) => (
+            {["overview", "reports"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-3 font-medium text-sm capitalize transition-colors whitespace-nowrap border-b-2 ${
-                  activeTab === tab
-                    ? "text-green-600 border-green-600"
-                    : "text-slate-600 hover:text-slate-900 border-transparent"
-                }`}
+                className={`px-4 py-3 font-medium text-sm capitalize transition-colors whitespace-nowrap border-b-2 ${activeTab === tab
+                  ? "text-green-600 border-green-600"
+                  : "text-slate-600 hover:text-slate-900 border-transparent"
+                  }`}
               >
                 {tab}
               </button>
@@ -314,119 +288,45 @@ export default function AdminDashboard() {
                     Active Users
                   </h3>
                   <div className="space-y-3">
-                    {mockUsers.slice(0, 4).map((user) => (
-                      <div key={user.id} className="p-4 rounded-lg bg-slate-50">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-medium text-slate-900">
-                              {user.name}
-                            </p>
-                            <p className="text-xs text-slate-600 mt-1">
-                              {user.role} • {user.email}
-                            </p>
+                    {usersLoading ? (
+                      <div className="text-center py-4 text-slate-600">Loading...</div>
+                    ) : users && users.length > 0 ? (
+                      // Take the most recent 4 users
+                      users
+                        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                        .slice(0, 4)
+                        .map((user) => (
+                          <div
+                            key={user._id}
+                            className="p-4 rounded-lg bg-slate-50 flex justify-between items-start"
+                          >
+                            <div>
+                              <p className="font-medium text-slate-900">{user.name}</p>
+                              <p className="text-xs text-slate-600 mt-1">
+                                {user.role} • {user.email}
+                              </p>
+                            </div>
+
+                            {user.accountVerified === "verified" ? (
+                              <Lock className="h-5 w-5 text-green-600" />
+                            ) : (
+                              <Unlock className="h-5 w-5 text-red-600" />
+                            )}
                           </div>
-                          {user.isSuspended ? (
-                            <Lock className="h-5 w-5 text-red-600" />
-                          ) : (
-                            <Unlock className="h-5 w-5 text-green-600" />
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                        ))
+                    ) : (
+                      <p className="text-center text-slate-500">No users found.</p>
+                    )}
                   </div>
+
                 </Card>
               </div>
             </div>
           )}
 
-          {/* Users Tab */}
-          {activeTab === "users" && (
-            <div className="space-y-6">
-              {/* Role Filter Radio Buttons */}
-              <div className="flex flex-wrap gap-3">
-                {["all", "donor", "recipient", "admin"].map((role) => (
-                  <label
-                    key={role}
-                    className={`flex items-center gap-2 px-5 py-2 rounded-full border cursor-pointer transition-all ${
-                      userRoleFilter === role
-                        ? "bg-green-600 text-white border-green-600 shadow-sm"
-                        : "bg-white border-slate-300 hover:border-slate-400"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="userRole"
-                      value={role}
-                      checked={userRoleFilter === role}
-                      onChange={(e) => setUserRoleFilter(e.target.value)}
-                      className="sr-only"
-                    />
-                    <span className="capitalize font-medium">
-                      {role === "all" ? "All Users" : role + "s"}
-                    </span>
-                  </label>
-                ))}
-              </div>
-
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-5 w-5 text-slate-500" />
-                <Input
-                  type="text"
-                  placeholder="Search users by name or email..."
-                  value={searchUser}
-                  onChange={(e) => setSearchUser(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-
-              <div className="overflow-x-auto rounded-lg border border-slate-200">
-                <table className="w-full">
-                  <thead className="bg-slate-50">
-                    <tr>
-                      <th className="text-left py-4 px-6 font-semibold text-slate-900">Name</th>
-                      <th className="text-left py-4 px-6 font-semibold text-slate-900">Email</th>
-                      <th className="text-left py-4 px-6 font-semibold text-slate-900">Role</th>
-                      <th className="text-left py-4 px-6 font-semibold text-slate-900">Status</th>
-                      <th className="text-left py-4 px-6 font-semibold text-slate-900">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredUsers.map((user) => (
-                      <tr key={user.id} className="border-t border-slate-200 hover:bg-slate-50">
-                        <td className="py-4 px-6 font-medium text-slate-900">{user.name}</td>
-                        <td className="py-4 px-6 text-slate-600">{user.email}</td>
-                        <td className="py-4 px-6">
-                          <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                            {user.role}
-                          </span>
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                            user.isSuspended
-                              ? "bg-red-100 text-red-700"
-                              : "bg-green-100 text-green-700"
-                          }`}>
-                            {user.isSuspended ? "Suspended" : "Active"}
-                          </span>
-                        </td>
-                        <td className="py-4 px-6 space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" className={user.isSuspended ? "text-green-600" : "text-orange-600"}>
-                            {user.isSuspended ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
 
           {/* Posts Tab */}
-          {activeTab === "posts" && (
+          {/* {activeTab === "posts" && (
             <div className="space-y-6">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-5 w-5 text-slate-500" />
@@ -477,7 +377,7 @@ export default function AdminDashboard() {
                 </table>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Reports Tab */}
           {activeTab === "reports" && (
@@ -489,21 +389,21 @@ export default function AdminDashboard() {
                 <div className="space-y-6">
                   <div>
                     <p className="text-sm text-slate-600 mb-2">Total Donations</p>
-                    <p className="text-4xl font-bold text-green-600">{mockFoodPosts.length}</p>
+                    <p className="text-4xl font-bold text-green-600">{dashboardStats?.totalFoodPosts}</p>
                   </div>
                   <div>
                     <p className="text-sm text-slate-600 mb-2">Total Requests</p>
                     <p className="text-4xl font-bold text-green-600">
-                      {mockFoodPosts.reduce((sum, p) => sum + p.requests.length, 0)}
+                      {dashboardStats?.totalRequests}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-slate-600 mb-2">Active Users</p>
-                    <p className="text-4xl font-bold text-green-600">{mockUsers.length}</p>
+                    <p className="text-4xl font-bold text-green-600">{dashboardStats?.totalUsers}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-600 mb-2">Success Rate</p>
-                    <p className="text-4xl font-bold text-green-600">78%</p>
+                    <p className="text-sm text-slate-600 mb-2">Average Rate</p>
+                    <p className="text-4xl font-bold text-green-600">{dashboardStats?.averageRating}</p>
                   </div>
                 </div>
               </Card>
@@ -515,16 +415,18 @@ export default function AdminDashboard() {
                 <div className="space-y-4">
                   <Button className="w-full bg-green-600 hover:bg-green-700" onClick={generateCSV}>
                     <Download className="mr-2 h-5 w-5" />
-                    Download Full CSV Report
+                    {exportLoading ? "Exporting..." : "Export Full Report ZIP"}
                   </Button>
-                  <Button variant="outline" className="w-full border-slate-300">
+                  <Button variant="outline" className="w-full border-slate-300" onClick={fetchExportUserAnalytics}>
                     <Download className="mr-2 h-5 w-5" />
-                    Export User Analytics CSV
+                    {exportUserLoading ? "Exporting..." : "Export Users CSV"}
                   </Button>
-                  <Button variant="outline" className="w-full border-slate-300">
+                  {exportUserError && (<div className="text-red-600 mt-2">{exportUserError}</div>)}
+                  <Button variant="outline" className="w-full border-slate-300" onClick={fetchExportFullReportMonthly}>
                     <Download className="mr-2 h-5 w-5" />
-                    Export Monthly Summary
+                    {exportReportLoading ? "Exporting..." : "Export Monthly Report CSV"}
                   </Button>
+                  {exportReportError && (<div className="text-red-600 mt-2">{exportReportError}</div>)}
                 </div>
               </Card>
             </div>

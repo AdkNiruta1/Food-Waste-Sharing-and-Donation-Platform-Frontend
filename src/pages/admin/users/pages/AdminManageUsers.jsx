@@ -87,7 +87,7 @@ export default function AdminManageUsers() {
       <div className="border-b border-slate-200 bg-slate-50">
         <div className="container mx-auto max-w-6xl px-4 py-10">
           <h1 className="text-3xl font-bold text-slate-900">
-            Manage Verified Users
+            Manage Users
           </h1>
           <p className="text-slate-600 mt-2">
             Manage document verification and view approved/rejected accounts
