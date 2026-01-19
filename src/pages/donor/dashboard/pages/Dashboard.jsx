@@ -168,15 +168,6 @@ export default function DonorDashboard() {
               >
                 Active Requests ({activeFoods.length})
               </button>
-              <button
-                onClick={() => setActiveTab("analytics")}
-                className={`pb-4 px-2 font-medium text-lg transition-colors border-b-2 whitespace-nowrap ${activeTab === "analytics"
-                  ? "text-green-600 border-green-600"
-                  : "text-slate-600 hover:text-slate-900 border-transparent"
-                  }`}
-              >
-                Analytics
-              </button>
             </div>
 
             {/* My Donations Tab */}

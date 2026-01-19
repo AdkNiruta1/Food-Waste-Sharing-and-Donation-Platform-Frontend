@@ -97,14 +97,14 @@ export default function DonationHistory() {
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-5 w-5 ${i < Math.floor(donation?.rating?.value)
+                      className={`h-5 w-5 ${i < Math.floor(donation?.acceptedRequest?.receiver?.rating)
                         ? "fill-yellow-500 text-yellow-500"
                         : "text-slate-300"
                         }`}
                     />
                   ))}
                   <span className="ml-2 font-medium text-slate-900">
-                    {donation?.rating?.value.toFixed(1)}
+                    {donation?.acceptedRequest?.receiver?.rating.toFixed(1)}
                   </span>
                 </div>
               )}

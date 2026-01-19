@@ -6,7 +6,6 @@ import Contact from "../pages/landing/Contact";
 import ProtectedRoute from "./ProtectedRoute";
 import BrowseFood from "../pages/landing/Browser";
 import ReciverBrowseFood from "../pages/recipient/browser/pages/BrowserFood";
-
 import AdminDashboard from "../pages/admin/dashboard/pages/Dashboard";
 import DonorDashboard from "../pages/donor/dashboard/pages/Dashboard";
 import RecipientDashboard from "../pages/recipient/dashboard/pages/Dashboard";
@@ -15,7 +14,6 @@ import VerifyEmail from "../pages/auth/login/pages/EmailVerified";
 import ForgotPassword from "../pages/auth/login/pages/ForgetPassword";
 import Register from "../pages/auth/Register/pages/Register";
 import AdminVerifyDocuments from "../pages/admin/users/pages/AdminVeriedDoc";
-import AdminVerifiedUsers from "../pages/admin/users/pages/AdminVerifiedUsers";
 import { Header } from "../components/Header";
 import UserProfile from "../components/UserProfile";
 import Notifications from "../components/Notifications";
@@ -36,6 +34,7 @@ import DonorViewRequestDetails from "../pages/donor/dashboard/pages/DonorViewAct
 import DonationHistory from "../pages/donor/DonationHistory/pages/DonationHistory";
 import ViewRecipientProfile from "../pages/donor/DonationHistory/pages/ViewRecipientProfile";
 import DonorRatingPage from "../pages/donor/DonationHistory/pages/DonorRatingPage";
+import AdminManageUsers from "../pages/admin/users/pages/AdminManageUsers";
 
 export default function AppRoutes() {
   return (
@@ -67,7 +66,7 @@ export default function AppRoutes() {
         {/* Admin */}
         <Route element={<ProtectedRoute roles={["admin"]} />}>
           <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/manage-users" element={<AdminVerifiedUsers />} />
+          <Route path="/manage-users" element={<AdminManageUsers />} />
           <Route path="/admin/verify-documents" element={<AdminVerifyDocuments />} />
           <Route path="/admin/user/:userId/activity-logs" element={<AdminUserActivityLogs />} />
         </Route>

@@ -7,7 +7,7 @@ import { Search, Clock, Shield, Mail, Phone, Calendar, UserCheck, XCircle } from
 
 import { useGetAllUsers } from "../hooks/useGetAllUsers";
 
-export default function AdminVerifiedUsers() {
+export default function AdminManageUsers() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("pending");
   const [searchTerm, setSearchTerm] = useState("");
