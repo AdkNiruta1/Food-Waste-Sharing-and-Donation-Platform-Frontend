@@ -250,7 +250,13 @@ export function Header() {
                 <>
                   <div className="border-t border-slate-200 my-4" />
                   <Link to="/notifications" onClick={() => setIsOpen(false)} className="flex items-center gap-3 text-lg font-medium text-slate-900 hover:text-green-600">
-                    <Bell className="h-5 w-5" /> Notifications
+                    <Bell className="h-5 w-5" />
+
+                    {countunseenNotifications > 0 && (
+                      <span className="absolute top-1 right-1 flex items-center justify-center h-4 w-4 bg-red-600 text-white text-[0.6rem] font-bold rounded-full border-2 border-white">
+                        {countunseenNotifications > 9 ? "9+" : countunseenNotifications}
+                      </span>
+                    )}
                   </Link>
                   <Link to="/profile" onClick={() => setIsOpen(false)} className="flex items-center gap-3 text-lg font-medium text-slate-900 hover:text-green-600">
                     <User className="h-5 w-5" /> View Profile

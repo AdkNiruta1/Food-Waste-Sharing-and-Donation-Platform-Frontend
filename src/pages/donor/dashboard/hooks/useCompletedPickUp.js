@@ -1,25 +1,24 @@
 import { useState, useContext } from "react";
-import {  getFoodDetailsService } from "../services/foodDonationServices";
+import { completePickupServices } from "../services/donationServices";
 import { AppContext } from "../../../../context/ContextApp";
 
-export const useGetFoodDetails = () => {
-  const [foods, setFoods] = useState([]);
+export const useCompletePickup = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const { showToast } = useContext(AppContext);
 
-  const FoodDonationDetails = async (id) => {
+  const completePickup = async (id) => {
     setLoading(true);
     setError(null);
 
     try {
-      const res = await getFoodDetailsService(id);
-      setFoods(res.data);       
+      const res = await completePickupServices(id);
+      showToast("Pickup completed successfully", "success");
       return res;
     } catch (err) {
       setError(err.message);
-      showToast(err.message || "Failed to fetch food", "error");
+      showToast(err.message || "Failed to complete pickup", "error");
       throw err;
     } finally {
       setLoading(false);
@@ -27,9 +26,8 @@ export const useGetFoodDetails = () => {
   };
 
   return {
-    foods,
     loading,
     error,
-    FoodDonationDetails,
+    completePickup,
   };
 };

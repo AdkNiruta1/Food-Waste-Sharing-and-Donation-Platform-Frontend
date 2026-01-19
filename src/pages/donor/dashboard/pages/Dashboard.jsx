@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Header } from "../../../../components/Header";
 import { Button } from "../../../../components/ui/button";
 import { Card } from "../../../../components/ui/card";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Plus,
   Package,
@@ -16,16 +16,25 @@ import {
 } from "lucide-react";
 import { useGetMyFood } from "../hooks/useGetMyDonation";
 import { useDeleteMyDonation } from "../hooks/useDeleteMyDonation";
+import { useGetActiveDonation } from "../hooks/useGetActiveDonation";
+
 
 import { IMAGE_URL } from "../../../../constants/constants";
+import { useCompletePickup } from "../hooks/useCompletedPickUp";
 export default function DonorDashboard() {
   const [activeTab, setActiveTab] = useState("posts");
   const { foods, loading, fetchMyFoodDonation } = useGetMyFood();
 
   const { deleteMyDonation, loading: deleteLoading } = useDeleteMyDonation();
+  const { foods: activeFoods, loading: activeLoading, error: activeError, fetchMyFoodDonation: fetchMyActiveFoodDonation } = useGetActiveDonation();
+  const { completePickup } = useCompletePickup();
+  const [loadingMap, setLoadingMap] = useState({});
+  const [errorMap, setErrorMap] = useState({});
+
   // Fetch donations on mount
   useEffect(() => {
     fetchMyFoodDonation();
+    fetchMyActiveFoodDonation();
   }, []);
 
   const handleDeleteDonation = async (id) => {
@@ -38,6 +47,25 @@ export default function DonorDashboard() {
       }
     }
   };
+  const handleCompletePickup = async ({ requestId }) => {
+    try {
+      setLoadingMap(prev => ({ ...prev, [requestId]: true }));
+      setErrorMap(prev => ({ ...prev, [requestId]: null }));
+
+      await completePickup({ requestId });
+
+      fetchMyActiveFoodDonation(); // refresh data
+    } catch (err) {
+      setErrorMap(prev => ({
+        ...prev,
+        [requestId]: err.message || "Failed to complete pickup",
+      }));
+    } finally {
+      setLoadingMap(prev => ({ ...prev, [requestId]: false }));
+    }
+  };
+
+  const navigate = useNavigate();
 
   // Filter posts donated by current user (mock)
   const donorPosts = foods;
@@ -75,327 +103,319 @@ export default function DonorDashboard() {
 
   return (
     loading ? <div>Loading...</div> :
-    <div className="min-h-screen flex flex-col bg-white">
-      {/* Header Section */}
-      <div className="border-b border-slate-200 bg-slate-50">
-        <div className="container mx-auto max-w-6xl px-4 py-10">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div>
-              <h1 className="text-4xl font-bold text-slate-900 mb-2">
-                Donor Dashboard
-              </h1>
-              <p className="text-lg text-slate-600">
-                Manage your food donations and track your impact
-              </p>
-            </div>
-            <Link to="/create-food">
-              <Button size="lg" className="bg-green-600 hover:bg-green-700">
-                <Plus className="mr-2 h-5 w-5" />
-                Post New Donation
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="container mx-auto max-w-6xl px-4 py-8">
-        <div className="grid md:grid-cols-4 gap-6 mb-10">
-          {stats.map((stat, index) => (
-            <Card key={index} className="p-6 border-slate-200">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-sm text-slate-600 mb-1">
-                    {stat.label}
-                  </p>
-                  <p className="text-3xl font-bold text-slate-900">
-                    {stat.value}
-                  </p>
-                </div>
-                <div className={`${stat.color} opacity-80`}>{stat.icon}</div>
+      <div className="min-h-screen flex flex-col bg-white">
+        {/* Header Section */}
+        <div className="border-b border-slate-200 bg-slate-50">
+          <div className="container mx-auto max-w-6xl px-4 py-10">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+              <div>
+                <h1 className="text-4xl font-bold text-slate-900 mb-2">
+                  Donor Dashboard
+                </h1>
+                <p className="text-lg text-slate-600">
+                  Manage your food donations and track your impact
+                </p>
               </div>
-              <p className="text-xs text-slate-600">{stat.change}</p>
-            </Card>
-          ))}
+              <Link to="/create-food">
+                <Button size="lg" className="bg-green-600 hover:bg-green-700">
+                  <Plus className="mr-2 h-5 w-5" />
+                  Post New Donation
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
 
-        {/* Tabs */}
-        <div className="space-y-8">
-          <div className="flex gap-8 border-b border-slate-200 overflow-x-auto">
-            <button
-              onClick={() => setActiveTab("posts")}
-              className={`pb-4 px-2 font-medium text-lg transition-colors border-b-2 whitespace-nowrap ${
-                activeTab === "posts"
-                  ? "text-green-600 border-green-600"
-                  : "text-slate-600 hover:text-slate-900 border-transparent"
-              }`}
-            >
-              My Donations ({donorPosts.length})
-            </button>
-            <button
-              onClick={() => setActiveTab("requests")}
-              className={`pb-4 px-2 font-medium text-lg transition-colors border-b-2 whitespace-nowrap ${
-                activeTab === "requests"
-                  ? "text-green-600 border-green-600"
-                  : "text-slate-600 hover:text-slate-900 border-transparent"
-              }`}
-            >
-              Active Requests ({donorPosts.reduce((sum, p) => sum + p.length, 0)})
-            </button>
-            <button
-              onClick={() => setActiveTab("analytics")}
-              className={`pb-4 px-2 font-medium text-lg transition-colors border-b-2 whitespace-nowrap ${
-                activeTab === "analytics"
-                  ? "text-green-600 border-green-600"
-                  : "text-slate-600 hover:text-slate-900 border-transparent"
-              }`}
-            >
-              Analytics
-            </button>
+        {/* Stats Grid */}
+        <div className="container mx-auto max-w-6xl px-4 py-8">
+          <div className="grid md:grid-cols-4 gap-6 mb-10">
+            {stats.map((stat, index) => (
+              <Card key={index} className="p-6 border-slate-200">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">
+                      {stat.label}
+                    </p>
+                    <p className="text-3xl font-bold text-slate-900">
+                      {stat.value}
+                    </p>
+                  </div>
+                  <div className={`${stat.color} opacity-80`}>{stat.icon}</div>
+                </div>
+                <p className="text-xs text-slate-600">{stat.change}</p>
+              </Card>
+            ))}
           </div>
 
-          {/* My Donations Tab */}
-          {activeTab === "posts" && (
-            <div className="space-y-6">
-              {donorPosts.length === 0 ? (
-                <Card className="p-16 text-center border-slate-200">
-                  <Package className="h-16 w-16 text-slate-400 mx-auto mb-6" />
-                  <h3 className="text-2xl font-bold text-slate-900 mb-3">
-                    No donations yet
-                  </h3>
-                  <p className="text-slate-600 mb-8 max-w-md mx-auto">
-                    Start sharing your surplus food and make a difference in your community.
-                  </p>
-                  <Link to="/create-food">
-                    <Button size="lg" className="bg-green-600 hover:bg-green-700">
-                      <Plus className="mr-2 h-5 w-5" />
-                      Post Your First Donation
-                    </Button>
-                  </Link>
-                </Card>
-              ) : (
-                donorPosts.map((post) => (
-                  <Card
-                    key={post.id}
-                    className="p-6 border-slate-200 hover:shadow-lg transition-shadow"
-                  >
-                    <div className="grid lg:grid-cols-4 gap-6 items-start">
-                      {/* Image */}
-                      <div className="lg:col-span-1">
-                        <img
-                          src={IMAGE_URL+ post.photo || "https://via.placeholder.com/300x200?text=No+Image"}
-                          alt={post.title}
-                          className="w-full h-48 object-cover rounded-lg"
-                        />
-                      </div>
-
-                      {/* Details */}
-                      <div className="lg:col-span-2 space-y-4">
-                        <div>
-                          <Link
-                            to={`/food/${post.id}`}
-                            className="text-2xl font-bold text-slate-900 hover:text-green-600 transition-colors"
-                          >
-                            {post.title}
-                          </Link>
-                          <p className="text-slate-600 mt-2 line-clamp-2">
-                            {post.description}
-                          </p>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <p className="text-slate-500">Quantity</p>
-                            <p className="font-semibold text-slate-900">
-                              {post.quantity} {post.unit}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-slate-500">Best Before</p>
-                            <p className="font-semibold text-slate-900">
-                              {new Date(post.expiryDate).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-slate-500">Status</p>
-                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                              post.status === "available"
-                                ? "bg-green-100 text-green-700"
-                                : post.status === "completed"
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-orange-100 text-orange-700"
-                            }`}>
-                              {post.status.charAt(0).toUpperCase() + post.status.slice(1)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="lg:col-span-1 space-y-3">
-                        <Link to={`/food-details/${post._id}`} className="block">
-                          <Button variant="outline" className="w-full border-slate-300">
-                            View Details
-                          </Button>
-                        </Link>
-                        <Button variant="outline" className="w-full border-slate-300"
-                        onClick={() => window.location.href = `/update-food/${post._id}`}
-                        >
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit Post
-                        </Button>
-                        <Button variant="outline" className="w-full text-red-600 hover:bg-red-50"
-                        onClick={() => handleDeleteDonation(post._id)}
-                        disabled={deleteLoading}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          {deleteLoading ? "Deleting..." : "Delete Post"}
-                        </Button>
-
-                        {post.length > 0 && (
-                          <div className="bg-orange-100 text-orange-700 rounded-lg p-3 text-center">
-                            <p className="text-sm font-semibold">
-                              {post.requests.length} pending request{post.requests.length > 1 ? "s" : ""}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                ))
-              )}
+          {/* Tabs */}
+          <div className="space-y-8">
+            <div className="flex gap-8 border-b border-slate-200 overflow-x-auto">
+              <button
+                onClick={() => setActiveTab("posts")}
+                className={`pb-4 px-2 font-medium text-lg transition-colors border-b-2 whitespace-nowrap ${activeTab === "posts"
+                  ? "text-green-600 border-green-600"
+                  : "text-slate-600 hover:text-slate-900 border-transparent"
+                  }`}
+              >
+                My Donations ({donorPosts.length})
+              </button>
+              <button
+                onClick={() => setActiveTab("requests")}
+                className={`pb-4 px-2 font-medium text-lg transition-colors border-b-2 whitespace-nowrap ${activeTab === "requests"
+                  ? "text-green-600 border-green-600"
+                  : "text-slate-600 hover:text-slate-900 border-transparent"
+                  }`}
+              >
+                Active Requests ({activeFoods.length})
+              </button>
+              <button
+                onClick={() => setActiveTab("analytics")}
+                className={`pb-4 px-2 font-medium text-lg transition-colors border-b-2 whitespace-nowrap ${activeTab === "analytics"
+                  ? "text-green-600 border-green-600"
+                  : "text-slate-600 hover:text-slate-900 border-transparent"
+                  }`}
+              >
+                Analytics
+              </button>
             </div>
-          )}
 
-          {/* Incoming Requests Tab */}
-          {activeTab === "requests" && (
-            <div className="space-y-6">
-              {donorPosts.flatMap((post) => post).length !== 0 ? (
-                <Card className="p-16 text-center border-slate-200">
-                  <MessageSquare className="h-16 w-16 text-slate-400 mx-auto mb-6" />
-                  <h3 className="text-2xl font-bold text-slate-900 mb-3">
-                    No incoming requests
-                  </h3>
-                  <p className="text-slate-600">
-                    When someone requests your food, you'll see it here.
-                  </p>
-                </Card>
-              ) : (
-                donorPosts.flatMap((post) =>
-                  post.map((request) => (
+            {/* My Donations Tab */}
+            {activeTab === "posts" && (
+              <div className="space-y-6">
+                {donorPosts.length === 0 ? (
+                  <Card className="p-16 text-center border-slate-200">
+                    <Package className="h-16 w-16 text-slate-400 mx-auto mb-6" />
+                    <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                      No donations yet
+                    </h3>
+                    <p className="text-slate-600 mb-8 max-w-md mx-auto">
+                      Start sharing your surplus food and make a difference in your community.
+                    </p>
+                    <Link to="/create-food">
+                      <Button size="lg" className="bg-green-600 hover:bg-green-700">
+                        <Plus className="mr-2 h-5 w-5" />
+                        Post Your First Donation
+                      </Button>
+                    </Link>
+                  </Card>
+                ) : (
+                  donorPosts.map((post) => (
                     <Card
-                      key={request.id}
+                      key={post.id}
                       className="p-6 border-slate-200 hover:shadow-lg transition-shadow"
                     >
-                      <div className="grid lg:grid-cols-4 gap-6 items-center">
-                        {/* Food Info */}
-                        <div>
-                          <p className="text-sm text-slate-500 mb-1">Donation</p>
-                          <h3 className="font-bold text-lg text-slate-900">
-                            {post.title}
-                          </h3>
-                          <p className="text-sm text-slate-600 mt-1">
-                            {post.quantity} {post.unit}
-                          </p>
+                      <div className="grid lg:grid-cols-4 gap-6 items-start">
+                        {/* Image */}
+                        <div className="lg:col-span-1">
+                          <img
+                            src={IMAGE_URL + post.photo || "https://via.placeholder.com/300x200?text=No+Image"}
+                            alt={post.title}
+                            className="w-full h-48 object-cover rounded-lg"
+                          />
                         </div>
 
-                        {/* Recipient Info */}
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                            <User className="h-7 w-7 text-green-600" />
-                          </div>
+                        {/* Details */}
+                        <div className="lg:col-span-2 space-y-4">
                           <div>
-                            <p className="text-sm text-slate-500">Requested by</p>
-                            <p className="font-semibold text-slate-900">
-                              {request.recipientName}
+                            <Link
+                              to={`/food/${post.id}`}
+                              className="text-2xl font-bold text-slate-900 hover:text-green-600 transition-colors"
+                            >
+                              {post.title}
+                            </Link>
+                            <p className="text-slate-600 mt-2 line-clamp-2">
+                              {post.description}
                             </p>
                           </div>
-                        </div>
 
-                        {/* Status */}
-                        <div>
-                          <p className="text-sm text-slate-500 mb-2">Status</p>
-                          <span className={`inline-block px-4 py-2 rounded-full text-sm font-semibold ${
-                            request.status === "pending"
-                              ? "bg-orange-100 text-orange-700"
-                              : request.status === "accepted"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-slate-100 text-slate-700"
-                          }`}>
-                            {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                          </span>
+                          <div className="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                              <p className="text-slate-500">Quantity</p>
+                              <p className="font-semibold text-slate-900">
+                                {post.quantity} {post.unit}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-slate-500">Best Before</p>
+                              <p className="font-semibold text-slate-900">
+                                {new Date(post.expiryDate).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-slate-500">Status</p>
+                              <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${post.status === "available"
+                                ? "bg-green-100 text-green-700"
+                                : post.status === "completed"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : "bg-orange-100 text-orange-700"
+                                }`}>
+                                {post.status.charAt(0).toUpperCase() + post.status.slice(1)}
+                              </span>
+                            </div>
+                          </div>
                         </div>
 
                         {/* Actions */}
-                        <div className="space-y-3">
-                          {request.status === "pending" && (
-                            <>
-                              <Button size="sm" className="w-full bg-green-600 hover:bg-green-700">
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Accept
-                              </Button>
-                              <Button size="sm" variant="outline" className="w-full border-slate-300">
-                                Reject
-                              </Button>
-                            </>
-                          )}
-                          {request.status === "accepted" && (
-                            <Button size="sm" variant="outline" className="w-full border-slate-300">
-                              <MessageSquare className="mr-2 h-4 w-4" />
-                              Contact Recipient
+                        <div className="lg:col-span-1 space-y-3">
+                          <Link to={`/food-details/${post._id}`} className="block">
+                            <Button variant="outline" className="w-full border-slate-300">
+                              View Details
                             </Button>
+                          </Link>
+                          <Button variant="outline" className="w-full border-slate-300"
+                            onClick={() => window.location.href = `/update-food/${post._id}`}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit Post
+                          </Button>
+                          <Button variant="outline" className="w-full text-red-600 hover:bg-red-50"
+                            onClick={() => handleDeleteDonation(post._id)}
+                            disabled={deleteLoading}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            {deleteLoading ? "Deleting..." : "Delete Post"}
+                          </Button>
+
+                          {post.length > 0 && (
+                            <div className="bg-orange-100 text-orange-700 rounded-lg p-3 text-center">
+                              <p className="text-sm font-semibold">
+                                {post.requests.length} pending request{post.requests.length > 1 ? "s" : ""}
+                              </p>
+                            </div>
                           )}
                         </div>
                       </div>
                     </Card>
                   ))
-                )
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
 
-          {/* Analytics Tab */}
-          {activeTab === "analytics" && (
-            <div className="grid lg:grid-cols-3 gap-8">
-              <Card className="p-8 border-slate-200 bg-green-50">
-                <h3 className="text-xl font-bold text-green-700 mb-4">
-                  Total Donations
-                </h3>
-                <p className="text-5xl font-bold text-green-600 mb-2">
-                  {donorPosts.length}
-                </p>
-                <p className="text-sm text-slate-600">
-                  Active posts this month
-                </p>
-              </Card>
+            {/* Analytics Tab */}
+            {activeTab === "requests" && (
+              <div className="space-y-6">
+                {/* Loading */}
+                {activeLoading && (
+                  <p className="text-center mt-20 text-slate-600">Loading...</p>
+                )}
 
-              <Card className="p-8 border-slate-200 bg-blue-50">
-                <h3 className="text-xl font-bold text-blue-700 mb-4">
-                  Meals Shared
-                </h3>
-                <p className="text-5xl font-bold text-blue-600 mb-2">
-                  87
-                </p>
-                <p className="text-sm text-slate-600">
-                  Estimated from your donations
-                </p>
-              </Card>
+                {/* Error */}
+                {activeError && (
+                  <p className="text-center mt-20 text-red-600">{activeError}</p>
+                )}
 
-              <Card className="p-8 border-slate-200 bg-yellow-50">
-                <h3 className="text-xl font-bold text-yellow-700 mb-4">
-                  Community Rating
-                </h3>
-                <p className="text-5xl font-bold text-yellow-600 mb-2">
-                  4.8 ★
-                </p>
-                <p className="text-sm text-slate-600">
-                  Based on recipient feedback
-                </p>
-              </Card>
-            </div>
-          )}
+                {/* Empty State */}
+                {!activeLoading && activeFoods.length === 0 ? (
+                  <Card className="p-16 text-center border-slate-200">
+                    <MessageSquare className="h-16 w-16 text-slate-400 mx-auto mb-6" />
+                    <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                      No accepted requests
+                    </h3>
+                    <p className="text-slate-600">
+                      Accepted food requests will appear here until pickup is completed.
+                    </p>
+                  </Card>
+                ) : (
+                  activeFoods.map((post) => {
+                    const isLoading = loadingMap[post._id] || false;
+                    const error = errorMap[post._id] || null;
+                    return (
+                      <Card
+                        key={post._id}
+                        className="p-6 border-slate-200 hover:shadow-lg transition-shadow"
+                      >
+                        <div className="grid lg:grid-cols-4 gap-6 items-center">
+                          {/* ================= Food Info ================= */}
+                          <div>
+                            <p className="text-sm text-slate-500 mb-1">Donation</p>
+                            <h3 className="font-bold text-lg text-slate-900">
+                              {post?.foodPost?.title}
+                            </h3>
+                            <p className="text-sm text-slate-600 mt-1">
+                              {post?.foodPost?.quantity} {post?.foodPost?.unit}
+                            </p>
+
+                            {post?.foodPost?.expiryDate && (
+                              <p className="text-xs text-slate-500 mt-1">
+                                Expires on{" "}
+                                {new Date(post.foodPost.expiryDate).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* ================= Receiver Info ================= */}
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                              <User className="h-7 w-7 text-green-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm text-slate-500">Requested by</p>
+                              <p className="font-semibold text-slate-900">
+                                {post?.receiver?.name}
+                              </p>
+
+                              {post?.receiver?.phone && (
+                                <p className="text-sm text-slate-600">
+                                  📞 {post.receiver.phone}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* ================= Pickup & Status ================= */}
+                          <div>
+                            <p className="text-sm text-slate-500 mb-2">Status</p>
+                            <span className="inline-block px-4 py-2 rounded-full text-sm font-semibold bg-green-100 text-green-700">
+                              Accepted – Waiting for Pickup
+                            </span>
+
+                            {post?.foodPost?.city && (
+                              <p className="text-sm text-slate-600 mt-3">
+                                📍 {post.foodPost.city}, {post.foodPost.district}
+                              </p>
+                            )}
+
+                            {post?.foodPost?.pickupInstructions && (
+                              <p className="text-xs text-slate-500 mt-1">
+                                {post.foodPost.pickupInstructions}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* ================= Actions ================= */}
+                          <div className="space-y-3">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="w-full border-slate-300"
+                              onClick={() => navigate(`/donor/food/active/details/${post._id}`)}
+                            >
+                              <MessageSquare className="mr-2 h-4 w-4" />
+                              View Details
+                            </Button>
+
+                            <Button
+                              size="sm"
+                              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                              onClick={() => handleCompletePickup({ "requestId": post._id })}
+                            >
+                              <CheckCircle className="mr-2 h-4 w-4" />
+                              {isLoading ? "Picking Up..." : "Mark as Picked Up"}
+                            </Button>
+                            {error && (
+                              <p className="text-sm text-red-600">{error}</p>
+                            )}
+                          </div>
+                        </div>
+                      </Card>
+                    )
+                  }
+                  )
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
   );
 }

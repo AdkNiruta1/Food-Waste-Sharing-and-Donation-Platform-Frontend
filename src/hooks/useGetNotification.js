@@ -7,7 +7,7 @@ export const useGetNotification = () => {
   const [loading, setLoading] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [pagination, setPagination] = useState({});
-  const { showToast } = useContext(AppContext);
+  // const { showToast } = useContext(AppContext);
 
   const getNotifications = async (page = 1, limit = 10) => {
     setLoading(true);
@@ -17,7 +17,8 @@ export const useGetNotification = () => {
       setPagination(res.data.pagination);
       return res.data;
     } catch (err) {
-      showToast(err.message || "Failed to fetch notifications", "error");
+      // showToast(err.message || "Failed to fetch notifications", "error");
+      console.log(err);
       throw err;
     } finally {
       setLoading(false);

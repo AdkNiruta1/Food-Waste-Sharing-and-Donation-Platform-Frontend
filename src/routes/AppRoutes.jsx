@@ -32,6 +32,10 @@ import FoodDetailViewer from "../pages/recipient/dashboard/pages/FoodRequestDeta
 import RatingPage from "../pages/recipient/RequestFood/pages/RatingPage";
 import ReceiverViewDonorDetails from "../pages/recipient/RequestFood/pages/ReceiverViewDonorDetails";
 import ViewFoodRequestList from "../pages/donor/dashboard/pages/ViewFoodRequestLIst";
+import DonorViewRequestDetails from "../pages/donor/dashboard/pages/DonorViewActiveDetails";
+import DonationHistory from "../pages/donor/DonationHistory/pages/DonationHistory";
+import ViewRecipientProfile from "../pages/donor/DonationHistory/pages/ViewRecipientProfile";
+import DonorRatingPage from "../pages/donor/DonationHistory/pages/DonorRatingPage";
 
 export default function AppRoutes() {
   return (
@@ -88,6 +92,10 @@ export default function AppRoutes() {
           <Route path="/food-details/:foodId" element={<DonorFoodDetail />} />
           <Route path="/update-food/:foodId" element={<EditFood />} />
           <Route path="/donor/food/:foodId/requests" element={<ViewFoodRequestList />} />
+          <Route path="/donor/food/active/details/:id" element={<DonorViewRequestDetails />} />
+          <Route path="/donation-history" element={<DonationHistory />} />
+          <Route path="/donation-history/recipient/:id" element={<ViewRecipientProfile />} />
+          <Route path="/donation-history/recipient/rating/:foodId" element={<DonorRatingPage />} />
 
         </Route>
 

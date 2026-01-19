@@ -1,21 +1,20 @@
 import { useState, useContext } from "react";
-import {  getFoodDetailsService } from "../services/foodDonationServices";
+import { getDonationHistoryByIdServices } from "../services/donationHistoryServices";
 import { AppContext } from "../../../../context/ContextApp";
 
-export const useGetFoodDetails = () => {
+export const useGetDonationHistoryById = () => {
   const [foods, setFoods] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
   const { showToast } = useContext(AppContext);
 
-  const FoodDonationDetails = async (id) => {
+  const fetchDonationHistoryById = async (id) => {
     setLoading(true);
     setError(null);
 
     try {
-      const res = await getFoodDetailsService(id);
-      setFoods(res.data);       
+      const res = await getDonationHistoryByIdServices(id);
+      setFoods(res.data);
       return res;
     } catch (err) {
       setError(err.message);
@@ -30,6 +29,6 @@ export const useGetFoodDetails = () => {
     foods,
     loading,
     error,
-    FoodDonationDetails,
+    fetchDonationHistoryById,
   };
 };

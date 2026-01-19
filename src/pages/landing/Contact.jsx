@@ -7,6 +7,7 @@ import { Textarea } from "../../components/ui/textarea";
 import { Mail, Phone, MapPin, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { Alert, AlertDescription } from "../../components/ui/alert";
+import { useSendMessage } from "./hooks/useSendMessage";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -20,6 +21,8 @@ export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+
+  const { sendMessage, loading: sendMessageLoading } = useSendMessage();
 
   const contactInfo = [
     {
@@ -82,18 +85,35 @@ export default function Contact() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validateForm()) return;
 
+  try {
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setSubmitted(true);
-      setFormData({ name: "", email: "", subject: "", message: "", inquiryType: "general", subscribe: true });
-      setTimeout(() => setSubmitted(false), 5000);
-    }, 1500);
-  };
+    const res = await sendMessage(formData);
+    if (!res) {
+      throw new Error("Failed to send message");
+
+    }
+    setSubmitted(true);
+    setFormData({
+      name: "",
+      email: "",
+      subject: "",
+      message: "",
+      inquiryType: "general",
+      subscribe: true,
+    });
+
+    setTimeout(() => setSubmitted(false), 5000);
+  } catch (err) {
+    alert(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -271,7 +291,7 @@ export default function Contact() {
                   </div>
 
                   <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={loading}>
-                    {loading ? "Sending..." : "Send Message"}
+                    {loading || sendMessageLoading ? "Sending..." : "Send Message"}
                   </Button>
                 </form>
 
