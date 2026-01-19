@@ -95,7 +95,7 @@ export function Header() {
                 <Link to="/admin" className={`text-sm font-medium pb-1 transition-colors ${isActive("/admin")}`}>Dashboard</Link>
                   <Link to="/manage-users" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-users")}`}>Manage Users</Link>
                   <Link to="/manage-posts" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-posts")}`}>Manage Posts</Link>
-                  <Link to="/manage-contact" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-contact")}`}>Manage Contact</Link>
+                  <Link to="/manage-messages" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-messages")}`}>Manage Messages</Link>
 
               </>
             )}
@@ -239,7 +239,7 @@ export function Header() {
                   <Link to="/admin" className={`text-sm font-medium pb-1 transition-colors ${isActive("/admin")}`}>Dashboard</Link>
                   <Link to="/manage-users" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-users")}`}>Manage Users</Link>
                   <Link to="/manage-posts" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-posts")}`}>Manage Posts</Link>
-                  <Link to="/manage-contact" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-contact")}`}>Manage Contact</Link>
+                  <Link to="/manage-messages" className={`text-sm font-medium pb-1 transition-colors ${isActive("/manage-messages")}`}>Manage Messages</Link>
 
                 </>
               )}

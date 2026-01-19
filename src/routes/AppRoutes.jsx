@@ -36,6 +36,7 @@ import ViewRecipientProfile from "../pages/donor/DonationHistory/pages/ViewRecip
 import DonorRatingPage from "../pages/donor/DonationHistory/pages/DonorRatingPage";
 import AdminManageUsers from "../pages/admin/users/pages/AdminManageUsers";
 import AdminManageFoodPosts from "../pages/admin/posts/pages/AdminViewPostList";
+import { AdminViewContactMessage } from "../pages/admin/contact/pages/AdminViewContactMessage";
 
 export default function AppRoutes() {
   return (
@@ -71,6 +72,7 @@ export default function AppRoutes() {
           <Route path="/admin/verify-documents" element={<AdminVerifyDocuments />} />
           <Route path="/admin/user/:userId/activity-logs" element={<AdminUserActivityLogs />} />
           <Route path="/manage-posts" element={<AdminManageFoodPosts />} />
+          <Route path="/manage-messages" element={<AdminViewContactMessage />} />
         </Route>
 
         {/* Recipient */}
