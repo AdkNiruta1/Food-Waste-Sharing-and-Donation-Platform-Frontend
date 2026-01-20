@@ -27,9 +27,13 @@ import {
   ChevronUp
 } from "lucide-react";
 import { useGetContactMessages } from "../hooks/useGetContactMessage";
+import { useMarkMessage } from "../hooks/useMarkMessage";
+import { useDeleteMessage } from "../hooks/useDeleteMessage";
 
 export const AdminViewContactMessage = () => {
   const { error, loading, fetchMessages, messages, pagination } = useGetContactMessages();
+  const {error: markError, loading: markLoading, markMessageAsRead} = useMarkMessage();
+  const { error: deleteError, loading: deleteLoading, deleteMessage} = useDeleteMessage();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -40,6 +44,7 @@ export const AdminViewContactMessage = () => {
 
   useEffect(() => {
     fetchMessages(currentPage, 10);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
   const toggleMessageExpand = (messageId) => {
@@ -77,12 +82,6 @@ export const AdminViewContactMessage = () => {
           bg: "bg-emerald-100 text-emerald-800",
           icon: <CheckCircle className="h-3 w-3" />,
           label: "Read"
-        };
-      case 'archived':
-        return { 
-          bg: "bg-slate-100 text-slate-800",
-          icon: <Archive className="h-3 w-3" />,
-          label: "Archived"
         };
       default:
         return { 
@@ -160,19 +159,15 @@ export const AdminViewContactMessage = () => {
     setDetailsModalOpen(true);
   };
 
-  const handleMarkAsRead = (message) => {
-    // Implement mark as read functionality
-    console.log("Mark as read:", message._id);
+  const handleMarkAsRead = async (message) => {
+    await markMessageAsRead(message._id);
+    await fetchMessages();
   };
 
-  const handleArchive = (message) => {
-    // Implement archive functionality
-    console.log("Archive:", message._id);
-  };
-
-  const handleDelete = (message) => {
+  const handleDelete = async (message) => {
     // Implement delete functionality
-    console.log("Delete:", message._id);
+    await deleteMessage(message._id);
+    await fetchMessages();
   };
 
   const handleReply = (message) => {
@@ -184,14 +179,14 @@ export const AdminViewContactMessage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-white">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-white">
         <Card className="p-8 rounded-2xl border-slate-200/80 shadow-lg">
           <AlertCircle className="h-12 w-12 text-rose-500 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-slate-900 mb-2">Error Loading Messages</h3>
           <p className="text-slate-600">{error}</p>
           <Button 
             onClick={() => fetchMessages()} 
-            className="mt-4 bg-gradient-to-r from-emerald-500 to-emerald-600"
+            className="mt-4 bg-linear-to-r from-emerald-500 to-emerald-600"
           >
             Try Again
           </Button>
@@ -201,13 +196,13 @@ export const AdminViewContactMessage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-white">
+    <div className="min-h-screen flex flex-col bg-linear-to-br from-slate-50 to-white">
       {/* Modern Header */}
       <div className="border-b border-slate-200/80 bg-white/90 backdrop-blur-sm">
         <div className="container mx-auto max-w-7xl px-6 py-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+              <h1 className="text-3xl md:text-4xl font-bold bg-linear-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
                 Contact Messages
               </h1>
               <p className="text-slate-600 mt-2 max-w-2xl">
@@ -261,7 +256,6 @@ export const AdminViewContactMessage = () => {
                 <option value="all">All Status</option>
                 <option value="new">New</option>
                 <option value="read">Read</option>
-                <option value="archived">Archived</option>
               </select>
             </div>
 
@@ -372,7 +366,7 @@ export const AdminViewContactMessage = () => {
 
                           {/* Sender Info */}
                           <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-emerald-100 to-emerald-200 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-full bg-linear-to-r from-emerald-100 to-emerald-200 flex items-center justify-center">
                               <User className="h-5 w-5 text-emerald-600" />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -433,16 +427,17 @@ export const AdminViewContactMessage = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleViewDetails(message)}
+                        onClick={() => {handleViewDetails(message);  message?.status === 'new' ? handleMarkAsRead(message): ""}}
                         className="border-slate-300 hover:border-slate-400 hover:bg-slate-50"
                       >
                         <Eye className="h-4 w-4 mr-2" />
-                        View
+                       {markLoading ? "viewing..." : "View"} 
                       </Button>
+                      {markError && <p className="text-sm text-red-500">{markError}</p>}
                       <Button
                         size="sm"
                         onClick={() => handleReply(message)}
-                        className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
+                        className="bg-linear-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
                       >
                         <Mail className="h-4 w-4 mr-2" />
                         Reply
@@ -494,7 +489,7 @@ export const AdminViewContactMessage = () => {
                           onClick={() => setCurrentPage(pageNum)}
                           className={`w-10 h-10 rounded-lg font-medium transition-all ${
                             currentPage === pageNum
-                              ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/20"
+                              ? "bg-linear-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/20"
                               : "text-slate-700 hover:bg-slate-100"
                           }`}
                         >
@@ -552,14 +547,14 @@ export const AdminViewContactMessage = () => {
                     </h4>
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="flex items-center gap-3">
-                        <User className="h-5 w-5 text-slate-400 flex-shrink-0" />
+                        <User className="h-5 w-5 text-slate-400 shrink-0" />
                         <div>
                           <p className="text-xs text-slate-500">Name</p>
                           <p className="font-semibold text-slate-900">{selectedMessage.name}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <Mail className="h-5 w-5 text-slate-400 flex-shrink-0" />
+                        <Mail className="h-5 w-5 text-slate-400 shrink-0" />
                         <div>
                           <p className="text-xs text-slate-500">Email</p>
                           <p className="font-semibold text-slate-900">{selectedMessage.email}</p>
@@ -643,22 +638,15 @@ export const AdminViewContactMessage = () => {
                   className="border-rose-300 text-rose-600 hover:bg-rose-50 hover:border-rose-400"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
+                  {deleteLoading ? "Deleting..." : "Delete"}
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleArchive(selectedMessage)}
-                  className="border-slate-300 hover:border-slate-400"
-                >
-                  <Archive className="h-4 w-4 mr-2" />
-                  Archive
-                </Button>
+                {deleteError && <p className="text-sm text-rose-500 mt-2">{deleteError}</p>}
                 <Button
                   onClick={() => {
                     setDetailsModalOpen(false);
                     handleReply(selectedMessage);
                   }}
-                  className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
+                  className="bg-linear-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
                 >
                   <Mail className="h-4 w-4 mr-2" />
                   Reply via Email
