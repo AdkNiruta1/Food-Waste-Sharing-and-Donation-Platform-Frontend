@@ -5,7 +5,7 @@ import { Badge } from "../../../../components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogSection, DialogFooter } from "../../../../components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../../../../components/ui/alert-dialog";
 import { useState, useEffect, useCallback } from "react";
-import { Search, Eye, Trash2, Filter, Calendar, MapPin, Users, Package, Clock, User, Phone, Mail, Shield, CheckCircle, XCircle, AlertCircle, ChevronLeft, ChevronRight, ExternalLink, Award, Heart } from "lucide-react";
+import { Search, Eye, Trash2, Filter, Calendar, MapPin, Users, Package, Clock, User, Phone, Mail, Shield, CheckCircle, XCircle, AlertCircle, ChevronLeft, ChevronRight, ExternalLink, Award, Heart, Star } from "lucide-react";
 import { IMAGE_URL } from "../../../../constants/constants";
 import { useDeleteFoodPost } from "../hooks/useDeleteFoodPost";
 import { useGetFoodPost } from "../hooks/useGetFoodPost";
@@ -23,7 +23,7 @@ export default function AdminManageFoodPosts() {
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
 
   const { foods: allPosts, pagination, loading, fetchFoodPost } = useGetFoodPost();
-  const { loading: deleteLoading, fetchFoodPost: deletePost } = useDeleteFoodPost();
+  const { loading: deleteLoading, deletePost } = useDeleteFoodPost();
 
   // Fetch ALL posts
   const loadPosts = useCallback(() => {
@@ -681,10 +681,10 @@ export default function AdminManageFoodPosts() {
                             <div className="flex items-center gap-2 mt-1">
                               <div className="flex items-center gap-1">
                                 {[1, 2, 3, 4, 5].map((star) => (
-                                  <Heart
+                                  <Star
                                     key={star}
                                     className={`h-3 w-3 ${star <= (selectedPost.donor?.rating || 0)
-                                        ? "fill-rose-400 text-rose-400"
+                                        ? "fill-yellow-400 text-yellow-400"
                                         : "fill-slate-200 text-slate-200"
                                       }`}
                                   />
@@ -867,7 +867,7 @@ export default function AdminManageFoodPosts() {
         <AlertDialogContent className="max-w-md rounded-2xl">
           <AlertDialogHeader>
             <div className="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center mx-auto mb-4">
-              <AlertDialogAction className="h-8 w-8 text-rose-600" />
+              <img src={IMAGE_URL + postToDelete?.photo} alt={postToDelete?.title} className="w-full h-full object-cover"/>
             </div>
             <AlertDialogTitle className="text-center text-xl font-bold text-slate-900">
               Delete Food Post

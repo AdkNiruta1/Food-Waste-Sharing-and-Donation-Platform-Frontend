@@ -7,3 +7,6 @@ export const getFoodPostServices = ({ page = 1, limit = 10, search = "" } = {}) 
   return authClient.get(`food-post?${query}`);
 };
 
+export const deletePostService = (id) => {
+  return authClient.delete(`food-post/${id}`);
+};
