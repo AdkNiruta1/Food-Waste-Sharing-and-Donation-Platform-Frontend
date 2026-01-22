@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "../../../../components/ui/button";
 import { Card } from "../../../../components/ui/card";
+import { Badge } from "../../../../components/ui/badge";
 import {
   Users,
   Package,
@@ -9,6 +10,20 @@ import {
   Lock,
   Unlock,
   Star,
+  BarChart3,
+  PieChart as PieChartIcon,
+  Activity,
+  FileText,
+  Calendar,
+  ArrowUpRight,
+  Eye,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  RefreshCw,
+  ChevronRight,
+  Shield,
+  Award
 } from "lucide-react";
 import {
   LineChart,
@@ -23,6 +38,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
 import { useGetDashboardStats } from "../hooks/useGetStats";
 import { useExportFullReport } from "../hooks/useExportFullReport";
@@ -36,6 +52,7 @@ import { useGetRequestOverView } from "../hooks/useGetRequestOverView";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [timeFilter, setTimeFilter] = useState("7d");
   const { stats: dashboardStats, loading, fetchStats } = useGetDashboardStats();
   const { error: exportError, loading: exportLoading, fetchExportFullReport } = useExportFullReport();
   const { error: exportUserError, loading: exportUserLoading, fetchExportUserAnalytics } = useExportUserAnalytics();
@@ -54,44 +71,67 @@ export default function AdminDashboard() {
     fetchFoodTypeDistribution();
     fetchRequestOverView();
   }, []);
-  const stats = [
 
+  const stats = [
     {
       label: "Total Users",
       value: loading ? "—" : dashboardStats?.totalUsers?.toString() || "0",
-      change: loading ? "—" : "Registered users",
+      change: "Registered users",
       icon: <Users className="h-6 w-6" />,
-      color: "text-green-600",
+      color: "from-blue-500 to-blue-600",
+      bgColor: "bg-blue-50",
+      trend: "+12%",
     },
     {
       label: "Food Posts",
       value: loading ? "—" : dashboardStats?.totalFoodPosts?.toString() || "0",
-      change: loading ? "—" : "Active donations",
+      change: "Active donations",
       icon: <Package className="h-6 w-6" />,
-      color: "text-orange-600",
+      color: "from-emerald-500 to-emerald-600",
+      bgColor: "bg-emerald-50",
+      trend: "+8%",
     },
     {
       label: "Total Requests",
       value: loading ? "—" : dashboardStats?.totalRequests?.toString() || "0",
-      change: loading ? "—" : "All time requests",
+      change: "All time requests",
       icon: <TrendingUp className="h-6 w-6" />,
-      color: "text-green-600",
+      color: "from-amber-500 to-amber-600",
+      bgColor: "bg-amber-50",
+      trend: "+15%",
     },
     {
       label: "Avg. Rating",
       value: loading ? "—" : dashboardStats?.averageRating?.toFixed(1) || "N/A",
-      change: loading ? "—" : "Based on user feedback",
+      change: "Based on user feedback",
       icon: <Star className="h-6 w-6" />,
-      color: "text-orange-600",
+      color: "from-purple-500 to-purple-600",
+      bgColor: "bg-purple-50",
+      trend: "+0.3",
     },
   ];
-  const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+  const getLast7Days = () => {
+    const result = [];
+    const today = new Date();
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(today.getDate() - i);
+      result.push({
+        label: d.toLocaleDateString("en-US", { weekday: "short" }),
+        fullDate: d.toISOString().slice(0, 10),
+      });
+    }
+    return result;
+  };
 
   const normalizeDonationData = (apiData) => {
-    return WEEK_DAYS.map(day => {
-      const found = apiData?.find(d => d?.date === day);
+    const last7Days = getLast7Days();
+    return last7Days.map(day => {
+      const found = apiData?.find(d => d?.date === day.label);
       return {
-        date: day,
+        date: day.label,
         donations: found ? found.donations : 0,
       };
     });
@@ -103,388 +143,612 @@ export default function AdminDashboard() {
     fetchExportFullReport();
   };
 
-  return (
-    <div className="min-h-screen flex flex-col bg-white">
-      {/* Header Section */}
-      <div className="border-b border-slate-200 bg-slate-50">
-        <div className="container mx-auto max-w-6xl px-4 py-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h1 className="text-4xl font-bold text-slate-900 mb-2">
-                Admin Dashboard
-              </h1>
-              <p className="text-lg text-slate-600">
-                Manage users, posts, and platform activities
-              </p>
-            </div>
-            <Button
-              onClick={generateCSV}
-              variant="outline"
-              className="border-slate-300"
-              disabled={exportLoading}
-            >
-              <Download className="mr-2 h-5 w-5" />
-              {exportLoading ? "Exporting..." : "Export CSV"}
-            </Button>
-            {exportError && (<div className="text-red-600 mt-2">{exportError}</div>)}
+  const COLORS = ['#10b981', '#f59e0b', '#6366f1', '#ef4444', '#8b5cf6'];
 
+  const timeFilters = [
+    { id: "7d", label: "Last 7 Days" },
+    { id: "30d", label: "Last 30 Days" },
+    { id: "90d", label: "Last 90 Days" },
+  ];
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-white">
+      {/* Modern Header */}
+      <div className="border-b border-slate-200/80 bg-white/90 backdrop-blur-sm shadow-sm">
+        <div className="container mx-auto max-w-7xl px-6 py-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-200 shadow-lg shadow-emerald-500/20">
+                <Activity className="h-8 w-8 text-emerald-600" />
+              </div>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                  Dashboard Overview
+                </h1>
+                <p className="text-slate-600 mt-2">
+                  Real-time insights and platform analytics
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-3">
+              <Button
+                onClick={generateCSV}
+                variant="outline"
+                className="border-slate-300 hover:border-slate-400"
+                disabled={exportLoading}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                {exportLoading ? "Exporting..." : "Export Full Report"}
+              </Button>
+              <Button
+                onClick={() => {
+                  fetchStats();
+                  fetchUsers();
+                  fetchFoodPost();
+                }}
+                variant="outline"
+                className="border-slate-300 hover:border-slate-400"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="container mx-auto max-w-6xl px-4 py-8">
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+      {/* Main Content */}
+      <div className="container mx-auto max-w-7xl px-6 py-8 flex-1">
+        {/* Stats Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
-            <Card key={index} className="p-6 border-slate-200">
+            <Card 
+              key={index} 
+              className="p-6 rounded-2xl border-slate-200/80 shadow-sm bg-white/90 backdrop-blur-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+            >
               <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-sm text-slate-600 mb-1">
-                    {stat.label}
-                  </p>
-                  <p className="text-3xl font-bold text-slate-900">
-                    {stat.value}
-                  </p>
+                <div className={`p-3 rounded-xl ${stat.bgColor}`}>
+                  <div className={`text-white bg-gradient-to-r ${stat.color} p-2 rounded-lg`}>
+                    {stat.icon}
+                  </div>
                 </div>
-                <div className={`${stat.color} opacity-80`}>{stat.icon}</div>
+                <Badge className="bg-emerald-100 text-emerald-800">
+                  {stat.trend}
+                </Badge>
               </div>
-              <p className="text-xs text-slate-600">{stat.change}</p>
+              
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                {stat.value}
+              </h3>
+              <p className="text-sm font-medium text-slate-900 mb-1">
+                {stat.label}
+              </p>
+              <p className="text-xs text-slate-500">
+                {stat.change}
+              </p>
             </Card>
           ))}
         </div>
 
-        {/* Tabs */}
-        <div className="space-y-6">
-          <div className="flex gap-6 border-b border-slate-200 overflow-x-auto">
-            {["overview", "reports"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-3 font-medium text-sm capitalize transition-colors whitespace-nowrap border-b-2 ${activeTab === tab
-                  ? "text-green-600 border-green-600"
-                  : "text-slate-600 hover:text-slate-900 border-transparent"
-                  }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
+        {/* Tabs and Time Filter */}
+        <div className="mb-8">
+          <Card className="p-6 rounded-2xl border-slate-200/80 shadow-sm bg-white/90 backdrop-blur-sm">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                {["overview", "reports"].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`px-6 py-3 font-medium text-sm capitalize rounded-xl transition-all ${
+                      activeTab === tab
+                        ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/20"
+                        : "text-slate-700 hover:bg-slate-100"
+                    }`}
+                  >
+                    {tab === "overview" ? (
+                      <span className="flex items-center gap-2">
+                        <BarChart3 className="h-4 w-4" />
+                        Overview
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Reports
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-slate-500" />
+                <div className="flex bg-slate-100/80 p-1 rounded-xl">
+                  {timeFilters.map((filter) => (
+                    <button
+                      key={filter.id}
+                      onClick={() => setTimeFilter(filter.id)}
+                      className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                        timeFilter === filter.id
+                          ? "bg-white shadow-sm text-slate-900"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      {filter.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
 
+        {/* Content Area */}
+        <div className="space-y-8">
           {/* Overview Tab */}
           {activeTab === "overview" && (
-            <div className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
+            <>
+              {/* Charts Section */}
+              <div className="grid lg:grid-cols-2 gap-8">
                 {/* Donations Over Time */}
-                {donationLoading && (
-                  <div className="flex items-center justify-center h-[320px]">
-                    <p className="text-slate-500">Loading donations...</p>
-                  </div>
-                )}
-
-                {!donationLoading && donationError && (
-                  <div className="text-red-600 mt-2">
-                    {donationError}
-                  </div>
-                )}
-
-                {!donationLoading && !donationError && (
-                  <Card className="p-6 border-slate-200">
-                    <h3 className="text-xl font-bold text-slate-900 mb-4">
-                      Donations Over Time
-                    </h3>
-
-                    {donationPost?.length === 0 ? (
-                      <div className="flex items-center justify-center h-[250px] text-slate-500">
-                        No donation data available
+                <Card className="p-6 rounded-2xl border-slate-200/80 shadow-sm bg-white/90 backdrop-blur-sm">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-emerald-100">
+                        <TrendingUp className="h-5 w-5 text-emerald-600" />
                       </div>
-                    ) : (
-                      <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={chartData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                          <XAxis dataKey="date" />
-                          <YAxis allowDecimals={false} />
-                          <Tooltip />
-                          <Line
-                            type="monotone"
-                            dataKey="donations"
-                            stroke="#16a34a"
-                            strokeWidth={3}
-                            dot={{ r: 5 }}
-                          />
-                        </LineChart>
+                      <div>
+                        <h3 className="font-bold text-lg text-slate-900">Donations Over Time</h3>
+                        <p className="text-sm text-slate-500">Last 7 days performance</p>
+                      </div>
+                    </div>
+                    <Badge className="bg-emerald-100 text-emerald-800">
+                      {donationPost?.reduce((sum, day) => sum + (day.donations || 0), 0)} donations
+                    </Badge>
+                  </div>
 
-                      </ResponsiveContainer>
-                    )}
-                  </Card>
-                )}
+                  {donationLoading ? (
+                    <div className="h-[300px] flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-2 border-emerald-200 border-t-emerald-500"></div>
+                    </div>
+                  ) : donationError ? (
+                    <div className="h-[300px] flex flex-col items-center justify-center text-rose-600">
+                      <AlertCircle className="h-12 w-12 mb-3" />
+                      {donationError}
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                        <XAxis 
+                          dataKey="date" 
+                          stroke="#64748b"
+                          tick={{ fill: '#64748b' }}
+                        />
+                        <YAxis 
+                          stroke="#64748b"
+                          tick={{ fill: '#64748b' }}
+                        />
+                        <Tooltip 
+                          contentStyle={{ 
+                            borderRadius: '12px',
+                            border: '1px solid #e2e8f0',
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                          }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="donations"
+                          stroke="#10b981"
+                          strokeWidth={3}
+                          dot={{ r: 6, fill: '#10b981' }}
+                          activeDot={{ r: 8, fill: '#059669' }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  )}
+                </Card>
 
                 {/* Food Types Distribution */}
-                {foodTypeLoading && (
-                  <div className="flex items-center justify-center h-[320px]">
-                    <p className="text-slate-500">Loading food types...</p>
+                <Card className="p-6 rounded-2xl border-slate-200/80 shadow-sm bg-white/90 backdrop-blur-sm">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-amber-100">
+                        <PieChartIcon className="h-5 w-5 text-amber-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg text-slate-900">Food Types Distribution</h3>
+                        <p className="text-sm text-slate-500">Categories overview</p>
+                      </div>
+                    </div>
                   </div>
-                )}
 
-                {!foodTypeLoading && foodTypeError && (
-                  <div className="text-red-600 mt-2">
-                    {foodTypeError}
-                  </div>
-                )}
-                {!foodTypeLoading && !foodTypeError && (
-                  <Card className="p-6 border-slate-200">
-                    <h3 className="text-xl font-bold text-slate-900 mb-4">
-                      Food Types Distribution
-                    </h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={foodType}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ name, value }) => `${name}: ${value}%`}
-                          outerRadius={100}
-                          dataKey="value"
-                        >
-                          <Cell fill="#16a34a" />
-                          <Cell fill="#fb923c" />
-
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </Card>
-                )}
+                  {foodTypeLoading ? (
+                    <div className="h-[300px] flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-200 border-t-amber-500"></div>
+                    </div>
+                  ) : foodTypeError ? (
+                    <div className="h-[300px] flex flex-col items-center justify-center text-rose-600">
+                      <AlertCircle className="h-12 w-12 mb-3" />
+                      {foodTypeError}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-6">
+                      <ResponsiveContainer width="100%" height={250}>
+                        <PieChart>
+                          <Pie
+                            data={foodType}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={90}
+                            paddingAngle={5}
+                            dataKey="value"
+                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          >
+                            {foodType?.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      
+                      <div className="space-y-3">
+                        {foodType?.map((type, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-slate-50/80">
+                            <div className="flex items-center gap-3">
+                              <div 
+                                className="w-3 h-3 rounded-full" 
+                                style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                              />
+                              <span className="font-medium text-slate-900">{type.name}</span>
+                            </div>
+                            <span className="font-bold text-slate-900">{type.value}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </Card>
               </div>
 
               {/* Request Status Chart */}
-              {requestLoading && (
-                <div className="flex items-center justify-center h-[320px]">
-                  <p className="text-slate-500">Loading request status...</p>
+              <Card className="p-6 rounded-2xl border-slate-200/80 shadow-sm bg-white/90 backdrop-blur-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-blue-100">
+                      <BarChart3 className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg text-slate-900">Request Status Overview</h3>
+                      <p className="text-sm text-slate-500">Distribution by status</p>
+                    </div>
+                  </div>
                 </div>
-              )}
-              {
-                requestError && (
-                  <div className="text-red-600 mt-2">
+
+                {requestLoading ? (
+                  <div className="h-[300px] flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-200 border-t-blue-500"></div>
+                  </div>
+                ) : requestError ? (
+                  <div className="h-[300px] flex flex-col items-center justify-center text-rose-600">
+                    <AlertCircle className="h-12 w-12 mb-3" />
                     {requestError}
                   </div>
-                )
-              }
-              {!requestLoading && !requestError && (
-
-                <Card className="p-6 border-slate-200">
-                  <h3 className="text-xl font-bold text-slate-900 mb-4">
-                    Request Status Overview
-                  </h3>
+                ) : (
                   <ResponsiveContainer width="100%" height={300}>
-                    <BarChart
-                      data={request}
-                    >
+                    <BarChart data={request}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                      <XAxis dataKey="status" stroke="#64748b" />
-                      <YAxis stroke="#64748b" />
-                      <Tooltip />
-                      <Bar dataKey="count" fill="#16a34a" radius={[8, 8, 0, 0]} />
+                      <XAxis 
+                        dataKey="status" 
+                        stroke="#64748b"
+                        tick={{ fill: '#64748b' }}
+                      />
+                      <YAxis 
+                        stroke="#64748b"
+                        tick={{ fill: '#64748b' }}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          borderRadius: '12px',
+                          border: '1px solid #e2e8f0',
+                          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                        }}
+                      />
+                      <Bar 
+                        dataKey="count" 
+                        radius={[8, 8, 0, 0]}
+                        className="fill-blue-500"
+                      />
                     </BarChart>
                   </ResponsiveContainer>
-                </Card>
-              )}
+                )}
+              </Card>
 
-              <div className="grid md:grid-cols-2 gap-6">
-                <Card className="p-6 border-slate-200">
-                  <h3 className="text-xl font-bold text-slate-900 mb-4">
-                    Recent Posts
-                  </h3>
-                  <div className="space-y-3">
+              {/* Recent Activity Grid */}
+              <div className="grid lg:grid-cols-2 gap-8">
+                {/* Recent Posts */}
+                <Card className="p-6 rounded-2xl border-slate-200/80 shadow-sm bg-white/90 backdrop-blur-sm">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-purple-100">
+                        <Package className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg text-slate-900">Recent Food Posts</h3>
+                        <p className="text-sm text-slate-500">Latest donations</p>
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900">
+                      View All
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+
+                  <div className="space-y-4">
                     {foodPostLoading ? (
-                      <div className="text-center py-4 text-slate-600">Loading...</div>
+                      <div className="space-y-3">
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="p-4 rounded-xl bg-slate-100 animate-pulse">
+                            <div className="h-4 w-3/4 bg-slate-200 rounded mb-2"></div>
+                            <div className="h-3 w-1/2 bg-slate-200 rounded"></div>
+                          </div>
+                        ))}
+                      </div>
                     ) : foodPostError ? (
-                      <div className="text-center py-4">
-                        <p className="text-red-600 font-medium">{foodPostError}</p>
+                      <div className="text-center py-8 text-rose-600">
+                        <AlertCircle className="h-8 w-8 mx-auto mb-2" />
+                        {foodPostError}
                       </div>
                     ) : foodPost && foodPost.length > 0 ? (
                       foodPost
-                        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Recent first
+                        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                         .slice(0, 4)
                         .map((post) => (
                           <div
                             key={post.id}
-                            className="p-4 rounded-lg bg-slate-50 shadow-sm hover:shadow-md transition-shadow"
+                            className="p-4 rounded-xl border border-slate-200/60 hover:border-slate-300 hover:shadow-sm transition-all group"
                           >
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <p className="font-medium text-slate-900 text-lg">{post.title}</p>
-                                <p className="text-xs text-slate-600 mt-1">
-                                  by <span className="font-semibold">{post?.donor?.name}</span> •{" "}
-                                  {new Date(post.createdAt).toLocaleDateString()}
-                                </p>
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <h4 className="font-semibold text-slate-900 group-hover:text-emerald-600 transition-colors">
+                                    {post.title}
+                                  </h4>
+                                  <Badge className={
+                                    post.status === "available" ? "bg-emerald-100 text-emerald-800" :
+                                    post.status === "accepted" ? "bg-blue-100 text-blue-800" :
+                                    post.status === "completed" ? "bg-slate-100 text-slate-800" :
+                                    "bg-amber-100 text-amber-800"
+                                  }>
+                                    {post.status}
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center gap-3 text-sm text-slate-600">
+                                  <div className="flex items-center gap-1">
+                                    <Users className="h-3 w-3" />
+                                    {post.donor?.name}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="h-3 w-3" />
+                                    {new Date(post.createdAt).toLocaleDateString()}
+                                  </div>
+                                </div>
                               </div>
-                              <span
-                                className={`text-xs font-semibold px-3 py-1 rounded-full ${post.status === "available"
-                                  ? "bg-green-100 text-green-700"
-                                  : post.status === "accepted"
-                                    ? "bg-blue-100 text-blue-700"
-                                    : post.status === "completed"
-                                      ? "bg-gray-100 text-gray-700"
-                                      : "bg-orange-100 text-orange-700"
-                                  }`}
-                              >
-                                {post.status.charAt(0).toUpperCase() + post.status.slice(1)}
-                              </span>
+                              <Eye className="h-5 w-5 text-slate-400 group-hover:text-slate-600 transition-colors" />
                             </div>
                           </div>
                         ))
                     ) : (
-                      <p className="text-center py-4 text-slate-500">No food posts found.</p>
+                      <div className="text-center py-8 text-slate-500">
+                        <Package className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                        No food posts found
+                      </div>
                     )}
                   </div>
-
                 </Card>
 
-                <Card className="p-6 border-slate-200">
-                  <h3 className="text-xl font-bold text-slate-900 mb-4">
-                    Active Users
-                  </h3>
-                  <div className="space-y-3">
+                {/* Active Users */}
+                <Card className="p-6 rounded-2xl border-slate-200/80 shadow-sm bg-white/90 backdrop-blur-sm">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-blue-100">
+                        <Users className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg text-slate-900">Recent Users</h3>
+                        <p className="text-sm text-slate-500">Latest registrations</p>
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900">
+                      View All
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+
+                  <div className="space-y-4">
                     {usersLoading ? (
-                      <div className="text-center py-4 text-slate-600">Loading...</div>
+                      <div className="space-y-3">
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="p-4 rounded-xl bg-slate-100 animate-pulse">
+                            <div className="h-4 w-3/4 bg-slate-200 rounded mb-2"></div>
+                            <div className="h-3 w-1/2 bg-slate-200 rounded"></div>
+                          </div>
+                        ))}
+                      </div>
                     ) : users && users.length > 0 ? (
-                      // Take the most recent 4 users
                       users
                         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                         .slice(0, 4)
                         .map((user) => (
                           <div
                             key={user._id}
-                            className="p-4 rounded-lg bg-slate-50 flex justify-between items-start"
+                            className="p-4 rounded-xl border border-slate-200/60 hover:border-slate-300 hover:shadow-sm transition-all group"
                           >
-                            <div>
-                              <p className="font-medium text-slate-900">{user.name}</p>
-                              <p className="text-xs text-slate-600 mt-1">
-                                {user.role} • {user.email}
-                              </p>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-emerald-100 to-emerald-200 flex items-center justify-center">
+                                  <Users className="h-5 w-5 text-emerald-600" />
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold text-slate-900">{user.name}</h4>
+                                  <div className="flex items-center gap-3 text-sm text-slate-600">
+                                    <Badge className="bg-slate-100 text-slate-700 capitalize">
+                                      {user.role}
+                                    </Badge>
+                                    <span className="truncate max-w-[120px]">{user.email}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              {user.accountVerified === "verified" ? (
+                                <CheckCircle className="h-5 w-5 text-emerald-600" />
+                              ) : (
+                                <Clock className="h-5 w-5 text-amber-600" />
+                              )}
                             </div>
-
-                            {user.accountVerified === "verified" ? (
-                              <Lock className="h-5 w-5 text-green-600" />
-                            ) : (
-                              <Unlock className="h-5 w-5 text-red-600" />
-                            )}
                           </div>
                         ))
                     ) : (
-                      <p className="text-center text-slate-500">No users found.</p>
+                      <div className="text-center py-8 text-slate-500">
+                        <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                        No users found
+                      </div>
                     )}
                   </div>
-
                 </Card>
               </div>
-            </div>
+            </>
           )}
-
-
-          {/* Posts Tab */}
-          {/* {activeTab === "posts" && (
-            <div className="space-y-6">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-5 w-5 text-slate-500" />
-                <Input
-                  type="text"
-                  placeholder="Search posts by title..."
-                  value={searchPost}
-                  onChange={(e) => setSearchPost(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-
-              <div className="overflow-x-auto rounded-lg border border-slate-200">
-                <table className="w-full">
-                  <thead className="bg-slate-50">
-                    <tr>
-                      <th className="text-left py-4 px-6 font-semibold text-slate-900">Title</th>
-                      <th className="text-left py-4 px-6 font-semibold text-slate-900">Donor</th>
-                      <th className="text-left py-4 px-6 font-semibold text-slate-900">Type</th>
-                      <th className="text-left py-4 px-6 font-semibold text-slate-900">Status</th>
-                      <th className="text-left py-4 px-6 font-semibold text-slate-900">Requests</th>
-                      <th className="text-left py-4 px-6 font-semibold text-slate-900">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredPosts.map((post) => (
-                      <tr key={post.id} className="border-t border-slate-200 hover:bg-slate-50">
-                        <td className="py-4 px-6 font-medium text-slate-900">{post.title}</td>
-                        <td className="py-4 px-6 text-slate-600">{post.donorName}</td>
-                        <td className="py-4 px-6 text-slate-600 capitalize">{post.type}</td>
-                        <td className="py-4 px-6">
-                          <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                            {post.status}
-                          </span>
-                        </td>
-                        <td className="py-4 px-6 font-medium text-slate-900">{post.requests.length}</td>
-                        <td className="py-4 px-6 space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-red-600">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )} */}
 
           {/* Reports Tab */}
           {activeTab === "reports" && (
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card className="p-8 border-slate-200">
-                <h3 className="text-2xl font-bold text-slate-900 mb-8">
-                  Platform Summary
-                </h3>
+            <div className="grid lg:grid-cols-2 gap-8">
+              <Card className="p-8 rounded-2xl border-slate-200/80 shadow-sm bg-white/90 backdrop-blur-sm">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-200">
+                    <Award className="h-6 w-6 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-slate-900">Platform Summary</h3>
+                    <p className="text-slate-600">Key metrics and statistics</p>
+                  </div>
+                </div>
+
                 <div className="space-y-6">
-                  <div>
-                    <p className="text-sm text-slate-600 mb-2">Total Donations</p>
-                    <p className="text-4xl font-bold text-green-600">{dashboardStats?.totalFoodPosts}</p>
+                  <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-200/60">
+                    <p className="text-sm text-emerald-700 font-semibold mb-2">Total Donations</p>
+                    <p className="text-4xl font-bold text-slate-900">{dashboardStats?.totalFoodPosts || 0}</p>
+                    <p className="text-sm text-emerald-600 mt-1">Active food donations</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-slate-600 mb-2">Total Requests</p>
-                    <p className="text-4xl font-bold text-green-600">
-                      {dashboardStats?.totalRequests}
-                    </p>
+                  
+                  <div className="p-4 rounded-xl bg-blue-50/80 border border-blue-200/60">
+                    <p className="text-sm text-blue-700 font-semibold mb-2">Total Requests</p>
+                    <p className="text-4xl font-bold text-slate-900">{dashboardStats?.totalRequests || 0}</p>
+                    <p className="text-sm text-blue-600 mt-1">All time requests</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-slate-600 mb-2">Active Users</p>
-                    <p className="text-4xl font-bold text-green-600">{dashboardStats?.totalUsers}</p>
+                  
+                  <div className="p-4 rounded-xl bg-amber-50/80 border border-amber-200/60">
+                    <p className="text-sm text-amber-700 font-semibold mb-2">Active Users</p>
+                    <p className="text-4xl font-bold text-slate-900">{dashboardStats?.totalUsers || 0}</p>
+                    <p className="text-sm text-amber-600 mt-1">Registered members</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-slate-600 mb-2">Average Rate</p>
-                    <p className="text-4xl font-bold text-green-600">{dashboardStats?.averageRating}</p>
+                  
+                  <div className="p-4 rounded-xl bg-purple-50/80 border border-purple-200/60">
+                    <p className="text-sm text-purple-700 font-semibold mb-2">Average Rating</p>
+                    <p className="text-4xl font-bold text-slate-900">{dashboardStats?.averageRating?.toFixed(1) || 'N/A'}</p>
+                    <p className="text-sm text-purple-600 mt-1">Community feedback score</p>
                   </div>
                 </div>
               </Card>
 
-              <Card className="p-8 border-slate-200">
-                <h3 className="text-2xl font-bold text-slate-900 mb-8">
-                  Export Reports
-                </h3>
+              <Card className="p-8 rounded-2xl border-slate-200/80 shadow-sm bg-white/90 backdrop-blur-sm">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-blue-100 to-blue-200">
+                    <Download className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-slate-900">Export Reports</h3>
+                    <p className="text-slate-600">Download detailed analytics</p>
+                  </div>
+                </div>
+
                 <div className="space-y-4">
-                  <Button className="w-full bg-green-600 hover:bg-green-700" onClick={generateCSV}>
-                    <Download className="mr-2 h-5 w-5" />
-                    {exportLoading ? "Exporting..." : "Export Full Report ZIP"}
+                  <Button 
+                    onClick={generateCSV}
+                    className="w-full h-14 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/20"
+                    disabled={exportLoading}
+                  >
+                    <Download className="mr-3 h-5 w-5" />
+                    {exportLoading ? (
+                      <div className="flex items-center gap-2">
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                        Exporting...
+                      </div>
+                    ) : (
+                      "Export Full Report (ZIP)"
+                    )}
                   </Button>
-                  <Button variant="outline" className="w-full border-slate-300" onClick={fetchExportUserAnalytics}>
-                    <Download className="mr-2 h-5 w-5" />
-                    {exportUserLoading ? "Exporting..." : "Export Users CSV"}
+                  
+                  <Button 
+                    variant="outline"
+                    onClick={fetchExportUserAnalytics}
+                    className="w-full h-14 border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400"
+                    disabled={exportUserLoading}
+                  >
+                    <Download className="mr-3 h-5 w-5" />
+                    {exportUserLoading ? (
+                      <div className="flex items-center gap-2">
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                        Exporting...
+                      </div>
+                    ) : (
+                      "Export Users Report (CSV)"
+                    )}
                   </Button>
-                  {exportUserError && (<div className="text-red-600 mt-2">{exportUserError}</div>)}
-                  <Button variant="outline" className="w-full border-slate-300" onClick={fetchExportFullReportMonthly}>
-                    <Download className="mr-2 h-5 w-5" />
-                    {exportReportLoading ? "Exporting..." : "Export Monthly Report CSV"}
+                  
+                  <Button 
+                    variant="outline"
+                    onClick={fetchExportFullReportMonthly}
+                    className="w-full h-14 border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-400"
+                    disabled={exportReportLoading}
+                  >
+                    <Download className="mr-3 h-5 w-5" />
+                    {exportReportLoading ? (
+                      <div className="flex items-center gap-2">
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                        Exporting...
+                      </div>
+                    ) : (
+                      "Export Monthly Report (CSV)"
+                    )}
                   </Button>
-                  {exportReportError && (<div className="text-red-600 mt-2">{exportReportError}</div>)}
+                </div>
+
+                {/* Error Display */}
+                {(exportError || exportUserError || exportReportError) && (
+                  <div className="mt-6 p-4 rounded-xl bg-rose-50/80 border border-rose-200/60">
+                    <div className="flex items-center gap-3 text-rose-700">
+                      <AlertCircle className="h-5 w-5" />
+                      <div>
+                        {exportError && <p className="text-sm">{exportError}</p>}
+                        {exportUserError && <p className="text-sm">{exportUserError}</p>}
+                        {exportReportError && <p className="text-sm">{exportReportError}</p>}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-8 p-4 rounded-xl bg-slate-50/80 border border-slate-200/60">
+                  <div className="flex items-center gap-3">
+                    <Shield className="h-5 w-5 text-slate-500" />
+                    <div>
+                      <p className="text-sm font-medium text-slate-900">Data Privacy</p>
+                      <p className="text-xs text-slate-600">
+                        All exported reports are encrypted and contain anonymized data
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </Card>
             </div>

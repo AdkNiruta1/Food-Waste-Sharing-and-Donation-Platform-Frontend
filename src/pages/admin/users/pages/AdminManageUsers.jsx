@@ -389,7 +389,7 @@ export default function AdminManageUsers() {
                             <div className="p-3 rounded-xl bg-emerald-50/80">
                               <p className="text-xs text-emerald-600 font-semibold">ACTIVITY</p>
                               <p className="font-bold text-slate-900 mt-1">
-                                {user.role === "donor" ? `${user.totalDonations || 0} donations` : `${user.totalRequests || 0} requests`}
+                                {user.role === "donor" ? `${user.donationCount || 0} donations` : `${user.requestCount || 0} requests`}
                               </p>
                             </div>
                             <div className="p-3 rounded-xl bg-amber-50/80">

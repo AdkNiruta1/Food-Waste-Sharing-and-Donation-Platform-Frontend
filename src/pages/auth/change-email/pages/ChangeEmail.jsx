@@ -114,7 +114,7 @@ export default function ChangeEmail() {
               </div>
 
               <h2 className="text-xl font-bold mb-2">
-                {step === "send" ? "Verify Your Email" : "Enter OTP"}
+                {step === "send" ? "Change Your Email" : "Enter OTP"}
               </h2>
 
               <p className="text-sm text-muted-foreground">

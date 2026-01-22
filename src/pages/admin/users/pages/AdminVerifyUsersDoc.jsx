@@ -1,7 +1,7 @@
 import { Button } from "../../../../components/ui/button";
 import { Card } from "../../../../components/ui/card";
 import { useLocation, useNavigate } from "react-router-dom";
-import {  CheckCircle, XCircle, AlertCircle, Star, MapPin, User, Mail, Phone, Shield, Calendar, FileText } from "lucide-react";
+import { CheckCircle, XCircle, AlertCircle, Star, MapPin, User, Mail, Phone, Shield, Calendar, FileText } from "lucide-react";
 import { useState } from "react";
 import { Alert, AlertDescription } from "../../../../components/ui/alert";
 import { Textarea } from "../../../../components/ui/textarea";
@@ -11,17 +11,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../../components
 import { useVerifyUser } from "../hooks/useVerifyUser";
 import { useRejectUser } from "../hooks/useRejectUser";
 import { IMAGE_URL } from "../../../../constants/constants";
+import { useDeleteUser } from "../hooks/useDeleteUser";
 
 export default function AdminVerifyDocuments() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const userData = location.state?.user;
-  console.log("User Data:", userData);
 
   const { verifyUser, loading: verifyLoading } = useVerifyUser();
   const { rejectUser, loading: rejectLoading } = useRejectUser();
-
+  const { deleteUser, loading:deleteLoading } = useDeleteUser();
   const [decision, setDecision] = useState("approve");
   const [rejectionReason, setRejectionReason] = useState("");
   const [step, setStep] = useState("pending");
@@ -35,7 +35,7 @@ export default function AdminVerifyDocuments() {
         <Card className="p-8 rounded-2xl border-slate-200/80 shadow-lg">
           <AlertCircle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
           <p className="text-lg font-medium text-slate-700">No user data provided</p>
-          <Button 
+          <Button
             onClick={() => navigate("/manage-users")}
             className="mt-4 bg-linear-to-r from-emerald-500 to-emerald-600"
           >
@@ -75,8 +75,13 @@ export default function AdminVerifyDocuments() {
     }
   };
 
+  const handleDelete = async (id) => {
+      await deleteUser(id);
+      navigate("/manage-users");
+  };
+
   const getStatusColor = (status) => {
-    switch(status) {
+    switch (status) {
       case "pending": return "bg-amber-100 text-amber-800 border-amber-200";
       case "approved": return "bg-emerald-100 text-emerald-800 border-emerald-200";
       case "rejected": return "bg-rose-100 text-rose-800 border-rose-200";
@@ -85,7 +90,7 @@ export default function AdminVerifyDocuments() {
   };
 
   const getRoleColor = (role) => {
-    switch(role) {
+    switch (role) {
       case "donor": return "bg-blue-100 text-blue-800 border-blue-200";
       case "recipient": return "bg-purple-100 text-purple-800 border-purple-200";
       case "admin": return "bg-slate-100 text-slate-800 border-slate-200";
@@ -108,14 +113,14 @@ export default function AdminVerifyDocuments() {
                   {userData.status === "pending" ? "Document Verification" : "User Details"}
                 </h1>
                 <p className="text-sm text-slate-500 mt-1">
-                  {userData.status === "pending" 
-                    ? "Review and verify user documents" 
+                  {userData.status === "pending"
+                    ? "Review and verify user documents"
                     : "View complete user profile"}
                 </p>
               </div>
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => navigate("/manage-users")}
               className="border-slate-300 hover:border-slate-400"
             >
@@ -135,8 +140,8 @@ export default function AdminVerifyDocuments() {
                 <div className="relative inline-block">
                   <div className="w-28 h-28 rounded-2xl overflow-hidden border-4 border-white shadow-lg mx-auto mb-4">
                     {userData.profilePicture ? (
-                      <img 
-                        src={`${IMAGE_URL}${userData.profilePicture}`} 
+                      <img
+                        src={`${IMAGE_URL}${userData.profilePicture}`}
                         alt={userData.name}
                         className="w-full h-full object-cover"
                       />
@@ -150,23 +155,22 @@ export default function AdminVerifyDocuments() {
                     {userData.status.toUpperCase()}
                   </Badge>
                 </div>
-                
+
                 <h2 className="text-xl font-bold text-slate-900">{userData.name}</h2>
                 <Badge className={`mt-2 ${getRoleColor(userData.role)}`}>
                   {userData.role.toUpperCase()}
                 </Badge>
-                
+
                 {/* Rating Display */}
                 <div className="flex items-center justify-center gap-2 mt-3">
                   <div className="flex items-center gap-1">
                     {[1, 2, 3, 4, 5].map((star) => (
-                      <Star 
+                      <Star
                         key={star}
-                        className={`h-4 w-4 ${
-                          star <= (userData.rating || 0) 
-                            ? "fill-amber-400 text-amber-400" 
+                        className={`h-4 w-4 ${star <= (userData.rating || 0)
+                            ? "fill-amber-400 text-amber-400"
                             : "fill-slate-200 text-slate-200"
-                        }`}
+                          }`}
                       />
                     ))}
                   </div>
@@ -292,8 +296,8 @@ export default function AdminVerifyDocuments() {
                         {userData.status === "pending" ? "Verify Documents" : "User Profile"}
                       </h2>
                       <p className="text-slate-600 mt-2">
-                        {userData.status === "pending" 
-                          ? "Review all submitted documents carefully" 
+                        {userData.status === "pending"
+                          ? "Review all submitted documents carefully"
                           : "View user information and history"}
                       </p>
                     </div>
@@ -310,14 +314,14 @@ export default function AdminVerifyDocuments() {
                   {/* Tabs for Better Organization */}
                   <Tabs defaultValue="documents" value={activeTab} onValueChange={setActiveTab} className="mb-8">
                     <TabsList className="grid w-full grid-cols-2 bg-slate-100/80 p-1 rounded-xl">
-                      <TabsTrigger 
-                        value="documents" 
+                      <TabsTrigger
+                        value="documents"
                         className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
                       >
                         Documents
                       </TabsTrigger>
-                      <TabsTrigger 
-                        value="info" 
+                      <TabsTrigger
+                        value="info"
                         className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
                       >
                         Additional Info
@@ -407,7 +411,7 @@ export default function AdminVerifyDocuments() {
                         <div className="p-5 rounded-xl bg-slate-50/80 border border-slate-200">
                           <h3 className="font-semibold text-slate-900 mb-3">Verification Notes</h3>
                           <p className="text-sm text-slate-600">
-                            Review all documents for authenticity. Check for clear visibility, 
+                            Review all documents for authenticity. Check for clear visibility,
                             valid dates, and matching information with user profile.
                           </p>
                         </div>
@@ -420,11 +424,10 @@ export default function AdminVerifyDocuments() {
                     <form onSubmit={handleSubmit} className="space-y-8 mt-10 pt-8 border-t border-slate-200/80">
                       <div className="grid md:grid-cols-2 gap-6">
                         <label
-                          className={`p-8 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
-                            decision === "approve"
+                          className={`p-8 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${decision === "approve"
                               ? "border-emerald-500 bg-linear-to-br from-emerald-50 to-emerald-100/50 shadow-lg shadow-emerald-500/10"
                               : "border-slate-300 hover:border-slate-400 hover:shadow-md"
-                          }`}
+                            }`}
                         >
                           <input
                             type="radio"
@@ -444,11 +447,10 @@ export default function AdminVerifyDocuments() {
                         </label>
 
                         <label
-                          className={`p-8 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
-                            decision === "reject"
+                          className={`p-8 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${decision === "reject"
                               ? "border-rose-500 bg-linear-to-br from-rose-50 to-rose-100/50 shadow-lg shadow-rose-500/10"
                               : "border-slate-300 hover:border-slate-400 hover:shadow-md"
-                          }`}
+                            }`}
                         >
                           <input
                             type="radio"
@@ -491,11 +493,10 @@ export default function AdminVerifyDocuments() {
                         type="submit"
                         size="lg"
                         disabled={loading || (decision === "reject" && !rejectionReason)}
-                        className={`w-full h-14 rounded-xl font-bold text-lg ${
-                          decision === "approve"
+                        className={`w-full h-14 rounded-xl font-bold text-lg ${decision === "approve"
                             ? "bg-linear-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/20"
                             : "bg-linear-to-br from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 shadow-lg shadow-rose-500/20"
-                        }`}
+                          }`}
                       >
                         {loading ? (
                           <div className="flex items-center gap-2">
@@ -517,11 +518,10 @@ export default function AdminVerifyDocuments() {
                       <div className="p-6 rounded-2xl bg-slate-50/80">
                         <h3 className="font-bold text-lg text-slate-900 mb-4">Account Status</h3>
                         <div className="flex items-center gap-3">
-                          <div className={`p-3 rounded-lg ${
-                            userData.status === "approved" 
-                              ? "bg-emerald-100" 
+                          <div className={`p-3 rounded-lg ${userData.status === "approved"
+                              ? "bg-emerald-100"
                               : "bg-rose-100"
-                          }`}>
+                            }`}>
                             {userData.status === "approved" ? (
                               <CheckCircle className="h-6 w-6 text-emerald-600" />
                             ) : (
@@ -533,7 +533,7 @@ export default function AdminVerifyDocuments() {
                               {userData.status === "approved" ? "Account Approved" : "Account Rejected"}
                             </p>
                             <p className="text-sm text-slate-600">
-                              {userData.status === "approved" 
+                              {userData.status === "approved"
                                 ? "This account has been verified and is active."
                                 : `Reason: ${userData.rejectionReason || "Not specified"}`}
                             </p>
@@ -541,6 +541,10 @@ export default function AdminVerifyDocuments() {
                         </div>
                       </div>
                     </div>
+                  )}
+                  {(userData?.status === 'approved') && (
+                    <Button size="lg" className="w-full h-14 mt-5 rounded-xl font-bold text-lg bg-red-500 hover:bg-red-600 shadow-lg shadow-rose-500/20"
+                    onClick={() => handleDelete(userData.id)}>{deleteLoading ? "Deleting..." : "Delete User" }</Button>
                   )}
                 </>
               )}
