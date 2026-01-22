@@ -7,15 +7,12 @@ import {
   Package,
   TrendingUp,
   Download,
-  Lock,
-  Unlock,
   Star,
   BarChart3,
   PieChart as PieChartIcon,
   Activity,
   FileText,
   Calendar,
-  ArrowUpRight,
   Eye,
   CheckCircle,
   Clock,
@@ -49,6 +46,7 @@ import { useGetFoodPost } from "../hooks/useGetFoodPost";
 import { useGetDonationOverTime } from "../hooks/useGetDonationOverTime";
 import { useGetFoodTypeDistrubution } from "../hooks/useGetFoodTypeDistrubution";
 import { useGetRequestOverView } from "../hooks/useGetRequestOverView";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -136,7 +134,7 @@ export default function AdminDashboard() {
       };
     });
   };
-
+  const navigate = useNavigate();
   const chartData = normalizeDonationData(donationPost);
 
   const generateCSV = () => {
@@ -480,7 +478,8 @@ export default function AdminDashboard() {
                         <p className="text-sm text-slate-500">Latest donations</p>
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900">
+                    <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900"
+                    onClick={() => navigate("manage-posts")}>
                       View All
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
@@ -561,7 +560,8 @@ export default function AdminDashboard() {
                         <p className="text-sm text-slate-500">Latest registrations</p>
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900">
+                    <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900"
+                    onClick={() => navigate("manage-users")}>
                       View All
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>

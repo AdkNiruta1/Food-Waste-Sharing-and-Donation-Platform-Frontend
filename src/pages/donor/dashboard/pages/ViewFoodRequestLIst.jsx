@@ -246,14 +246,14 @@ function DetailRow({ label, value, icon, className = "" }) {
 export default function ViewFoodRequestList() {
   const { foodId } = useParams();
   const navigate = useNavigate();
-  const { foods, loading, error, FoodDonationDeatils } = useGetFoodDetails();
+  const { foods, loading, error, FoodDonationDetails } = useGetFoodDetails();
   const { loading: acceptLoading, error: acceptError, acceptRequest } = useAcceptRequestStatus();
   const { loading: rejectLoading, error: rejectError, rejectRequest } = useRejectRequestStatus();
 
   const [selectedRequest, setSelectedRequest] = useState(null);
 
   useEffect(() => {
-    FoodDonationDeatils(foodId);
+    FoodDonationDetails(foodId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [foodId]);
 

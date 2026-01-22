@@ -21,11 +21,11 @@ export default function DonorFoodDetail() {
   const { foodId } = useParams();
   const navigate = useNavigate();
 
-  const { foods: post, loading, FoodDonationDeatils } =
+  const { foods: post, loading, FoodDonationDetails } =
     useGetFoodDetails();
 
   useEffect(() => {
-    FoodDonationDeatils(foodId);
+    FoodDonationDetails(foodId);
   }, [foodId]);
 
   if (loading) {

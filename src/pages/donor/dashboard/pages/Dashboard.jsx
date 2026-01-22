@@ -21,12 +21,14 @@ import { useGetActiveDonation } from "../hooks/useGetActiveDonation";
 
 import { IMAGE_URL } from "../../../../constants/constants";
 import { useCompletePickup } from "../hooks/useCompletedPickUp";
+import { useGetDonorStats } from "../hooks/useGetDonorStats";
 export default function DonorDashboard() {
   const [activeTab, setActiveTab] = useState("posts");
   const { foods, loading, fetchMyFoodDonation } = useGetMyFood();
 
   const { deleteMyDonation, loading: deleteLoading } = useDeleteMyDonation();
   const { foods: activeFoods, loading: activeLoading, error: activeError, fetchMyFoodDonation: fetchMyActiveFoodDonation } = useGetActiveDonation();
+  const {error, foods: statsFoods,fetchDonorStats,loading:statsLoading} = useGetDonorStats();
   const { completePickup } = useCompletePickup();
   const [loadingMap, setLoadingMap] = useState({});
   const [errorMap, setErrorMap] = useState({});
@@ -34,6 +36,7 @@ export default function DonorDashboard() {
   // Fetch donations on mount
   useEffect(() => {
     fetchMyFoodDonation();
+    fetchDonorStats();
     fetchMyActiveFoodDonation();
   }, []);
 
@@ -70,36 +73,37 @@ export default function DonorDashboard() {
   // Filter posts donated by current user (mock)
   const donorPosts = foods;
 
-  const stats = [
-    {
-      label: "Total Donations",
-      value: donorPosts.length.toString(),
-      change: "+2 this month",
-      icon: <Package className="h-6 w-6" />,
-      color: "text-green-600",
-    },
-    {
-      label: "Total Requests",
-      value: donorPosts.reduce((sum, p) => sum + p.length, 0).toString(),
-      change: "+1 pending",
-      icon: <MessageSquare className="h-6 w-6" />,
-      color: "text-orange-600",
-    },
-    {
-      label: "Completed",
-      value: donorPosts.reduce((sum, p) => sum + (p.status === "completed" ? 1 : 0), 0).toString(),
-      change: "87.5% success rate",
-      icon: <CheckCircle className="h-6 w-6" />,
-      color: "text-green-600",
-    },
-    {
-      label: "Rating",
-      value: "4.8",
-      change: "Excellent donor",
-      icon: <TrendingUp className="h-6 w-6" />,
-      color: "text-yellow-600",
-    },
-  ];
+const stats = [
+  {
+    label: "Total Donations",
+    value: statsLoading ? "—" : statsFoods?.totalDonations,
+    change: "Lifetime contributions",
+    icon: <Package className="h-6 w-6" />,
+    color: "text-green-600",
+  },
+  {
+    label: "Total Requests",
+    value: statsLoading ? "—" : statsFoods?.totalRequests,
+    change: "Requests received",
+    icon: <MessageSquare className="h-6 w-6" />,
+    color: "text-orange-600",
+  },
+  {
+    label: "Completed",
+    value: statsLoading ? "—" : statsFoods?.totalCompletedDonations,
+    change: "Successfully delivered",
+    icon: <CheckCircle className="h-6 w-6" />,
+    color: "text-green-600",
+  },
+  {
+    label: "Rating",
+    value: statsLoading ? "—" : statsFoods?.avgRating,
+    change: "Community feedback",
+    icon: <TrendingUp className="h-6 w-6" />,
+    color: "text-yellow-600",
+  },
+];
+
 
   return (
     loading ? <div>Loading...</div> :
@@ -128,6 +132,7 @@ export default function DonorDashboard() {
 
         {/* Stats Grid */}
         <div className="container mx-auto max-w-6xl px-4 py-8">
+          {error && <div className="text-red-500">{error}</div>}
           <div className="grid md:grid-cols-4 gap-6 mb-10">
             {stats.map((stat, index) => (
               <Card key={index} className="p-6 border-slate-200">

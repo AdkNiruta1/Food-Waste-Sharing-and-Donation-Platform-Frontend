@@ -37,7 +37,7 @@ export default function EditFood() {
   const { foodId } = useParams();
   const navigate = useNavigate();
 
-  const { foods: post, FoodDonationDeatils, loading } = useGetFoodDetails();
+  const { foods: post, FoodDonationDetails, loading } = useGetFoodDetails();
   const { updatePost, updating } = useUpdatePost();
 
   const [formData, setFormData] = useState({
@@ -57,7 +57,7 @@ export default function EditFood() {
 
   /* Fetch food */
   useEffect(() => {
-    FoodDonationDeatils(foodId);
+    FoodDonationDetails(foodId);
   }, [foodId]);
 
   /* Populate form */
@@ -292,6 +292,7 @@ export default function EditFood() {
                 type="file"
                 accept="image/*"
                 onChange={(e) => handleFileChange(e.target.files[0])}
+                className="cursor-pointer"
               />
             </section>
 

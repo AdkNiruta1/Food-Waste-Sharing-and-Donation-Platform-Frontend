@@ -22,13 +22,13 @@ import { useRequestFood } from "../hooks/useRequestFood";
 export default function FoodDetail() {
   const { foodId } = useParams();
   const navigate = useNavigate();
-  const { foods: post, loading, FoodDonationDeatils } = useGetFoodDetails();
+  const { foods: post, loading, FoodDonationDetails } = useGetFoodDetails();
   const { error, loading: loadingRequest, requestFood } = useRequestFood();
 
   const { user: currentUser } = useAuth();
 
   useEffect(() => {
-    FoodDonationDeatils(foodId);
+    FoodDonationDetails(foodId);
   }, [foodId]);
   const requests = post?.requests || [];
   const requestCount = requests.length;
