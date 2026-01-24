@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Header } from "../../../../components/Header";
 import { Button } from "../../../../components/ui/button";
 import { Card } from "../../../../components/ui/card";
+import { Badge } from "../../../../components/ui/badge";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Plus,
@@ -13,22 +14,40 @@ import {
   Trash2,
   MessageSquare,
   User,
+  ArrowRight,
+  Eye,
+  MapPin,
+  Calendar,
+  Users,
+  Award,
+  Heart,
+  RefreshCw,
+  ChevronRight,
+  BarChart3,
+  Truck,
+  Bell,
+  Download,
+  Share2,
+  Filter,
+  Search,
+  X,
+  AlertCircle,
+  Sparkles
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../../components/ui/tabs";
 import { useGetMyFood } from "../hooks/useGetMyDonation";
 import { useDeleteMyDonation } from "../hooks/useDeleteMyDonation";
 import { useGetActiveDonation } from "../hooks/useGetActiveDonation";
-
-
 import { IMAGE_URL } from "../../../../constants/constants";
 import { useCompletePickup } from "../hooks/useCompletedPickUp";
 import { useGetDonorStats } from "../hooks/useGetDonorStats";
+
 export default function DonorDashboard() {
   const [activeTab, setActiveTab] = useState("posts");
   const { foods, loading, fetchMyFoodDonation } = useGetMyFood();
-
   const { deleteMyDonation, loading: deleteLoading } = useDeleteMyDonation();
   const { foods: activeFoods, loading: activeLoading, error: activeError, fetchMyFoodDonation: fetchMyActiveFoodDonation } = useGetActiveDonation();
-  const {error, foods: statsFoods,fetchDonorStats,loading:statsLoading} = useGetDonorStats();
+  const { error, foods: statsFoods, fetchDonorStats, loading: statsLoading } = useGetDonorStats();
   const { completePickup } = useCompletePickup();
   const [loadingMap, setLoadingMap] = useState({});
   const [errorMap, setErrorMap] = useState({});
@@ -50,6 +69,7 @@ export default function DonorDashboard() {
       }
     }
   };
+
   const handleCompletePickup = async ({ requestId }) => {
     try {
       setLoadingMap(prev => ({ ...prev, [requestId]: true }));
@@ -70,58 +90,111 @@ export default function DonorDashboard() {
 
   const navigate = useNavigate();
 
-  // Filter posts donated by current user (mock)
   const donorPosts = foods;
 
-const stats = [
-  {
-    label: "Total Donations",
-    value: statsLoading ? "—" : statsFoods?.totalDonations,
-    change: "Lifetime contributions",
-    icon: <Package className="h-6 w-6" />,
-    color: "text-green-600",
-  },
-  {
-    label: "Total Requests",
-    value: statsLoading ? "—" : statsFoods?.totalRequests,
-    change: "Requests received",
-    icon: <MessageSquare className="h-6 w-6" />,
-    color: "text-orange-600",
-  },
-  {
-    label: "Completed",
-    value: statsLoading ? "—" : statsFoods?.totalCompletedDonations,
-    change: "Successfully delivered",
-    icon: <CheckCircle className="h-6 w-6" />,
-    color: "text-green-600",
-  },
-  {
-    label: "Rating",
-    value: statsLoading ? "—" : statsFoods?.avgRating,
-    change: "Community feedback",
-    icon: <TrendingUp className="h-6 w-6" />,
-    color: "text-yellow-600",
-  },
-];
+  const stats = [
+    {
+      label: "Total Donations",
+      value: statsLoading ? "—" : statsFoods?.totalDonations || 0,
+      change: "Lifetime contributions",
+      icon: <Package className="h-6 w-6" />,
+      color: "bg-gradient-to-r from-emerald-500 to-emerald-600",
+      bgColor: "from-emerald-50 to-emerald-100/50",
+      borderColor: "border-emerald-200/60"
+    },
+    {
+      label: "Total Requests",
+      value: statsLoading ? "—" : statsFoods?.totalRequests || 0,
+      change: "Requests received",
+      icon: <MessageSquare className="h-6 w-6" />,
+      color: "bg-gradient-to-r from-blue-500 to-blue-600",
+      bgColor: "from-blue-50 to-blue-100/50",
+      borderColor: "border-blue-200/60"
+    },
+    {
+      label: "Completed",
+      value: statsLoading ? "—" : statsFoods?.totalCompletedDonations || 0,
+      change: "Successfully delivered",
+      icon: <CheckCircle className="h-6 w-6" />,
+      color: "bg-gradient-to-r from-purple-500 to-purple-600",
+      bgColor: "from-purple-50 to-purple-100/50",
+      borderColor: "border-purple-200/60"
+    },
+    {
+      label: "Avg Rating",
+      value: statsLoading ? "—" : statsFoods?.avgRating?.toFixed(1) || "0.0",
+      change: "Community feedback",
+      icon: <Award className="h-6 w-6" />,
+      color: "bg-gradient-to-r from-amber-500 to-amber-600",
+      bgColor: "from-amber-50 to-amber-100/50",
+      borderColor: "border-amber-200/60"
+    }
+  ];
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'available': return 'bg-gradient-to-r from-emerald-500 to-emerald-600';
+      case 'accepted': return 'bg-gradient-to-r from-blue-500 to-blue-600';
+      case 'completed': return 'bg-gradient-to-r from-purple-500 to-purple-600';
+      case 'expired': return 'bg-gradient-to-r from-rose-500 to-rose-600';
+      default: return 'bg-gradient-to-r from-slate-500 to-slate-600';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'available': return <Package className="h-4 w-4" />;
+      case 'accepted': return <Clock className="h-4 w-4" />;
+      case 'completed': return <CheckCircle className="h-4 w-4" />;
+      case 'expired': return <X className="h-4 w-4" />;
+      default: return <Package className="h-4 w-4" />;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-white">
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-emerald-200 border-t-emerald-500 mb-4"></div>
+        <p className="text-lg font-medium text-slate-600">Loading dashboard...</p>
+        <p className="text-sm text-slate-500 mt-2">Preparing your donor insights</p>
+      </div>
+    );
+  }
 
   return (
-    loading ? <div>Loading...</div> :
-      <div className="min-h-screen flex flex-col bg-white">
-        {/* Header Section */}
-        <div className="border-b border-slate-200 bg-slate-50">
-          <div className="container mx-auto max-w-6xl px-4 py-10">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-emerald-50/80 to-emerald-100/30 border-b border-emerald-200/60">
+        <div className="container mx-auto max-w-7xl px-4 py-10">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="flex items-center gap-5">
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/20">
+                <Package className="h-8 w-8 text-white" />
+              </div>
               <div>
-                <h1 className="text-4xl font-bold text-slate-900 mb-2">
+                <h1 className="text-4xl font-bold text-slate-900">
                   Donor Dashboard
                 </h1>
-                <p className="text-lg text-slate-600">
+                <p className="text-lg text-slate-600 mt-2">
                   Manage your food donations and track your impact
                 </p>
               </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  fetchMyFoodDonation();
+                  fetchDonorStats();
+                  fetchMyActiveFoodDonation();
+                }}
+                className="border-slate-300 hover:border-slate-400"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Refresh
+              </Button>
               <Link to="/create-food">
-                <Button size="lg" className="bg-green-600 hover:bg-green-700">
+                <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/20">
                   <Plus className="mr-2 h-5 w-5" />
                   Post New Donation
                 </Button>
@@ -129,289 +202,446 @@ const stats = [
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Stats Grid */}
-        <div className="container mx-auto max-w-6xl px-4 py-8">
-          {error && <div className="text-red-500">{error}</div>}
-          <div className="grid md:grid-cols-4 gap-6 mb-10">
-            {stats.map((stat, index) => (
-              <Card key={index} className="p-6 border-slate-200">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <p className="text-sm text-slate-600 mb-1">
-                      {stat.label}
-                    </p>
-                    <p className="text-3xl font-bold text-slate-900">
-                      {stat.value}
-                    </p>
-                  </div>
-                  <div className={`${stat.color} opacity-80`}>{stat.icon}</div>
+      {/* Stats Grid */}
+      <div className="container mx-auto max-w-7xl px-4 py-8">
+        {error && (
+          <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-rose-50 to-rose-100/50 border border-rose-200/60">
+            <div className="flex items-center gap-2 text-rose-700">
+              <AlertCircle className="h-5 w-5" />
+              {error}
+            </div>
+          </div>
+        )}
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          {stats.map((stat, index) => (
+            <Card
+              key={index}
+              className={`p-6 rounded-2xl border ${stat.borderColor} bg-gradient-to-br ${stat.bgColor} hover:shadow-lg transition-all duration-300 hover:-translate-y-1`}
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">
+                    {stat.label}
+                  </p>
+                  <p className="text-3xl font-bold text-slate-900">
+                    {stat.value}
+                  </p>
                 </div>
-                <p className="text-xs text-slate-600">{stat.change}</p>
-              </Card>
-            ))}
+                <div className={`p-3 rounded-xl ${stat.color} text-white shadow-lg`}>
+                  {stat.icon}
+                </div>
+              </div>
+              <p className="text-xs text-slate-600">{stat.change}</p>
+            </Card>
+          ))}
+        </div>
+
+        {/* Main Content */}
+        <Tabs defaultValue="posts" value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="flex items-center justify-between mb-8">
+            <TabsList className="bg-slate-100/80 backdrop-blur-sm rounded-2xl p-1">
+              <TabsTrigger
+                value="posts"
+                className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-slate-200/60 px-6"
+              >
+                <Package className="mr-2 h-4 w-4" />
+                My Donations ({donorPosts.length})
+              </TabsTrigger>
+              <TabsTrigger
+                value="requests"
+                className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-slate-200/60 px-6"
+              >
+                <Bell className="mr-2 h-4 w-4" />
+                Active Requests ({activeFoods.length})
+              </TabsTrigger>
+            </TabsList>
+
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <input
+                  type="search"
+                  placeholder="Search..."
+                  className="pl-10 pr-4 py-2 rounded-xl border border-slate-300/80 bg-white/90 backdrop-blur-sm text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/20 focus:border-emerald-400"
+                />
+              </div>
+              <Button variant="outline" size="sm" className="border-slate-300">
+                <Filter className="mr-2 h-4 w-4" />
+                Filter
+              </Button>
+            </div>
           </div>
 
-          {/* Tabs */}
-          <div className="space-y-8">
-            <div className="flex gap-8 border-b border-slate-200 overflow-x-auto">
-              <button
-                onClick={() => setActiveTab("posts")}
-                className={`pb-4 px-2 font-medium text-lg transition-colors border-b-2 whitespace-nowrap ${activeTab === "posts"
-                  ? "text-green-600 border-green-600"
-                  : "text-slate-600 hover:text-slate-900 border-transparent"
-                  }`}
-              >
-                My Donations ({donorPosts.length})
-              </button>
-              <button
-                onClick={() => setActiveTab("requests")}
-                className={`pb-4 px-2 font-medium text-lg transition-colors border-b-2 whitespace-nowrap ${activeTab === "requests"
-                  ? "text-green-600 border-green-600"
-                  : "text-slate-600 hover:text-slate-900 border-transparent"
-                  }`}
-              >
-                Active Requests ({activeFoods.length})
-              </button>
-            </div>
-
-            {/* My Donations Tab */}
-            {activeTab === "posts" && (
-              <div className="space-y-6">
-                {donorPosts.length === 0 ? (
-                  <Card className="p-16 text-center border-slate-200">
-                    <Package className="h-16 w-16 text-slate-400 mx-auto mb-6" />
-                    <h3 className="text-2xl font-bold text-slate-900 mb-3">
-                      No donations yet
-                    </h3>
-                    <p className="text-slate-600 mb-8 max-w-md mx-auto">
-                      Start sharing your surplus food and make a difference in your community.
-                    </p>
-                    <Link to="/create-food">
-                      <Button size="lg" className="bg-green-600 hover:bg-green-700">
-                        <Plus className="mr-2 h-5 w-5" />
-                        Post Your First Donation
-                      </Button>
-                    </Link>
-                  </Card>
-                ) : (
-                  donorPosts.map((post) => (
-                    <Card
-                      key={post.id}
-                      className="p-6 border-slate-200 hover:shadow-lg transition-shadow"
-                    >
-                      <div className="grid lg:grid-cols-4 gap-6 items-start">
-                        {/* Image */}
-                        <div className="lg:col-span-1">
-                          <img
-                            src={IMAGE_URL + post.photo || "https://via.placeholder.com/300x200?text=No+Image"}
-                            alt={post.title}
-                            className="w-full h-48 object-cover rounded-lg"
-                          />
+          {/* My Donations Tab */}
+          <TabsContent value="posts" className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+            {donorPosts.length === 0 ? (
+              <Card className="p-16 text-center border-slate-200/80 rounded-2xl bg-gradient-to-br from-slate-50 to-white">
+                <div className="p-6 rounded-2xl bg-slate-100/80 inline-flex mb-6">
+                  <Package className="h-20 w-20 text-slate-400" />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-4">
+                  No donations yet
+                </h3>
+                <p className="text-slate-600 mb-8 max-w-md mx-auto">
+                  Start sharing your surplus food and make a meaningful impact in your community.
+                  Your generosity can feed someone in need today.
+                </p>
+                <Link to="/create-food">
+                  <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/20">
+                    <Plus className="mr-2 h-5 w-5" />
+                    Post Your First Donation
+                  </Button>
+                </Link>
+              </Card>
+            ) : (
+              donorPosts.map((post) => (
+                <Card
+                  key={post._id}
+                  className="p-6 rounded-2xl border-slate-200/80 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/90 backdrop-blur-sm group"
+                >
+                  <div className="grid lg:grid-cols-4 gap-6 items-start">
+                    {/* Image */}
+                    <div className="lg:col-span-1">
+                      <div className="relative rounded-2xl overflow-hidden border border-slate-200 group-hover:border-emerald-200 transition-colors">
+                        <img
+                          src={IMAGE_URL + (post.photo || "default-food.jpg")}
+                          alt={post.title}
+                          className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute top-3 left-3">
+                          <Badge className={`${getStatusColor(post.status)} text-white shadow-lg`}>
+                            {getStatusIcon(post.status)}
+                            <span className="ml-1">{post.status?.charAt(0).toUpperCase() + post.status?.slice(1)}</span>
+                          </Badge>
                         </div>
+                        <div className="absolute bottom-3 right-3">
+                          <Badge className="bg-white/90 backdrop-blur-sm text-slate-800 border border-slate-200/60">
+                            {post.quantity} {post.unit}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
 
-                        {/* Details */}
-                        <div className="lg:col-span-2 space-y-4">
-                          <div>
-                            <Link
-                              to={`/food/${post.id}`}
-                              className="text-2xl font-bold text-slate-900 hover:text-green-600 transition-colors"
+                    {/* Details */}
+                    <div className="lg:col-span-2 space-y-5">
+                      <div>
+                        <h3 className="text-2xl font-bold text-slate-900 hover:text-emerald-600 transition-colors">
+                          {post.title}
+                        </h3>
+                        <p className="text-slate-600 mt-2 line-clamp-2">
+                          {post.description}
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="p-3 rounded-xl bg-gradient-to-br from-slate-50/80 to-white border border-slate-200/60">
+                          <p className="text-xs text-slate-500 mb-1">Quantity</p>
+                          <p className="font-bold text-slate-900">
+                            {post.quantity} {post.unit}
+                          </p>
+                        </div>
+                        <div className="p-3 rounded-xl bg-gradient-to-br from-slate-50/80 to-white border border-slate-200/60">
+                          <p className="text-xs text-slate-500 mb-1">Expires</p>
+                          <p className="font-bold text-slate-900 flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {new Date(post.expiryDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="p-3 rounded-xl bg-gradient-to-br from-slate-50/80 to-white border border-slate-200/60">
+                          <p className="text-xs text-slate-500 mb-1">Location</p>
+                          <p className="font-bold text-slate-900 flex items-center gap-1">
+                            <MapPin className="h-4 w-4" />
+                            {post.city || "Not specified"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Pending Requests Badge */}
+                      {post.requests && post.requests.length > 0 && (
+                        <div className="p-4 rounded-xl bg-gradient-to-r from-amber-50 to-amber-100/50 border border-amber-200/60">
+                          <div className="flex items-center gap-2">
+                            <Bell className="h-5 w-5 text-amber-600" />
+                            <p className="text-sm font-medium text-amber-700">
+                              {post.requests.length} pending request{post.requests.length > 1 ? "s" : ""}
+                            </p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="ml-auto text-amber-600 hover:bg-amber-100"
+                              onClick={() => navigate(`/food/${post._id}`)}
                             >
-                              {post.title}
-                            </Link>
-                            <p className="text-slate-600 mt-2 line-clamp-2">
-                              {post.description}
+                              View Requests
+                              <ChevronRight className="ml-1 h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="lg:col-span-1 space-y-3">
+                      <Button
+                        variant="outline"
+                        onClick={() => navigate(`/food-details/${post._id}`)}
+                        className="w-full border-emerald-300 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-400 transition-all"
+                      >
+                        <Eye className="mr-2 h-4 w-4" />
+                        View Details
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        onClick={() => window.location.href = `/update-food/${post._id}`}
+                        className="w-full border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400 transition-all"
+                      >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit Post
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        onClick={() => handleDeleteDonation(post._id)}
+                        disabled={deleteLoading}
+                        className="w-full border-rose-300 text-rose-700 hover:bg-rose-50 hover:border-rose-400 transition-all"
+                      >
+                        {deleteLoading ? (
+                          <>
+                            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                            Deleting...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Post
+                          </>
+                        )}
+                      </Button>
+
+                      {/* <Button
+                        variant="ghost"
+                        className="w-full text-slate-600 hover:text-emerald-600 hover:bg-slate-50"
+                        onClick={() => navigate(`/donation/${post._id}`)}
+                      >
+                        <Share2 className="mr-2 h-4 w-4" />
+                        Share
+                      </Button> */}
+                    </div>
+                  </div>
+                </Card>
+              ))
+            )}
+          </TabsContent>
+
+          {/* Active Requests Tab */}
+          <TabsContent value="requests" className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+            {/* Loading */}
+            {activeLoading && (
+              <div className="text-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-200 border-t-emerald-500 mx-auto mb-4"></div>
+                <p className="text-slate-600">Loading active requests...</p>
+              </div>
+            )}
+
+            {/* Error */}
+            {activeError && (
+              <Card className="p-8 rounded-2xl border-rose-200/60 bg-gradient-to-r from-rose-50 to-rose-100/50">
+                <div className="flex items-center gap-3 mb-4">
+                  <AlertCircle className="h-6 w-6 text-rose-500" />
+                  <h3 className="text-lg font-bold text-slate-900">Error Loading Requests</h3>
+                </div>
+                <p className="text-slate-600">{activeError}</p>
+                <Button
+                  onClick={fetchMyActiveFoodDonation}
+                  className="mt-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Try Again
+                </Button>
+              </Card>
+            )}
+
+            {/* Empty State */}
+            {!activeLoading && activeFoods.length === 0 ? (
+              <Card className="p-16 text-center border-slate-200/80 rounded-2xl bg-gradient-to-br from-slate-50 to-white">
+                <div className="p-6 rounded-2xl bg-blue-100/80 inline-flex mb-6">
+                  <MessageSquare className="h-20 w-20 text-blue-400" />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-4">
+                  No active requests
+                </h3>
+                <p className="text-slate-600 mb-8 max-w-md mx-auto">
+                  Accepted food requests will appear here until pickup is completed.
+                  Share more donations to receive requests!
+                </p>
+                <Link to="/create-food">
+                  <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/20">
+                    <Plus className="mr-2 h-5 w-5" />
+                    Post New Donation
+                  </Button>
+                </Link>
+              </Card>
+            ) : (
+              activeFoods.map((post) => {
+                const isLoading = loadingMap[post._id] || false;
+                const error = errorMap[post._id] || null;
+                return (
+                  <Card
+                    key={post._id}
+                    className="p-6 rounded-2xl border-slate-200/80 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/90 backdrop-blur-sm group"
+                  >
+                    <div className="grid lg:grid-cols-5 gap-6 items-center">
+                      {/* Food Info */}
+                      <div className="lg:col-span-2">
+                        <div className="flex items-start gap-4">
+                          <div className="w-20 h-20 rounded-xl overflow-hidden border border-slate-200/60">
+                            <img
+                              src={IMAGE_URL + (post?.foodPost?.photo || "default-food.jpg")}
+                              alt={post?.foodPost?.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div>
+                            <p className="text-sm text-slate-500 mb-1">Donation</p>
+                            <h3 className="font-bold text-lg text-slate-900 mb-2">
+                              {post?.foodPost?.title}
+                            </h3>
+                            <Badge className="bg-gradient-to-r from-emerald-100 to-emerald-200 text-emerald-800 border-0">
+                              {post?.foodPost?.quantity} {post?.foodPost?.unit}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Receiver Info */}
+                      <div className="lg:col-span-1">
+                        <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-slate-50/80 to-white border border-slate-200/60">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-100 to-blue-200 flex items-center justify-center">
+                            <User className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-500">Requested by</p>
+                            <p className="font-semibold text-slate-900">
+                              {post?.receiver?.name}
                             </p>
                           </div>
+                        </div>
+                      </div>
 
-                          <div className="grid grid-cols-3 gap-4 text-sm">
-                            <div>
-                              <p className="text-slate-500">Quantity</p>
-                              <p className="font-semibold text-slate-900">
-                                {post.quantity} {post.unit}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-slate-500">Best Before</p>
-                              <p className="font-semibold text-slate-900">
-                                {new Date(post.expiryDate).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-slate-500">Status</p>
-                              <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${post.status === "available"
-                                ? "bg-green-100 text-green-700"
-                                : post.status === "completed"
-                                  ? "bg-blue-100 text-blue-700"
-                                  : "bg-orange-100 text-orange-700"
-                                }`}>
-                                {post.status.charAt(0).toUpperCase() + post.status.slice(1)}
+                      {/* Pickup Info */}
+                      <div className="lg:col-span-1">
+                        <div className="space-y-3">
+                          <div className="p-3 rounded-xl bg-gradient-to-r from-blue-50 to-blue-100/50 border border-blue-200/60">
+                            <p className="text-xs text-slate-500 mb-1">Status</p>
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-blue-600" />
+                              <span className="text-sm font-medium text-blue-700">
+                                Waiting for Pickup
                               </span>
                             </div>
                           </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="lg:col-span-1 space-y-3">
-                          <Link to={`/food-details/${post._id}`} className="block">
-                            <Button variant="outline" className="w-full border-slate-300">
-                              View Details
-                            </Button>
-                          </Link>
-                          <Button variant="outline" className="w-full border-slate-300"
-                            onClick={() => window.location.href = `/update-food/${post._id}`}
-                          >
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit Post
-                          </Button>
-                          <Button variant="outline" className="w-full text-red-600 hover:bg-red-50"
-                            onClick={() => handleDeleteDonation(post._id)}
-                            disabled={deleteLoading}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            {deleteLoading ? "Deleting..." : "Delete Post"}
-                          </Button>
-
-                          {post.length > 0 && (
-                            <div className="bg-orange-100 text-orange-700 rounded-lg p-3 text-center">
-                              <p className="text-sm font-semibold">
-                                {post.requests.length} pending request{post.requests.length > 1 ? "s" : ""}
-                              </p>
+                          {post?.foodPost?.city && (
+                            <div className="flex items-center gap-2 text-sm text-slate-600">
+                              <MapPin className="h-4 w-4" />
+                              {post.foodPost.city}, {post.foodPost.district}
                             </div>
                           )}
                         </div>
                       </div>
-                    </Card>
-                  ))
-                )}
-              </div>
-            )}
 
-            {/* Analytics Tab */}
-            {activeTab === "requests" && (
-              <div className="space-y-6">
-                {/* Loading */}
-                {activeLoading && (
-                  <p className="text-center mt-20 text-slate-600">Loading...</p>
-                )}
+                      {/* Actions */}
+                      <div className="lg:col-span-1 space-y-3">
+                        <Button
+                          variant="outline"
+                          onClick={() => navigate(`/donor/food/active/details/${post._id}`)}
+                          className="w-full border-slate-300 hover:border-slate-400 transition-all"
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Details
+                        </Button>
 
-                {/* Error */}
-                {activeError && (
-                  <p className="text-center mt-20 text-red-600">{activeError}</p>
-                )}
-
-                {/* Empty State */}
-                {!activeLoading && activeFoods.length === 0 ? (
-                  <Card className="p-16 text-center border-slate-200">
-                    <MessageSquare className="h-16 w-16 text-slate-400 mx-auto mb-6" />
-                    <h3 className="text-2xl font-bold text-slate-900 mb-3">
-                      No accepted requests
-                    </h3>
-                    <p className="text-slate-600">
-                      Accepted food requests will appear here until pickup is completed.
-                    </p>
-                  </Card>
-                ) : (
-                  activeFoods.map((post) => {
-                    const isLoading = loadingMap[post._id] || false;
-                    const error = errorMap[post._id] || null;
-                    return (
-                      <Card
-                        key={post._id}
-                        className="p-6 border-slate-200 hover:shadow-lg transition-shadow"
-                      >
-                        <div className="grid lg:grid-cols-4 gap-6 items-center">
-                          {/* ================= Food Info ================= */}
-                          <div>
-                            <p className="text-sm text-slate-500 mb-1">Donation</p>
-                            <h3 className="font-bold text-lg text-slate-900">
-                              {post?.foodPost?.title}
-                            </h3>
-                            <p className="text-sm text-slate-600 mt-1">
-                              {post?.foodPost?.quantity} {post?.foodPost?.unit}
-                            </p>
-
-                            {post?.foodPost?.expiryDate && (
-                              <p className="text-xs text-slate-500 mt-1">
-                                Expires on{" "}
-                                {new Date(post.foodPost.expiryDate).toLocaleDateString()}
-                              </p>
-                            )}
-                          </div>
-
-                          {/* ================= Receiver Info ================= */}
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                              <User className="h-7 w-7 text-green-600" />
-                            </div>
-                            <div>
-                              <p className="text-sm text-slate-500">Requested by</p>
-                              <p className="font-semibold text-slate-900">
-                                {post?.receiver?.name}
-                              </p>
-
-                              {post?.receiver?.phone && (
-                                <p className="text-sm text-slate-600">
-                                  📞 {post.receiver.phone}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* ================= Pickup & Status ================= */}
-                          <div>
-                            <p className="text-sm text-slate-500 mb-2">Status</p>
-                            <span className="inline-block px-4 py-2 rounded-full text-sm font-semibold bg-green-100 text-green-700">
-                              Accepted – Waiting for Pickup
-                            </span>
-
-                            {post?.foodPost?.city && (
-                              <p className="text-sm text-slate-600 mt-3">
-                                📍 {post.foodPost.city}, {post.foodPost.district}
-                              </p>
-                            )}
-
-                            {post?.foodPost?.pickupInstructions && (
-                              <p className="text-xs text-slate-500 mt-1">
-                                {post.foodPost.pickupInstructions}
-                              </p>
-                            )}
-                          </div>
-
-                          {/* ================= Actions ================= */}
-                          <div className="space-y-3">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="w-full border-slate-300"
-                              onClick={() => navigate(`/donor/food/active/details/${post._id}`)}
-                            >
-                              <MessageSquare className="mr-2 h-4 w-4" />
-                              View Details
-                            </Button>
-
-                            <Button
-                              size="sm"
-                              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                              onClick={() => handleCompletePickup({ "requestId": post._id })}
-                            >
+                        <Button
+                          onClick={() => handleCompletePickup({ "requestId": post._id })}
+                          disabled={isLoading}
+                          className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/20 transition-all"
+                        >
+                          {isLoading ? (
+                            <>
+                              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                              Processing...
+                            </>
+                          ) : (
+                            <>
                               <CheckCircle className="mr-2 h-4 w-4" />
-                              {isLoading ? "Picking Up..." : "Mark as Picked Up"}
-                            </Button>
-                            {error && (
-                              <p className="text-sm text-red-600">{error}</p>
-                            )}
+                              Mark as Picked Up
+                            </>
+                          )}
+                        </Button>
+
+                        {error && (
+                          <div className="p-2 rounded-lg bg-gradient-to-r from-rose-50 to-rose-100/50 border border-rose-200/60">
+                            <p className="text-xs text-rose-700 text-center">{error}</p>
                           </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Pickup Instructions */}
+                    {post?.foodPost?.pickupInstructions && (
+                      <div className="mt-6 pt-6 border-t border-slate-200/60">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Truck className="h-4 w-4 text-slate-500" />
+                          <p className="text-sm font-medium text-slate-900">Pickup Instructions</p>
                         </div>
-                      </Card>
-                    )
-                  }
-                  )
-                )}
-              </div>
+                        <p className="text-sm text-slate-600 bg-slate-50/80 p-3 rounded-xl border border-slate-200/60">
+                          {post.foodPost.pickupInstructions}
+                        </p>
+                      </div>
+                    )}
+                  </Card>
+                );
+              })
             )}
+          </TabsContent>
+        </Tabs>
+
+        {/* Quick Stats Footer */}
+        <div className="mt-12 pt-8 border-t border-slate-200/60">
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card className="p-5 rounded-2xl border-emerald-200/60 bg-gradient-to-r from-emerald-50 to-emerald-100/30">
+              <div className="flex items-center gap-3 mb-3">
+                <Sparkles className="h-5 w-5 text-emerald-600" />
+                <h4 className="font-semibold text-slate-900">Donation Tips</h4>
+              </div>
+              <p className="text-sm text-slate-600">
+                Keep food fresh by posting within 2-3 days of expiry. Clear photos get more requests!
+              </p>
+            </Card>
+            
+            <Card className="p-5 rounded-2xl border-blue-200/60 bg-gradient-to-r from-blue-50 to-blue-100/30">
+              <div className="flex items-center gap-3 mb-3">
+                <Award className="h-5 w-5 text-blue-600" />
+                <h4 className="font-semibold text-slate-900">Community Impact</h4>
+              </div>
+              <p className="text-sm text-slate-600">
+                Each donation helps reduce food waste and feeds someone in need. Thank you for your contribution!
+              </p>
+            </Card>
+            
+            <Card className="p-5 rounded-2xl border-amber-200/60 bg-gradient-to-r from-amber-50 to-amber-100/30">
+              <div className="flex items-center gap-3 mb-3">
+                <Bell className="h-5 w-5 text-amber-600" />
+                <h4 className="font-semibold text-slate-900">Need Help?</h4>
+              </div>
+              <p className="text-sm text-slate-600">
+                Contact our support team if you need assistance with donations or recipient coordination.
+              </p>
+            </Card>
           </div>
         </div>
       </div>
+    </div>
   );
 }

@@ -29,11 +29,9 @@ import EditFood from "../pages/donor/foods/pages/EditFood";
 import FoodDetailViewer from "../pages/recipient/dashboard/pages/FoodRequestDetails";
 import RatingPage from "../pages/recipient/RequestFood/pages/RatingPage";
 import ReceiverViewDonorDetails from "../pages/recipient/RequestFood/pages/ReceiverViewDonorDetails";
-import ViewFoodRequestList from "../pages/donor/dashboard/pages/ViewFoodRequestLIst";
+import ViewFoodRequestList from "../pages/donor/dashboard/pages/ViewFoodRequestList";
 import DonorViewRequestDetails from "../pages/donor/dashboard/pages/DonorViewActiveDetails";
 import DonationHistory from "../pages/donor/DonationHistory/pages/DonationHistory";
-import ViewRecipientProfile from "../pages/donor/DonationHistory/pages/ViewRecipientProfile";
-import DonorRatingPage from "../pages/donor/DonationHistory/pages/DonorRatingPage";
 import AdminManageUsers from "../pages/admin/users/pages/AdminManageUsers";
 import AdminManageFoodPosts from "../pages/admin/posts/pages/AdminViewPostList";
 import { AdminViewContactMessage } from "../pages/admin/contact/pages/AdminViewContactMessage";
@@ -97,8 +95,6 @@ export default function AppRoutes() {
           <Route path="/donor/food/:foodId/requests" element={<ViewFoodRequestList />} />
           <Route path="/donor/food/active/details/:id" element={<DonorViewRequestDetails />} />
           <Route path="/donation-history" element={<DonationHistory />} />
-          <Route path="/donation-history/recipient/:id" element={<ViewRecipientProfile />} />
-          <Route path="/donation-history/recipient/rating/:foodId" element={<DonorRatingPage />} />
 
         </Route>
 
