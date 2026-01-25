@@ -5,7 +5,6 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {
-  User,
   Phone,
   Star,
   MapPin,
@@ -16,25 +15,17 @@ import {
   ArrowLeft,
   Mail,
   Shield,
-  Award,
   Users,
   Truck,
-  Heart,
   AlertCircle,
   RefreshCw,
-  Share2,
-  Eye,
-  ChevronRight,
-  TrendingUp,
   CheckCircle,
   ExternalLink,
   Thermometer,
   Scale,
-  Home,
-  MessageSquare,
   Sparkles
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useGetActiveDonationById } from "../hooks/useGetActiveDonationById";
 import { useParams, useNavigate } from "react-router-dom";
 import LiveRoute from "./Live";
@@ -69,6 +60,7 @@ const receiverIcon = L.icon({
 export default function DonorViewRequestDetails() {
   const navigate = useNavigate();
   const { id: donationId } = useParams();
+
   const {
     foods: activeFoods,
     loading: activeLoading,
@@ -76,80 +68,97 @@ export default function DonorViewRequestDetails() {
     fetchMyActiveDonationById,
   } = useGetActiveDonationById();
 
-  const { completePickup, loading: completeLoading, error: completeError } = useCompletePickup();
-  const [receiverPosition, setReceiverPosition] = useState(null);
-  const [mapCenter, setMapCenter] = useState([27.7172, 85.3240]); // Default to Kathmandu
-  const [loading, setLoading] = useState(false);
+  const { completePickup, loading: completeLoading, error: completeError } =
+    useCompletePickup();
 
+  const [loading, setLoading] = useState(false);
+  const [receiverPosition, setReceiverPosition] = useState(null);
+  const [mapCenter, setMapCenter] = useState([27.7172, 85.3240]); // Kathmandu default
+
+  const lastGeocodedAddress = useRef(null);
+
+  // -----------------------------
+  // Geocode helper
+  // -----------------------------
+  const geocodeAddress = useCallback(async (address) => {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+      );
+      const data = await res.json();
+
+      if (data && data.length > 0) {
+        return {
+          lat: parseFloat(data[0].lat),
+          lng: parseFloat(data[0].lon),
+        };
+      }
+      return null;
+    } catch (err) {
+      console.error("Geocoding error:", err);
+      return null;
+    }
+  }, []);
   // Fetch donation details
   useEffect(() => {
     fetchMyActiveDonationById(donationId);
   }, [donationId]);
 
-  // Donor (pickup) position
-  const donorPosition = activeFoods?.foodPost?.lat && activeFoods?.foodPost?.lng
-    ? [activeFoods.foodPost.lat, activeFoods.foodPost.lng]
-    : null;
-
-  // Update map center when positions are available
+  // Donor position
+  const donorPosition =
+    activeFoods?.foodPost?.lat && activeFoods?.foodPost?.lng
+      ? [activeFoods.foodPost.lat, activeFoods.foodPost.lng]
+      : null;
+  // Geocode receiver address -> coords
   useEffect(() => {
-    if (donorPosition) {
-      setMapCenter(donorPosition);
-    }
-  }, [donorPosition]);
+    const address = activeFoods?.receiver?.address;
 
-  // WebSocket for LIVE receiver tracking
-  useEffect(() => {
-    if (!activeFoods?.foodPost?._id) return;
+    if (!address) return;
 
-    const ws = new WebSocket("ws://localhost:5000");
+    // Prevent re-geocoding same address
+    if (lastGeocodedAddress.current === address) return;
 
-    ws.onopen = () => {
-      ws.send(
-        JSON.stringify({
-          userId: activeFoods.foodPost.donor._id || activeFoods.foodPost.donor,
-          role: "donor",
-          foodPostId: activeFoods.foodPost._id,
-        })
-      );
-    };
+    lastGeocodedAddress.current = address;
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === "LIVE_LOCATION") {
-          console.log("WS LIVE_LOCATION", data);
-          setReceiverPosition([data.lat, data.lng]);
-          
-          // Update map center to show both markers
-          if (donorPosition) {
-            const centerLat = (data.lat + donorPosition[0]) / 2;
-            const centerLng = (data.lng + donorPosition[1]) / 2;
-            setMapCenter([centerLat, centerLng]);
-          }
+    (async () => {
+      const coords = await geocodeAddress(address);
+
+      if (!coords) return;
+
+      setReceiverPosition((prev) => {
+        // Prevent state update if same coords
+        if (
+          prev &&
+          prev[0] === coords.lat &&
+          prev[1] === coords.lng
+        ) {
+          return prev;
         }
-      } catch (err) {
-        console.error("WS parse error", err);
+        return [coords.lat, coords.lng];
+      });
+    })();
+  }, [activeFoods?.receiver?.address, geocodeAddress]);
+
+  // Update map center when donor available
+  useEffect(() => {
+    if (!donorPosition) return;
+
+    setMapCenter((prev) => {
+      if (
+        prev[0] === donorPosition[0] &&
+        prev[1] === donorPosition[1]
+      ) {
+        return prev;
       }
-    };
-
-    ws.onerror = (err) => {
-      console.error("WebSocket error", err);
-    };
-
-    return () => {
-      ws.close();
-    };
-  }, [activeFoods?.foodPost?._id, donorPosition]);
+      return donorPosition;
+    });
+  }, [donorPosition]);
 
   const handleCompletePickup = async () => {
     try {
       setLoading(true);
       await completePickup({ requestId: donationId });
-      // Show success and navigate after a delay
-      setTimeout(() => {
-        navigate('/donor-dashboard');
-      }, 2000);
+      setTimeout(() => navigate("/donor-dashboard"), 2000);
     } catch (err) {
       console.error("Complete pickup error:", err);
     } finally {
@@ -160,66 +169,30 @@ export default function DonorViewRequestDetails() {
   const calculateDaysLeft = (expiryDate) => {
     const today = new Date();
     const expiry = new Date(expiryDate);
-    const diffTime = expiry - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+    return Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+  const formatDate = (dateString) =>
+    new Date(dateString).toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
-  };
 
-  const renderStars = (rating) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <Star
-          key={i}
-          className={`h-4 w-4 ${
-            i <= (rating || 0)
-              ? "fill-amber-400 text-amber-400"
-              : "fill-slate-200 text-slate-200"
+  const renderStars = (rating) =>
+    Array.from({ length: 5 }).map((_, i) => (
+      <Star
+        key={i}
+        className={`h-4 w-4 ${i + 1 <= (rating || 0)
+          ? "fill-amber-400 text-amber-400"
+          : "fill-slate-200 text-slate-200"
           }`}
-        />
-      );
-    }
-    return stars;
-  };
+      />
+    ));
 
-  if (activeLoading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-white">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-emerald-200 border-t-emerald-500 mb-4"></div>
-        <p className="text-lg font-medium text-slate-600">Loading request details...</p>
-        <p className="text-sm text-slate-500 mt-2">Fetching pickup information</p>
-      </div>
-    );
-  }
-
-  if (activeError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-white">
-        <Card className="p-8 rounded-2xl border-slate-200/80 bg-white/90 backdrop-blur-sm shadow-lg max-w-md">
-          <AlertCircle className="h-16 w-16 text-rose-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Error Loading Request</h2>
-          <p className="text-slate-600 mb-6">{activeError}</p>
-          <Button
-            onClick={() => navigate(-1)}
-            className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Go Back
-          </Button>
-        </Card>
-      </div>
-    );
-  }
+  if (activeLoading) return <div className="p-10">Loading...</div>;
+  if (activeError) return <div className="p-10 text-red-600">{activeError}</div>;
 
   const daysLeft = calculateDaysLeft(activeFoods?.foodPost?.expiryDate);
 
@@ -374,11 +347,10 @@ export default function DonorViewRequestDetails() {
                     </div>
                     <div className="p-4 rounded-xl bg-gradient-to-br from-slate-50/80 to-white border border-slate-200/60">
                       <p className="text-xs text-slate-500 mb-1">Days Left</p>
-                      <p className={`font-bold flex items-center gap-1 ${
-                        daysLeft <= 2 ? 'text-rose-600' :
+                      <p className={`font-bold flex items-center gap-1 ${daysLeft <= 2 ? 'text-rose-600' :
                         daysLeft <= 7 ? 'text-amber-600' :
-                        'text-emerald-600'
-                      }`}>
+                          'text-emerald-600'
+                        }`}>
                         <Thermometer className="h-4 w-4" />
                         {daysLeft} days
                       </p>
@@ -431,96 +403,67 @@ export default function DonorViewRequestDetails() {
           {/* Right Column - Map and Actions */}
           <div className="space-y-8">
             {/* Live Map Card */}
-            <Card className="p-6 rounded-2xl border-slate-200/80 bg-white/90 backdrop-blur-sm shadow-lg sticky top-24">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600">
-                  <Navigation className="h-6 w-6 text-white" />
-                </div>
-                <h2 className="text-2xl font-bold text-slate-900">Live Pickup Map</h2>
-              </div>
+            <Card className="p-6 m-6">
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <Navigation /> Pickup Map
+              </h2>
 
-              {donorPosition ? (
-                <div className="space-y-4">
-                  <div className="h-[350px] rounded-xl overflow-hidden border-2 border-slate-200/60">
-                    <MapContainer
-                      center={mapCenter}
-                      zoom={14}
-                      className="h-full w-full"
-                    >
-                      <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      />
+              {donorPosition && (
+                <div className="h-[350px] rounded-xl overflow-hidden">
+                  <MapContainer
+                    center={mapCenter}
+                    zoom={14}
+                    className="h-full w-full"
+                    scrollWheelZoom={true}
+                  >
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-                      {/* Donor Marker */}
-                      <Marker position={donorPosition} icon={donorIcon}>
-                        <Popup className="custom-popup">
-                          <div className="p-2">
-                            <div className="flex items-center gap-2 mb-2">
-                              <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                              <strong className="text-emerald-700">Pickup Location</strong>
-                            </div>
-                            <p className="text-sm text-slate-600">{activeFoods?.foodPost?.city}</p>
-                          </div>
+                    {/* Donor Marker */}
+                    <Marker position={donorPosition} icon={donorIcon}>
+                      <Popup>Pickup Location</Popup>
+                    </Marker>
+
+                    {/* Receiver Marker */}
+                    {receiverPosition && (
+                      <Marker position={receiverPosition} icon={receiverIcon}>
+                        <Popup>
+                          Recipient<br />
+                          {activeFoods?.receiver?.address}
                         </Popup>
                       </Marker>
+                    )}
 
-                      {/* Receiver Live Marker */}
-                      {receiverPosition && (
-                        <Marker position={receiverPosition} icon={receiverIcon}>
-                          <Popup className="custom-popup">
-                            <div className="p-2">
-                              <div className="flex items-center gap-2 mb-2">
-                                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                                <strong className="text-blue-700">Recipient (Live)</strong>
-                              </div>
-                              <p className="text-sm text-slate-600">Currently en route</p>
-                            </div>
-                          </Popup>
-                        </Marker>
-                      )}
+                    Route Line (Pathao style)
+                    {receiverPosition && donorPosition && (
+                      <LiveRoute from={receiverPosition} to={donorPosition} />
+                    )}
+                  </MapContainer>
 
-                      {/* Live Route */}
-                      {receiverPosition && donorPosition && (
-                        <LiveRoute from={receiverPosition} to={donorPosition} />
-                      )}
-                    </MapContainer>
-                  </div>
-
-                  <div className="flex items-center gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                      <span className="text-slate-600">Pickup Location</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                      <span className="text-slate-600">Recipient Location</span>
-                    </div>
-                  </div>
-
-                  {/* Google Maps Navigation */}
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${donorPosition[0]},${donorPosition[1]}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block"
-                  >
-                    <Button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg shadow-blue-500/20">
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      Open in Google Maps
-                    </Button>
-                  </a>
                 </div>
-              ) : (
-                <div className="text-center py-12">
-                  <div className="p-4 rounded-2xl bg-slate-100/80 inline-flex mb-4">
-                    <MapPin className="h-12 w-12 text-slate-400" />
-                  </div>
-                  <p className="text-slate-600">Pickup location not available</p>
-                </div>
+
+
               )}
-            </Card>
+              <Button
+                onClick={() => {
+                  const destination = `${donorPosition[0]},${donorPosition[1]}`;
 
+                  // If receiver position exists, use it as origin
+                  const origin = receiverPosition
+                    ? `${receiverPosition[0]},${receiverPosition[1]}`
+                    : "";
+
+                  const url = origin
+                    ? `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=driving`
+                    : `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+
+                  window.open(url, "_blank");
+                }}
+                className="w-full mt-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+              >
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Navigate in Google Maps
+              </Button>
+            </Card>
             {/* Actions Card */}
             <Card className="p-6 rounded-2xl border-slate-200/80 bg-white/90 backdrop-blur-sm shadow-lg">
               <div className="flex items-center gap-3 mb-6">

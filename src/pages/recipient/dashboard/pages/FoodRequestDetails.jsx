@@ -9,7 +9,7 @@ import {
   User,
   AlertCircle,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { IMAGE_URL } from "../../../../constants/constants";
 import { useAuth } from "../../../../context/AuthContext";
 import { useGetFoodRequestDetails } from "../hooks/useGetFoodRequestDetails";
@@ -38,6 +38,33 @@ export default function FoodDetailViewer() {
   const alreadyRequested = !!userRequest && userRequest.status !== "cancelled";
   const isRejected = userRequest?.status === "rejected";
 
+  const [myLocation, setMyLocation] = useState(null);
+  const donorLat = post?.foodPost?.lat;
+  const donorLng = post?.foodPost?.lng;
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      alert("Geolocation not supported");
+      return;
+    }
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        setMyLocation([pos.coords.latitude, pos.coords.longitude]);
+      },
+      (err) => {
+        console.error("Geo error", err);
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 10000,
+        timeout: 10000,
+      }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
+  if (!donorLat || !donorLng) return null;
   if (loading) return <p className="text-center mt-20">Loading...</p>;
   if (!post)
     return (
@@ -163,29 +190,47 @@ export default function FoodDetailViewer() {
                       Pickup Location
                     </h2>
                     <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 space-y-4">
-                      <p className="font-medium text-slate-900">{post?.foodPost?.address}</p>
-                      <p className="text-slate-600">{post?.foodPost?.city}, {post?.foodPost?.district}</p>
-                      {post?.foodPost?.lat && post?.foodPost?.lng && (
-                        <iframe
-                          title="Pickup Location Map"
-                          width="100%"
-                          height="300"
-                          loading="lazy"
-                          allowFullScreen
-                          src={`https://www.google.com/maps?q=${post?.foodPost?.lat},${post?.foodPost?.lng}&z=15&output=embed`}
-                          className="rounded-xl"
-                        />
-                      )}
+                      <p className="font-medium text-slate-900">
+                        {post?.foodPost?.address}
+                      </p>
+
+                      <p className="text-slate-600">
+                        {post?.foodPost?.city}, {post?.foodPost?.district}
+                      </p>
+
+                      {/* Embedded donor pickup map */}
+                      <iframe
+                        title="Pickup Location Map"
+                        width="100%"
+                        height="300"
+                        loading="lazy"
+                        allowFullScreen
+                        className="rounded-xl"
+                        src={`https://www.google.com/maps?q=${donorLat},${donorLng}&z=15&output=embed`}
+                      />
+
+                      {/* Pathao-style real navigation */}
                       <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${post?.foodPost?.lat},${post?.foodPost?.lng}`}
+                        href={
+                          myLocation
+                            ? `https://www.google.com/maps/dir/?api=1&origin=${myLocation[0]},${myLocation[1]}&destination=${donorLat},${donorLng}&travelmode=driving`
+                            : `https://www.google.com/maps/search/?api=1&query=${donorLat},${donorLng}`
+                        }
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <Button variant="outline" className="mt-4 w-full border-slate-300">
-                          Open in Google Maps
+                        <Button className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white">
+                          🚗 Navigate in Google Maps
                         </Button>
                       </a>
+
+                      {!myLocation && (
+                        <p className="text-sm text-orange-600 text-center">
+                          Waiting for your live location to enable navigation...
+                        </p>
+                      )}
                     </div>
+
                   </div>
                 </div>
               </Card>
@@ -266,5 +311,5 @@ export default function FoodDetailViewer() {
         </div>
       </div>
     )
-    );
+  );
 }

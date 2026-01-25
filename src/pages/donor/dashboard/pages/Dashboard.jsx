@@ -41,8 +41,12 @@ import { useGetActiveDonation } from "../hooks/useGetActiveDonation";
 import { IMAGE_URL } from "../../../../constants/constants";
 import { useCompletePickup } from "../hooks/useCompletedPickUp";
 import { useGetDonorStats } from "../hooks/useGetDonorStats";
+import { useCreateRating } from "../../../recipient/RequestFood/hooks/useCreateRating";
+import { RatingPopup } from "./DonorRatingPage";
 
 export default function DonorDashboard() {
+    const [selectedDonation, setSelectedDonation] = useState(null);
+  const [showRatingPopup, setShowRatingPopup] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
   const { foods, loading, fetchMyFoodDonation } = useGetMyFood();
   const { deleteMyDonation, loading: deleteLoading } = useDeleteMyDonation();
@@ -51,6 +55,7 @@ export default function DonorDashboard() {
   const { completePickup } = useCompletePickup();
   const [loadingMap, setLoadingMap] = useState({});
   const [errorMap, setErrorMap] = useState({});
+  const { createRating, loading: ratingLoading, error: ratingError } = useCreateRating();
 
   // Fetch donations on mount
   useEffect(() => {
@@ -69,8 +74,12 @@ export default function DonorDashboard() {
       }
     }
   };
+    const handleRateRecipient = (donation) => {
+    setSelectedDonation(donation);
+    setShowRatingPopup(true);
+  };
 
-  const handleCompletePickup = async ({ requestId }) => {
+  const handleCompletePickup = async ({ requestId },post) => {
     try {
       setLoadingMap(prev => ({ ...prev, [requestId]: true }));
       setErrorMap(prev => ({ ...prev, [requestId]: null }));
@@ -78,6 +87,7 @@ export default function DonorDashboard() {
       await completePickup({ requestId });
 
       fetchMyActiveFoodDonation(); // refresh data
+      handleRateRecipient(post)
     } catch (err) {
       setErrorMap(prev => ({
         ...prev,
@@ -85,6 +95,16 @@ export default function DonorDashboard() {
       }));
     } finally {
       setLoadingMap(prev => ({ ...prev, [requestId]: false }));
+    }
+  };
+  const handleSubmitRating = async (ratingData) => {
+    try {
+      await createRating(ratingData);
+      fetchMyFoodDonation();
+      setShowRatingPopup(false);
+      setSelectedDonation(null);
+    } catch (err) {
+      console.error("Rating submission failed:", err);
     }
   };
 
@@ -391,7 +411,7 @@ export default function DonorDashboard() {
                         <Eye className="mr-2 h-4 w-4" />
                         View Details
                       </Button>
-                      
+
                       <Button
                         variant="outline"
                         onClick={() => window.location.href = `/update-food/${post._id}`}
@@ -400,7 +420,7 @@ export default function DonorDashboard() {
                         <Edit className="mr-2 h-4 w-4" />
                         Edit Post
                       </Button>
-                      
+
                       <Button
                         variant="outline"
                         onClick={() => handleDeleteDonation(post._id)}
@@ -563,7 +583,7 @@ export default function DonorDashboard() {
                         </Button>
 
                         <Button
-                          onClick={() => handleCompletePickup({ "requestId": post._id })}
+                          onClick={() => handleCompletePickup({ "requestId": post._id }, post)}
                           disabled={isLoading}
                           className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/20 transition-all"
                         >
@@ -619,7 +639,7 @@ export default function DonorDashboard() {
                 Keep food fresh by posting within 2-3 days of expiry. Clear photos get more requests!
               </p>
             </Card>
-            
+
             <Card className="p-5 rounded-2xl border-blue-200/60 bg-gradient-to-r from-blue-50 to-blue-100/30">
               <div className="flex items-center gap-3 mb-3">
                 <Award className="h-5 w-5 text-blue-600" />
@@ -629,7 +649,7 @@ export default function DonorDashboard() {
                 Each donation helps reduce food waste and feeds someone in need. Thank you for your contribution!
               </p>
             </Card>
-            
+
             <Card className="p-5 rounded-2xl border-amber-200/60 bg-gradient-to-r from-amber-50 to-amber-100/30">
               <div className="flex items-center gap-3 mb-3">
                 <Bell className="h-5 w-5 text-amber-600" />
@@ -642,6 +662,20 @@ export default function DonorDashboard() {
           </div>
         </div>
       </div>
+      {selectedDonation && (
+        <RatingPopup
+          isOpen={showRatingPopup}
+          onClose={() => {
+            setShowRatingPopup(false);
+            setSelectedDonation(null);
+          }}
+          onSubmit={handleSubmitRating}
+          loading={ratingLoading}
+          error={ratingError}
+          post={selectedDonation}
+        />
+      )}
+
     </div>
   );
 }

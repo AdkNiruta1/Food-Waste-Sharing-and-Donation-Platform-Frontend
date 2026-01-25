@@ -249,7 +249,7 @@ export default function RequestHistory() {
         {/* Tabs */}
         <div className="container mx-auto max-w-5xl px-4 py-8">
           <Tabs defaultValue="all" className="w-full">
-            <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-5 mb-10 bg-slate-100">
+            <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-6 mb-10 bg-slate-100">
               <TabsTrigger value="all">
                 All ({userRequests.length})
               </TabsTrigger>

@@ -19,7 +19,8 @@ import { useCancelFoodRequest } from "../hooks/useCancelFoodRequest";
 export default function RecipientDashboard() {
   const [activeTab, setActiveTab] = useState("active");
   const { foods: userRequests, loading, error, fetchFoodRequestList } = useGetFoodRequestList();
-  const { cancelFoodRequest, loading: cancelLoading, error: cancelError } = useCancelFoodRequest();
+  const { cancelFoodRequest, error: cancelError } = useCancelFoodRequest();
+  const [cancellingId, setCancellingId] = useState(null);
 
 
   useEffect(() => {
@@ -51,11 +52,16 @@ export default function RecipientDashboard() {
   const filteredRequests = userRequests.filter(request => request.status === "pending" || request.status === "accepted");
   const handleCancelRequest = async (id) => {
     try {
+      setCancellingId(id);
       await cancelFoodRequest(
-        {"requestId": id});
+        { "requestId": id });
       fetchFoodRequestList();
     } catch (err) {
       console.log(err);
+      setCancellingId(null); // 👈 reset
+    }
+    finally {
+      setCancellingId(null); // 👈 reset
     }
   };
 
@@ -220,9 +226,15 @@ export default function RecipientDashboard() {
                               </Button>
                             </Link>
                             {request.status === "pending" && (
-                              <Button variant="outline" className="w-full text-red-600 hover:bg-red-50" onClick={() => handleCancelRequest(request._id)}>
-                                {cancelLoading ? "Cancelling..." : "Cancel Request"}
+                              <Button
+                                variant="outline"
+                                className="w-full text-red-600 hover:bg-red-50"
+                                onClick={() => handleCancelRequest(request._id)}
+                                disabled={cancellingId === request._id}
+                              >
+                                {cancellingId === request._id ? "Cancelling..." : "Cancel Request"}
                               </Button>
+
                             )}
                             {cancelError && (
                               <p className="text-red-600 text-sm">{cancelError}</p>

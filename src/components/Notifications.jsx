@@ -58,13 +58,14 @@ export default function Notifications() {
   const fetchNotifications = () => {
     getNotifications(currentPage, 10);
   };
-
+  const unreadNotificationsData = notifications.filter(n => !n.read);
+  const readNotificationsData = notifications.filter(n => n.read);
   const unreadNotifications = count?.unseen
   const readNotifications = count?.seen;
 
   const getFilteredList = (tab) => {
-    if (tab === "unread") return unreadNotifications;
-    if (tab === "read") return readNotifications;
+    if (tab === "unread") return unreadNotificationsData;
+    if (tab === "read") return readNotificationsData;
     return notificationsState;
   };
 
@@ -75,7 +76,10 @@ export default function Notifications() {
     setNotificationsState(prev => 
       prev.map(n => n._id === id ? { ...n, read: true } : n)
     );
+    // Refetch notifications to get updated state
+    fetchNotifications();
     setActionLoading(false);
+    //reload window
   };
 
   const handleMarkAllAsRead = async () => {
@@ -92,6 +96,7 @@ export default function Notifications() {
     // Update local state immediately
     setNotificationsState(prev => prev.filter(n => n._id !== id));
     setActionLoading(false);
+    fetchNotifications();
   };
 
   // Extract notification type from message
@@ -209,7 +214,7 @@ export default function Notifications() {
           </p>
         </Card>
       ) : (
-        items.map((notification) => {
+        items?.map((notification) => {
           const type = extractNotificationType(notification.message);
           const colors = getNotificationColor(type);
           const title = generateTitle(notification.message);

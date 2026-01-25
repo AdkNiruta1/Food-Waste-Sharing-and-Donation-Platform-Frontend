@@ -82,7 +82,11 @@ const alreadyRequested = requests.some(
 
   const handleRequest = (e) => {
     e.preventDefault();
-    requestFood({ foodPostId: post._id });
+    const res = requestFood({ foodPostId: post._id });
+
+    if (res) {
+      navigate(-1);
+    }
 
   };
 
