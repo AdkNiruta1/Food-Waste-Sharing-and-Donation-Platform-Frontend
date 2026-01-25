@@ -106,8 +106,8 @@ export function Header() {
             {isAuthenticated && isEmailVerified === "verified" && isStatusVerified === "verified" ? (
               <>
                 {/* Notifications */}
-                <Link to="/notifications">
-                  <Button variant="ghost" size="sm" className="relative">
+                <Link to="/notifications" className="cursor-pointer">
+                  <Button variant="ghost" size="sm" className="relative cursor-pointer">
                     <Bell className="h-5 w-5" />
 
                     {countunseenNotifications > 0 && (
