@@ -1,7 +1,6 @@
 // components/popups/RatingPopup.jsx
 import { useState } from "react";
 import { Button } from "../../../../components/ui/button";
-import { Card } from "../../../../components/ui/card";
 import { Textarea } from "../../../../components/ui/textarea";
 import { Alert, AlertDescription } from "../../../../components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from "../../../../components/ui/dialog";

@@ -209,13 +209,13 @@ export default function ReceiverViewDonorDetails({
 
       {/* Donor Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-        <div className="text-center p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100/30 border border-emerald-200/60">
+        {/* <div className="text-center p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100/30 border border-emerald-200/60">
           <div className="p-2 rounded-full bg-emerald-100 inline-flex mb-2">
             <Package className="h-5 w-5 text-emerald-600" />
           </div>
           <p className="text-2xl font-bold text-slate-900">{donor?.totalDonations || 0}</p>
           <p className="text-xs text-slate-600">Donations</p>
-        </div>
+        </div> */}
 
         <div className="text-center p-4 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100/30 border border-blue-200/60">
           <div className="p-2 rounded-full bg-blue-100 inline-flex mb-2">

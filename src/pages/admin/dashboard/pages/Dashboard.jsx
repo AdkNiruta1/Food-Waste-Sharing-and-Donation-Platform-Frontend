@@ -50,7 +50,6 @@ import { useNavigate } from "react-router-dom";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
-  const [timeFilter, setTimeFilter] = useState("7d");
   const { stats: dashboardStats, loading, fetchStats } = useGetDashboardStats();
   const { error: exportError, loading: exportLoading, fetchExportFullReport } = useExportFullReport();
   const { error: exportUserError, loading: exportUserLoading, fetchExportUserAnalytics } = useExportUserAnalytics();
@@ -142,12 +141,6 @@ export default function AdminDashboard() {
   };
 
   const COLORS = ['#10b981', '#f59e0b', '#6366f1', '#ef4444', '#8b5cf6'];
-
-  const timeFilters = [
-    { id: "7d", label: "Last 7 Days" },
-    { id: "30d", label: "Last 30 Days" },
-    { id: "90d", label: "Last 90 Days" },
-  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-white">
@@ -256,25 +249,6 @@ export default function AdminDashboard() {
                     )}
                   </button>
                 ))}
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-slate-500" />
-                <div className="flex bg-slate-100/80 p-1 rounded-xl">
-                  {timeFilters.map((filter) => (
-                    <button
-                      key={filter.id}
-                      onClick={() => setTimeFilter(filter.id)}
-                      className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
-                        timeFilter === filter.id
-                          ? "bg-white shadow-sm text-slate-900"
-                          : "text-slate-600 hover:text-slate-900"
-                      }`}
-                    >
-                      {filter.label}
-                    </button>
-                  ))}
-                </div>
               </div>
             </div>
           </Card>

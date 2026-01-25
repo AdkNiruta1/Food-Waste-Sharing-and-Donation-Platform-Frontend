@@ -288,10 +288,10 @@ const alreadyRequested = requests.some(
                     </div>
                     
 
-                    <div className="flex justify-between">
+                    {/* <div className="flex justify-between">
                       <span className="text-slate-600">Total Donations</span>
                       <span className="font-semibold text-green-600">{post?.donor?.totalDonations || "N/A"}</span>
-                    </div>
+                    </div> */}
                     <div className="flex justify-between">
                       <span className="text-slate-600">Member Since</span>
                       <span className="font-semibold text-slate-900">

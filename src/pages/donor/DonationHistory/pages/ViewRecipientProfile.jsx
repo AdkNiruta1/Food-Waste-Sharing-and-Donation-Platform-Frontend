@@ -232,7 +232,7 @@ export const ViewRecipientPopup = ({
                     Recipient Statistics
                   </h3>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50/80">
+                    {/* <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50/80">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
                           <Package className="h-4 w-4 text-purple-600" />
@@ -242,7 +242,7 @@ export const ViewRecipientPopup = ({
                           <p className="font-bold text-slate-900">{user.totalRequests || 0}</p>
                         </div>
                       </div>
-                    </div>
+                    </div> */}
                     <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50/80">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center">
