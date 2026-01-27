@@ -14,35 +14,35 @@ export const exportUserAnalyticsService = () => {
     responseType: "blob",
   });
 }
-
+// export full report
 export const exportFullReportService = () => {
   return authClient.get("export/full-report", {
     responseType: "blob",
   });
 };
-
+// export full report
 export const exportFullReportMonthlyService = (month, year) => {
   return authClient.get(`export/full-report/${month}/${year}`, {
     responseType: "blob",
   });
 }
-
+// export full report
 export const getFoodPostsService = () => {
   return authClient.get(`food-post/list`);
 }
-
+// get food post by id
 export const getFoodPostByIdService = (id) => {
   return authClient.get(`food-post/${id}/details`);
 }
-
+// get donations over time
 export const getDonationsOverTimeService = () => {
   return authClient.get(`donations-over-time`);
 }
-
+// get food type distribution
 export const getFoodTypeDistributionService = () => {
   return authClient.get(`food-type-distribution`);
 }
-
+// get request status overview
 export const getRequestStatusOverviewService = () => {
   return authClient.get(`request-status-overview`);
 }

@@ -1,17 +1,22 @@
 import { useEffect, useState } from "react";
 import { getMeService } from "../services/GetProfile";
-// authentication hook
+
+// Authentication hook to check logged-in user
 export const useAuth = () => {
+  // Store current user
   const [user, setUser] = useState(null);
+
+  // Track auth loading state
   const [loading, setLoading] = useState(true);
-//call getMeService to check if user is authenticated
+
+  // Check authentication on app load
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const res = await getMeService();
         setUser(res.data);
       } catch {
-        setUser(null);
+        setUser(null); // Not authenticated
       } finally {
         setLoading(false);
       }
@@ -20,5 +25,10 @@ export const useAuth = () => {
     fetchUser();
   }, []);
 
-  return { user, loading, isAuthenticated: !!user };
+  // Expose auth state
+  return { 
+    user, 
+    loading, 
+    isAuthenticated: !!user 
+  };
 };

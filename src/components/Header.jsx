@@ -14,13 +14,13 @@ export function Header() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { user, loading, isAuthenticated, refetchUser } = useAuth();
   const { logout, loading: logoutLoading } = useLogout();
-
+  // 
   const isLoggedIn = isAuthenticated;
   const isEmailVerified = user?.emailVerified;
   const isStatusVerified = user?.accountVerified;
   const userName = user?.emailVerified === "verified" && isStatusVerified === "verified" ? user?.name : "John Doe";
   const userRole = user?.emailVerified === "verified" && isStatusVerified === "verified" ? user?.role : "donor";
-
+  // function to handle logout
   const handleLogout = async (e) => {
     e?.preventDefault(); //VERY IMPORTANT
 

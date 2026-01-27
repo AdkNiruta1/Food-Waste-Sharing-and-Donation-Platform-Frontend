@@ -49,7 +49,7 @@ export default function UserProfile() {
       </div>
     );
   }
-
+// Function to get action icon
   const getActionIcon = (action) => {
     if (action.includes("Logged In"))
       return <LogIn className="h-5 w-5 text-green-600" />;
@@ -62,6 +62,7 @@ export default function UserProfile() {
 
     return <Clock className="h-5 w-5 text-slate-500" />;
   };
+  // Function to build message
   const buildMessage = (log) => {
     switch (log.action) {
       case "User Logged In":
@@ -74,6 +75,7 @@ export default function UserProfile() {
         return log.action;
     }
   };
+  // get current user
   const user = currentUser;
   const isCurrentUser = true; // since we only show the logged-in user
   // Open modal and prefill form
@@ -86,14 +88,15 @@ export default function UserProfile() {
     });
     setIsModalOpen(true);
   };
-
+// Close modal
   const handleCloseModal = () => setIsModalOpen(false);
 
   const handleChange = (e) =>
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-
+// Save changes
   const handleSave = async () => {
     try {
+      // update user
       const updatedUser = await updateProfile(formData);
       await refetchUser(); // wait for user refresh
       if (updatedUser) {
@@ -111,7 +114,7 @@ export default function UserProfile() {
   //   if (reviewFilter === "3below") return review.rating <= 3;
   //   return true;
   // });
-
+// Function to render stars
   const renderStars = (rating) =>
     [...Array(5)].map((_, i) => (
       <Star
@@ -124,7 +127,7 @@ export default function UserProfile() {
           }`}
       />
     ));
-
+// Activity logs
   function ActivityLogs() {
     const { logs, pagination, loading, fetchMyLogs } = useGetMyLogs();
     const [page, setPage] = useState(1);
@@ -165,7 +168,7 @@ export default function UserProfile() {
         </div>
       );
     }
-
+// If no logs
     if (!logs?.length) {
       return (
         <div className="text-center py-16">
