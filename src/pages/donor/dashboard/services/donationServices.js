@@ -18,14 +18,3 @@ export const AcceptDonationServices = ( data) => {
 export const RejectDonationServices = ( data) => {
   return client.post(data, "reject");
 }
-
-export const getActiveDonationServices = () => {
-  return client.get(`active`);
-}
-
-export const completePickupServices = (data) => {
-  return client.post(data, "complete");
-}
-export const getActiveDonationsbyIdServices = (donationId) => {
-  return client.get(`active/${donationId}`);
-}

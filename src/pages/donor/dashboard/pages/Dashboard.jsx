@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Header } from "../../../../components/Header";
 import { Button } from "../../../../components/ui/button";
 import { Card } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
@@ -9,25 +8,16 @@ import {
   Package,
   CheckCircle,
   Clock,
-  TrendingUp,
   Edit,
   Trash2,
   MessageSquare,
-  User,
-  ArrowRight,
   Eye,
   MapPin,
   Calendar,
-  Users,
   Award,
-  Heart,
   RefreshCw,
   ChevronRight,
-  BarChart3,
-  Truck,
   Bell,
-  Download,
-  Share2,
   Filter,
   Search,
   X,
@@ -37,31 +27,19 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../../components/ui/tabs";
 import { useGetMyFood } from "../hooks/useGetMyDonation";
 import { useDeleteMyDonation } from "../hooks/useDeleteMyDonation";
-import { useGetActiveDonation } from "../hooks/useGetActiveDonation";
 import { IMAGE_URL } from "../../../../constants/constants";
-import { useCompletePickup } from "../hooks/useCompletedPickUp";
 import { useGetDonorStats } from "../hooks/useGetDonorStats";
-import { useCreateRating } from "../../../recipient/RequestFood/hooks/useCreateRating";
-import { RatingPopup } from "./DonorRatingPage";
 
 export default function DonorDashboard() {
-    const [selectedDonation, setSelectedDonation] = useState(null);
-  const [showRatingPopup, setShowRatingPopup] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
   const { foods, loading, fetchMyFoodDonation } = useGetMyFood();
   const { deleteMyDonation, loading: deleteLoading } = useDeleteMyDonation();
-  const { foods: activeFoods, loading: activeLoading, error: activeError, fetchMyFoodDonation: fetchMyActiveFoodDonation } = useGetActiveDonation();
   const { error, foods: statsFoods, fetchDonorStats, loading: statsLoading } = useGetDonorStats();
-  const { completePickup } = useCompletePickup();
-  const [loadingMap, setLoadingMap] = useState({});
-  const [errorMap, setErrorMap] = useState({});
-  const { createRating, loading: ratingLoading, error: ratingError } = useCreateRating();
 
   // Fetch donations on mount
   useEffect(() => {
     fetchMyFoodDonation();
     fetchDonorStats();
-    fetchMyActiveFoodDonation();
   }, []);
 
   const handleDeleteDonation = async (id) => {
@@ -72,39 +50,6 @@ export default function DonorDashboard() {
       } catch (err) {
         console.error(err);
       }
-    }
-  };
-    const handleRateRecipient = (donation) => {
-    setSelectedDonation(donation);
-    setShowRatingPopup(true);
-  };
-
-  const handleCompletePickup = async ({ requestId },post) => {
-    try {
-      setLoadingMap(prev => ({ ...prev, [requestId]: true }));
-      setErrorMap(prev => ({ ...prev, [requestId]: null }));
-
-      await completePickup({ requestId });
-
-      fetchMyActiveFoodDonation(); // refresh data
-      handleRateRecipient(post)
-    } catch (err) {
-      setErrorMap(prev => ({
-        ...prev,
-        [requestId]: err.message || "Failed to complete pickup",
-      }));
-    } finally {
-      setLoadingMap(prev => ({ ...prev, [requestId]: false }));
-    }
-  };
-  const handleSubmitRating = async (ratingData) => {
-    try {
-      await createRating(ratingData);
-      fetchMyFoodDonation();
-      setShowRatingPopup(false);
-      setSelectedDonation(null);
-    } catch (err) {
-      console.error("Rating submission failed:", err);
     }
   };
 
@@ -206,7 +151,6 @@ export default function DonorDashboard() {
                 onClick={() => {
                   fetchMyFoodDonation();
                   fetchDonorStats();
-                  fetchMyActiveFoodDonation();
                 }}
                 className="border-slate-300 hover:border-slate-400"
               >
@@ -275,7 +219,7 @@ export default function DonorDashboard() {
                 className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-slate-200/60 px-6"
               >
                 <Bell className="mr-2 h-4 w-4" />
-                Active Requests ({activeFoods.length})
+                Active Requests
               </TabsTrigger>
             </TabsList>
 
@@ -457,173 +401,6 @@ export default function DonorDashboard() {
 
           {/* Active Requests Tab */}
           <TabsContent value="requests" className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-            {/* Loading */}
-            {activeLoading && (
-              <div className="text-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-200 border-t-emerald-500 mx-auto mb-4"></div>
-                <p className="text-slate-600">Loading active requests...</p>
-              </div>
-            )}
-
-            {/* Error */}
-            {activeError && (
-              <Card className="p-8 rounded-2xl border-rose-200/60 bg-gradient-to-r from-rose-50 to-rose-100/50">
-                <div className="flex items-center gap-3 mb-4">
-                  <AlertCircle className="h-6 w-6 text-rose-500" />
-                  <h3 className="text-lg font-bold text-slate-900">Error Loading Requests</h3>
-                </div>
-                <p className="text-slate-600">{activeError}</p>
-                <Button
-                  onClick={fetchMyActiveFoodDonation}
-                  className="mt-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
-                >
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Try Again
-                </Button>
-              </Card>
-            )}
-
-            {/* Empty State */}
-            {!activeLoading && activeFoods.length === 0 ? (
-              <Card className="p-16 text-center border-slate-200/80 rounded-2xl bg-gradient-to-br from-slate-50 to-white">
-                <div className="p-6 rounded-2xl bg-blue-100/80 inline-flex mb-6">
-                  <MessageSquare className="h-20 w-20 text-blue-400" />
-                </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-4">
-                  No active requests
-                </h3>
-                <p className="text-slate-600 mb-8 max-w-md mx-auto">
-                  Accepted food requests will appear here until pickup is completed.
-                  Share more donations to receive requests!
-                </p>
-                <Link to="/create-food">
-                  <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/20">
-                    <Plus className="mr-2 h-5 w-5" />
-                    Post New Donation
-                  </Button>
-                </Link>
-              </Card>
-            ) : (
-              activeFoods.map((post) => {
-                const isLoading = loadingMap[post._id] || false;
-                const error = errorMap[post._id] || null;
-                return (
-                  <Card
-                    key={post._id}
-                    className="p-6 rounded-2xl border-slate-200/80 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/90 backdrop-blur-sm group"
-                  >
-                    <div className="grid lg:grid-cols-5 gap-6 items-center">
-                      {/* Food Info */}
-                      <div className="lg:col-span-2">
-                        <div className="flex items-start gap-4">
-                          <div className="w-20 h-20 rounded-xl overflow-hidden border border-slate-200/60">
-                            <img
-                              src={IMAGE_URL + (post?.foodPost?.photo || "default-food.jpg")}
-                              alt={post?.foodPost?.title}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div>
-                            <p className="text-sm text-slate-500 mb-1">Donation</p>
-                            <h3 className="font-bold text-lg text-slate-900 mb-2">
-                              {post?.foodPost?.title}
-                            </h3>
-                            <Badge className="bg-gradient-to-r from-emerald-100 to-emerald-200 text-emerald-800 border-0">
-                              {post?.foodPost?.quantity} {post?.foodPost?.unit}
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Receiver Info */}
-                      <div className="lg:col-span-1">
-                        <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-slate-50/80 to-white border border-slate-200/60">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-100 to-blue-200 flex items-center justify-center">
-                            <User className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <div>
-                            <p className="text-xs text-slate-500">Requested by</p>
-                            <p className="font-semibold text-slate-900">
-                              {post?.receiver?.name}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Pickup Info */}
-                      <div className="lg:col-span-1">
-                        <div className="space-y-3">
-                          <div className="p-3 rounded-xl bg-gradient-to-r from-blue-50 to-blue-100/50 border border-blue-200/60">
-                            <p className="text-xs text-slate-500 mb-1">Status</p>
-                            <div className="flex items-center gap-2">
-                              <Clock className="h-4 w-4 text-blue-600" />
-                              <span className="text-sm font-medium text-blue-700">
-                                Waiting for Pickup
-                              </span>
-                            </div>
-                          </div>
-                          {post?.foodPost?.city && (
-                            <div className="flex items-center gap-2 text-sm text-slate-600">
-                              <MapPin className="h-4 w-4" />
-                              {post.foodPost.city}, {post.foodPost.district}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="lg:col-span-1 space-y-3">
-                        <Button
-                          variant="outline"
-                          onClick={() => navigate(`/donor/food/active/details/${post._id}`)}
-                          className="w-full border-slate-300 hover:border-slate-400 transition-all"
-                        >
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Details
-                        </Button>
-
-                        <Button
-                          onClick={() => handleCompletePickup({ "requestId": post._id }, post)}
-                          disabled={isLoading}
-                          className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/20 transition-all"
-                        >
-                          {isLoading ? (
-                            <>
-                              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                              Processing...
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle className="mr-2 h-4 w-4" />
-                              Mark as Picked Up
-                            </>
-                          )}
-                        </Button>
-
-                        {error && (
-                          <div className="p-2 rounded-lg bg-gradient-to-r from-rose-50 to-rose-100/50 border border-rose-200/60">
-                            <p className="text-xs text-rose-700 text-center">{error}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Pickup Instructions */}
-                    {post?.foodPost?.pickupInstructions && (
-                      <div className="mt-6 pt-6 border-t border-slate-200/60">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Truck className="h-4 w-4 text-slate-500" />
-                          <p className="text-sm font-medium text-slate-900">Pickup Instructions</p>
-                        </div>
-                        <p className="text-sm text-slate-600 bg-slate-50/80 p-3 rounded-xl border border-slate-200/60">
-                          {post.foodPost.pickupInstructions}
-                        </p>
-                      </div>
-                    )}
-                  </Card>
-                );
-              })
-            )}
           </TabsContent>
         </Tabs>
 
@@ -662,19 +439,6 @@ export default function DonorDashboard() {
           </div>
         </div>
       </div>
-      {selectedDonation && (
-        <RatingPopup
-          isOpen={showRatingPopup}
-          onClose={() => {
-            setShowRatingPopup(false);
-            setSelectedDonation(null);
-          }}
-          onSubmit={handleSubmitRating}
-          loading={ratingLoading}
-          error={ratingError}
-          post={selectedDonation}
-        />
-      )}
 
     </div>
   );

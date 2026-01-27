@@ -1,13 +1,13 @@
-import { Header } from "../../components/Header";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Card } from "../../components/ui/card";
 import { Label } from "../../components/ui/label";
 import { Textarea } from "../../components/ui/textarea";
 import { Mail, Phone, MapPin, Clock, CheckCircle, AlertCircle } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "../../components/ui/alert";
-import { useSendMessage } from "./hooks/useSendMessage";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -22,7 +22,22 @@ export default function Contact() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const { sendMessage, loading: sendMessageLoading } = useSendMessage();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (authLoading) return;          // wait until auth is loaded
+    if (!user) return;           // safety check
+
+    if (user.role === "admin") {
+      navigate("/admin");
+    } else if (user.role === "donor") {
+      navigate("/donor-dashboard");
+    } else if (user.role === "recipient") {
+      navigate("/recipient-dashboard");
+    } else {
+      navigate("/");
+    }
+  }, [user, authLoading, navigate]);
 
   const contactInfo = [
     {
@@ -86,38 +101,38 @@ export default function Contact() {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!validateForm()) return;
+    e.preventDefault();
+    if (!validateForm()) return;
 
-  try {
-    setLoading(true);
-    const res = await sendMessage(formData);
-    if (!res) {
-      throw new Error("Failed to send message");
+    try {
+      setLoading(true);
+      const res = formData;
+      if (!res) {
+        throw new Error("Failed to send message");
 
+      }
+      setSubmitted(true);
+      setFormData({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+        inquiryType: "general",
+        subscribe: true,
+      });
+
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
     }
-    setSubmitted(true);
-    setFormData({
-      name: "",
-      email: "",
-      subject: "",
-      message: "",
-      inquiryType: "general",
-      subscribe: true,
-    });
-
-    setTimeout(() => setSubmitted(false), 5000);
-  } catch (err) {
-    alert(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      
+
 
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-green-500/10 to-green-500/5 border-b border-slate-200">
@@ -207,11 +222,10 @@ export default function Contact() {
                       {inquiryTypes.map((type) => (
                         <label
                           key={type.value}
-                          className={`flex items-center justify-center gap-3 p-4 rounded-lg border cursor-pointer transition-all ${
-                            formData.inquiryType === type.value
+                          className={`flex items-center justify-center gap-3 p-4 rounded-lg border cursor-pointer transition-all ${formData.inquiryType === type.value
                               ? "border-green-600 bg-green-50 text-green-700 shadow-sm"
                               : "border-slate-300 hover:border-slate-400 bg-white"
-                          }`}
+                            }`}
                         >
                           <input
                             type="radio"
@@ -291,7 +305,7 @@ export default function Contact() {
                   </div>
 
                   <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={loading}>
-                    {loading || sendMessageLoading ? "Sending..." : "Send Message"}
+                    {loading ? "Sending..." : "Send Message"}
                   </Button>
                 </form>
 

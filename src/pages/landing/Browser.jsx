@@ -4,7 +4,7 @@ import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   MapPin,
   Clock,
@@ -17,6 +17,7 @@ import {
 import { useEffect } from "react";
 import { useGetFood } from "../recipient/browser/hooks/useGetFood";
 import { IMAGE_URL } from "../../constants/constants";
+import { useAuth } from "../../context/AuthContext";
 
 const FOOD_TYPES = [
   { value: "vegetables", label: "Vegetables" },
@@ -50,6 +51,23 @@ export default function BrowseFood() {
   useEffect(() => {
     fetchFoodDonation(page, 9);
   }, [page]);
+
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (authLoading) return;          // wait until auth is loaded
+    if (!user) return;           // safety check
+
+    if (user.role === "admin") {
+      navigate("/admin");
+    } else if (user.role === "donor") {
+      navigate("/donor-dashboard");
+    } else if (user.role === "recipient") {
+      navigate("/recipient-dashboard");
+    } else {
+      navigate("/");
+    }
+  }, [user, authLoading, navigate]);
 
   const filteredPosts = useMemo(() => {
     return foods.filter((post) => {
