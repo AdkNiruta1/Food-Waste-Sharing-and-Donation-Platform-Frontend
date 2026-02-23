@@ -1,8 +1,8 @@
 import { Header } from "../../components/Header";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react"; // Added for radio state
+import { Link } from "react-router-dom";
+import { useState } from "react"; // Added for radio state
 import {
   Leaf,
   Heart,
@@ -13,7 +13,6 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Mission from "../../assets/mission.png"
-import { useAuth } from "../../context/AuthContext";
 // Custom Package icon
 const PackageIcon = () => (
   <svg
@@ -33,22 +32,6 @@ const PackageIcon = () => (
 
 export default function About() {
   const [selectedRole, setSelectedRole] = useState("donor"); // Default: donor
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (loading) return;          // wait until auth is loaded
-    if (!user) return;           // safety check
-
-    if (user.role === "admin") {
-      navigate("/admin");
-    } else if (user.role === "donor") {
-      navigate("/donor-dashboard");
-    } else if (user.role === "recipient") {
-      navigate("/recipient-dashboard");
-    } else {
-      navigate("/about");
-    }
-  }, [user, loading, navigate]);
 
   const teamMembers = [
     {

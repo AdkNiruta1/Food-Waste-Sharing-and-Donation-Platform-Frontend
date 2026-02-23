@@ -107,7 +107,7 @@ export default function AdminDashboard() {
       trend: "+0.3",
     },
   ];
-  // Last 7 days
+
   const getLast7Days = () => {
     const result = [];
     const today = new Date();
@@ -122,7 +122,7 @@ export default function AdminDashboard() {
     }
     return result;
   };
-// normalize donation data
+
   const normalizeDonationData = (apiData) => {
     const last7Days = getLast7Days();
     return last7Days.map(day => {
@@ -133,7 +133,6 @@ export default function AdminDashboard() {
       };
     });
   };
-  // donation over time
   const navigate = useNavigate();
   const chartData = normalizeDonationData(donationPost);
 

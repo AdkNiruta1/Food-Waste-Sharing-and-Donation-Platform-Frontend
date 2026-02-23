@@ -1,5 +1,7 @@
+import { Header } from "../components/Header";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
+import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import { useNavigate, useParams } from "react-router-dom";
@@ -9,10 +11,9 @@ import { useResubmit } from "../hooks/useResubmit";
 
 export default function ResubmitDocuments() {
  const navigate = useNavigate();
- //  get token from URL
   const { token } = useParams(); // 🔥 resubmit token from URL
   const { resubmitUser, loading } = useResubmit();
-  // handle file upload
+
   const [files, setFiles] = useState({
     citizenship: null,
     pan: null,
@@ -20,7 +21,7 @@ export default function ResubmitDocuments() {
   });
 
   const [submitted, setSubmitted] = useState(false);
-  // handle file change
+
   const handleFileChange = (e, type) => {
     const file = e.target.files[0];
     if (file) {
@@ -31,16 +32,15 @@ export default function ResubmitDocuments() {
   /* =========================
      SUBMIT HANDLER
   ========================== */
-  // handle form submit
 const handleSubmit = async (e) => {
   e.preventDefault();
 
   if (!files.citizenship) {
     return alert("Citizenship document is required");
   }
-  // create form data
+
   const formData = new FormData();
-  // append files
+
   if (files.citizenship) {
     formData.append("citizenship", files.citizenship);
   }
@@ -52,7 +52,6 @@ const handleSubmit = async (e) => {
   }
 
   try {
-    // resubmit user
     await resubmitUser(formData, token);
     setSubmitted(true);
     setTimeout(() => navigate("/login"), 3000);
@@ -60,7 +59,7 @@ const handleSubmit = async (e) => {
     // toast handled by hook
   }
 };
-  // check if token is valid
+
   if (!token) {
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -74,7 +73,7 @@ const handleSubmit = async (e) => {
     </div>
   );
 }
-  // check if submitted
+
   if (submitted) {
     return (
       <div className="min-h-screen flex flex-col bg-white">
@@ -100,7 +99,7 @@ const handleSubmit = async (e) => {
       </div>
     );
   }
-  // render
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
 

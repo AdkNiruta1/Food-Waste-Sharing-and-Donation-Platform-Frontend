@@ -16,15 +16,25 @@ import Register from "../pages/auth/Register/pages/Register";
 import AdminVerifyDocuments from "../pages/admin/users/pages/AdminVerifyUsersDoc";
 import { Header } from "../components/Header";
 import UserProfile from "../components/UserProfile";
+import Notifications from "../components/Notifications";
 import ResubmitDocuments from "../components/ResubmitDocuments";
 import AdminUserActivityLogs from "../pages/admin/users/pages/AdminViewUserLogs";
 import CreateFood from "../pages/donor/foods/pages/CreateFood";
 import FoodDetail from "../pages/recipient/browser/pages/ViewFoodDetails";
+import RequestHistory from "../pages/recipient/RequestFood/pages/RequestHistory";
+import ChangeEmail from "../pages/auth/change-email/pages/ChangeEmail";
+import ChangePassword from "../pages/auth/change-password/pages/ChangePassword";
 import DonorFoodDetail from "../pages/donor/dashboard/pages/ViewDonationFoodDetails";
 import EditFood from "../pages/donor/foods/pages/EditFood";
 import FoodDetailViewer from "../pages/recipient/dashboard/pages/FoodRequestDetails";
+import RatingPage from "../pages/recipient/RequestFood/pages/RatingPage";
+import ReceiverViewDonorDetails from "../pages/recipient/RequestFood/pages/ReceiverViewDonorDetails";
 import ViewFoodRequestList from "../pages/donor/dashboard/pages/ViewFoodRequestList";
+import DonorViewRequestDetails from "../pages/donor/dashboard/pages/DonorViewActiveDetails";
+import DonationHistory from "../pages/donor/DonationHistory/pages/DonationHistory";
 import AdminManageUsers from "../pages/admin/users/pages/AdminManageUsers";
+import AdminManageFoodPosts from "../pages/admin/posts/pages/AdminViewPostList";
+import { AdminViewContactMessage } from "../pages/admin/contact/pages/AdminViewContactMessage";
 
 export default function AppRoutes() {
   return (
@@ -47,6 +57,9 @@ export default function AppRoutes() {
         />
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<UserProfile />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/change-email" element={<ChangeEmail />} />
+          <Route path="/change-password" element={<ChangePassword />} />
 
 
         </Route>
@@ -56,6 +69,8 @@ export default function AppRoutes() {
           <Route path="/manage-users" element={<AdminManageUsers />} />
           <Route path="/admin/verify-documents" element={<AdminVerifyDocuments />} />
           <Route path="/admin/user/:userId/activity-logs" element={<AdminUserActivityLogs />} />
+          <Route path="/manage-posts" element={<AdminManageFoodPosts />} />
+          <Route path="/manage-messages" element={<AdminViewContactMessage />} />
         </Route>
 
         {/* Recipient */}
@@ -63,7 +78,10 @@ export default function AppRoutes() {
           <Route path="/recipient-dashboard" element={<RecipientDashboard />} />\
           <Route path="/food-browse" element={<ReciverBrowseFood />} />
           <Route path="/food-browse/:foodId" element={<FoodDetail />} />
+          <Route path="/request-history" element={<RequestHistory />} />
           <Route path="/food-donations/details/:foodId" element={<FoodDetailViewer />} />
+          <Route path="/food-donations/rating/:foodId" element={<RatingPage />} />
+          <Route path="/food-donations/donor/:id" element={<ReceiverViewDonorDetails />} />
 
 
         </Route>
@@ -75,6 +93,8 @@ export default function AppRoutes() {
           <Route path="/food-details/:foodId" element={<DonorFoodDetail />} />
           <Route path="/update-food/:foodId" element={<EditFood />} />
           <Route path="/donor/food/:foodId/requests" element={<ViewFoodRequestList />} />
+          <Route path="/donor/food/active/details/:id" element={<DonorViewRequestDetails />} />
+          <Route path="/donation-history" element={<DonationHistory />} />
 
         </Route>
 

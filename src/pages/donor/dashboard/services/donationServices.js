@@ -1,21 +1,31 @@
 import APIClient from "../../../../services/ApiClient";
 
 const client = new APIClient("food-donations");
-// get all donations
+
 export const donationServices = () => {
 
   return client.get('my');
 };
-// delete donation
 export const deleteDonationServices = (id) => {
 
   return client.delete(`${id}`);
 };
-// accept donation
+
 export const AcceptDonationServices = ( data) => {
   return client.post(data, "accept");
 }
-// reject donation
+
 export const RejectDonationServices = ( data) => {
   return client.post(data, "reject");
+}
+
+export const getActiveDonationServices = () => {
+  return client.get(`active`);
+}
+
+export const completePickupServices = (data) => {
+  return client.post(data, "complete");
+}
+export const getActiveDonationsbyIdServices = (donationId) => {
+  return client.get(`active/${donationId}`);
 }

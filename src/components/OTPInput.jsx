@@ -9,7 +9,7 @@ export function OTPInput({ value, onChange, length = 6 }) {
     // Focus first input on mount
     inputRefs.current[0]?.focus();
   }, []);
-// handle change
+
   const handleChange = (index, val) => {
     // Only allow single digit
     if (!/^\d*$/.test(val)) return;
@@ -25,7 +25,7 @@ export function OTPInput({ value, onChange, length = 6 }) {
       inputRefs.current[index + 1]?.focus();
     }
   };
-// handle keydown
+
   const handleKeyDown = (index, e) => {
     if (e.key === "Backspace") {
       if (value[index]) {
@@ -43,7 +43,7 @@ export function OTPInput({ value, onChange, length = 6 }) {
       inputRefs.current[index + 1]?.focus();
     }
   };
-// handle paste
+
   const handlePaste = (e) => {
     const pastedData = e.clipboardData.getData("text").slice(0, length);
     if (/^\d+$/.test(pastedData)) {

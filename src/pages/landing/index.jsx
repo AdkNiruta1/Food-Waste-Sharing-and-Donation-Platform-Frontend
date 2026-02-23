@@ -1,7 +1,7 @@
 import { Header } from "../../components/Header";
 import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   HandHeart,
   MapPin,
@@ -15,28 +15,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 import '../../index.css';
-import { useAuth } from "../../context/AuthContext";
-import {  useEffect } from "react";
 
 export default function Index() {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (loading) return;          // wait until auth is loaded
-    if (!user) return;           // safety check
-
-    if (user.role === "admin") {
-      navigate("/admin");
-    } else if (user.role === "donor") {
-      navigate("/donor-dashboard");
-    } else if (user.role === "recipient") {
-      navigate("/recipient-dashboard");
-    } else {
-      navigate("/");
-    }
-  }, [user, loading, navigate]);
-
-
   const stats = [
     { label: "Food Donations", value: "1,234+" },
     { label: "Active Users", value: "892" },
@@ -74,7 +54,7 @@ export default function Index() {
   ];
   return (
     <div className="min-h-screen flex flex-col">
-
+      
 
       {/* Hero Section */}
       <section className="relative py-20 px-4 md:py-32 overflow-hidden">

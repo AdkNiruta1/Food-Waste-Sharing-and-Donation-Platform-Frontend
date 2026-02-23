@@ -1,11 +1,12 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Menu, X, Bell, LogOut, User, Settings, Package } from "lucide-react";
-import {  useState } from "react";
+import { useEffect, useState } from "react";
 import Logo from "../assets/logo.png";
 import { useAuth } from "../context/AuthContext";
 import { useLogout } from "../hooks/useLogout";
 import { IMAGE_URL } from "../constants/constants";
+import { useGetNotification } from "../hooks/useGetNotification";
 
 export function Header() {
   const navigate = useNavigate();
@@ -14,13 +15,14 @@ export function Header() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { user, loading, isAuthenticated, refetchUser } = useAuth();
   const { logout, loading: logoutLoading } = useLogout();
-  // 
+
   const isLoggedIn = isAuthenticated;
   const isEmailVerified = user?.emailVerified;
   const isStatusVerified = user?.accountVerified;
   const userName = user?.emailVerified === "verified" && isStatusVerified === "verified" ? user?.name : "John Doe";
   const userRole = user?.emailVerified === "verified" && isStatusVerified === "verified" ? user?.role : "donor";
-  // function to handle logout
+  const { getNotifications, loading: notificationLoading, notifications } = useGetNotification();
+
   const handleLogout = async (e) => {
     e?.preventDefault(); //VERY IMPORTANT
 
@@ -35,7 +37,11 @@ export function Header() {
       console.error("Logout failed:", err);
     }
   };
+  useEffect(() => {
+    getNotifications();
+  }, [user]);
 
+  const countunseenNotifications = notificationLoading ? 0 : notifications.filter((n) => !n.read).length;
 
   const isActive = (path) => {
     return location.pathname === path
@@ -104,7 +110,11 @@ export function Header() {
                   <Button variant="ghost" size="sm" className="relative cursor-pointer">
                     <Bell className="h-5 w-5" />
 
-                   
+                    {countunseenNotifications > 0 && (
+                      <span className="absolute top-1 right-1 flex items-center justify-center h-4 w-4 bg-red-600 text-white text-[0.6rem] font-bold rounded-full border-2 border-white">
+                        {countunseenNotifications > 9 ? "9+" : countunseenNotifications}
+                      </span>
+                    )}
                   </Button>
                 </Link>
 
@@ -240,6 +250,11 @@ export function Header() {
                   <Link to="/notifications" onClick={() => setIsOpen(false)} className="flex items-center gap-3 text-lg font-medium text-slate-900 hover:text-green-600">
                     <Bell className="h-5 w-5" />
 
+                    {countunseenNotifications > 0 && (
+                      <span className="absolute top-1 right-1 flex items-center justify-center h-4 w-4 bg-red-600 text-white text-[0.6rem] font-bold rounded-full border-2 border-white">
+                        {countunseenNotifications > 9 ? "9+" : countunseenNotifications}
+                      </span>
+                    )}
                   </Link>
                   <Link to="/profile" onClick={() => setIsOpen(false)} className="flex items-center gap-3 text-lg font-medium text-slate-900 hover:text-green-600">
                     <User className="h-5 w-5" /> View Profile
