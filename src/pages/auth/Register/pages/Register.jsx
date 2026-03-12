@@ -13,7 +13,7 @@ export default function Register() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const { register, loading, error } = useRegister();
-// Form state
+  // Form state
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -21,7 +21,8 @@ export default function Register() {
     confirmPassword: "",
     role: "recipient",
     documents: {
-      citizenship: null,
+      citizenshipFront: null,
+      citizenshipBack: null,
       pan: null,
       drivingLicense: null,
     },
@@ -33,7 +34,7 @@ export default function Register() {
 
   const handleInputChange = (e) => {
     const { name, value, type } = e.target;
-// Handle file inputs separately
+    // Handle file inputs separately
     if (type === "file") {
       const file = e.target.files?.[0];
       if (name === "profileImage") {
@@ -58,7 +59,7 @@ export default function Register() {
 
   const validateStep1 = () => {
     const newErrors = {};
-// Basic info validations
+    // Basic info validations
     if (!formData.name.trim()) {
       newErrors.name = "Full name is required";
     }
@@ -78,79 +79,77 @@ export default function Register() {
 
   const validateStep2 = () => {
     const newErrors = {};
-// Additional info validations
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required";
-    }
-    if (!formData.address.trim()) {
-      newErrors.address = "Address is required";
-    }
+    if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
+    if (!formData.address.trim()) newErrors.address = "Address is required";
 
-    // Check for documents if hotel or needs verification
-    if (formData.role === "donor") {
-      if (!formData.documents.citizenship && !formData.documents.pan && !formData.documents.drivingLicense) {
-        newErrors.documents = "At least one form of ID is required";
-      }
-    } else {
-      if (!formData.documents.citizenship && !formData.documents.pan && !formData.documents.drivingLicense) {
-        newErrors.documents = "At least one form of ID is required";
-      }
+    const { citizenshipFront, citizenshipBack, pan, drivingLicense } = formData.documents;
+
+    const hasCitizenship = citizenshipFront && citizenshipBack;
+    const hasOther = pan || drivingLicense;
+
+    if (!hasCitizenship && !hasOther) {
+      newErrors.documents = "Upload citizenship (front & back), PAN, or driving license";
+    } else if ((citizenshipFront && !citizenshipBack) || (!citizenshipFront && citizenshipBack)) {
+      newErrors.documents = "Citizenship requires both front and back images";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-//handle form submit
+  //handle form submit
   const handleSubmit = async (e) => {
-  e.preventDefault();
-// Validate current step
-  if (step === 1) {
-    if (validateStep1()) setStep(2);
-    return;
-  }
-  // Final submission for step 2
-
-  if (!validateStep2()) return;
-// Check terms agreement
-  if (!agreedToTerms) {
-    setErrors({ terms: "You must agree to the terms" });
-    return;
-  }
-// Prepare form data for submission
-  try {
-    const formDataPayload = new FormData();
-
-    // Basic fields
-    formDataPayload.append("name", formData.name);
-    formDataPayload.append("email", formData.email);
-    formDataPayload.append("password", formData.password);
-    formDataPayload.append("role", formData.role);
-    formDataPayload.append("phone", formData.phone);
-    formDataPayload.append("address", formData.address);
-
-    // Profile image
-    if (formData.profileImage) {
-      formDataPayload.append("profilePicture", formData.profileImage);
+    e.preventDefault();
+    // Validate current step
+    if (step === 1) {
+      if (validateStep1()) setStep(2);
+      return;
     }
+    // Final submission for step 2
 
-    // Documents (at least one required)
-    if (formData.documents.citizenship) {
-      formDataPayload.append("citizenship", formData.documents.citizenship);
+    if (!validateStep2()) return;
+    // Check terms agreement
+    if (!agreedToTerms) {
+      setErrors({ terms: "You must agree to the terms" });
+      return;
     }
-    if (formData.documents.pan) {
-      formDataPayload.append("pan", formData.documents.pan);
+    // Prepare form data for submission
+    try {
+      const formDataPayload = new FormData();
+
+      // Basic fields
+      formDataPayload.append("name", formData.name);
+      formDataPayload.append("email", formData.email);
+      formDataPayload.append("password", formData.password);
+      formDataPayload.append("role", formData.role);
+      formDataPayload.append("phone", formData.phone);
+      formDataPayload.append("address", formData.address);
+
+      // Profile image
+      if (formData.profileImage) {
+        formDataPayload.append("profilePicture", formData.profileImage);
+      }
+
+      // Documents (at least one required)
+      if (formData.documents.citizenshipFront) {
+        formDataPayload.append("citizenshipFront", formData.documents.citizenshipFront);
+      }
+      if (formData.documents.citizenshipBack) {
+        formDataPayload.append("citizenshipBack", formData.documents.citizenshipBack);
+      }
+      if (formData.documents.pan) {
+        formDataPayload.append("pan", formData.documents.pan);
+      }
+      if (formData.documents.drivingLicense) {
+        formDataPayload.append("drivingLicense", formData.documents.drivingLicense);
+      }
+      // Call register service
+      await register(formDataPayload);
+      // Navigate to dashboard on success
+      navigate("/login");
+    } catch (err) {
+      console.error(err);
     }
-    if (formData.documents.drivingLicense) {
-      formDataPayload.append("drivingLicense", formData.documents.drivingLicense);
-    }
-// Call register service
-    await register(formDataPayload);
-// Navigate to dashboard on success
-    navigate("/login");
-  } catch (err) {
-    console.error(err);
-  }
-};
+  };
 
   const goBack = () => {
     if (step > 1) {
@@ -160,7 +159,7 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      
+
       <div className="flex-1 flex items-center justify-center px-4 py-20">
         <Card className="max-w-2xl w-full p-8">
           <div className="flex items-center justify-center gap-2 mb-8">
@@ -337,35 +336,84 @@ export default function Register() {
                     Verification Documents * (Upload at least one)
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    Submit citizenship, PAN, or driving license for verification
+                    Citizenship (front + back required), PAN card, or Driving License
                   </p>
 
                   <div className="space-y-2">
-                    <div className="border border-border rounded-lg p-4">
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="file"
-                          name="citizenship"
-                          onChange={handleInputChange}
-                          className="hidden"
-                        />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-foreground">Citizenship Certificate</p>
-                          <p className="text-xs text-muted-foreground">
-                            {formData.documents.citizenship
-                              ? formData.documents.citizenship.name
-                              : "Click to upload"}
-                          </p>
-                        </div>
-                        <Upload className="h-4 w-4 text-muted-foreground" />
-                      </label>
+                    {/* Citizenship — grouped with a subtle wrapper */}
+                    <div className="border border-border rounded-lg p-3 space-y-2 bg-accent/5">
+                      <p className="text-xs font-semibold text-foreground uppercase tracking-wide">
+                        Citizenship Certificate
+                      </p>
+
+                      {/* Front */}
+                      <div className="border border-dashed border-border rounded-lg p-3">
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="file"
+                            name="citizenshipFront"
+                            accept="image/*"
+                            onChange={handleInputChange}
+                            className="hidden"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-foreground">Front Side</p>
+                            <p className="text-xs text-muted-foreground">
+                              {formData.documents.citizenshipFront
+                                ? formData.documents.citizenshipFront.name
+                                : "Click to upload front"}
+                            </p>
+                          </div>
+                          {formData.documents.citizenshipFront ? (
+                            <img
+                              src={URL.createObjectURL(formData.documents.citizenshipFront)}
+                              alt="front preview"
+                              className="h-10 w-16 object-cover rounded border border-border"
+                            />
+                          ) : (
+                            <Upload className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </label>
+                      </div>
+
+                      {/* Back */}
+                      <div className="border border-dashed border-border rounded-lg p-3">
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="file"
+                            name="citizenshipBack"
+                            accept="image/*"
+                            onChange={handleInputChange}
+                            className="hidden"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-foreground">Back Side</p>
+                            <p className="text-xs text-muted-foreground">
+                              {formData.documents.citizenshipBack
+                                ? formData.documents.citizenshipBack.name
+                                : "Click to upload back"}
+                            </p>
+                          </div>
+                          {formData.documents.citizenshipBack ? (
+                            <img
+                              src={URL.createObjectURL(formData.documents.citizenshipBack)}
+                              alt="back preview"
+                              className="h-10 w-16 object-cover rounded border border-border"
+                            />
+                          ) : (
+                            <Upload className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </label>
+                      </div>
                     </div>
 
+                    {/* PAN */}
                     <div className="border border-border rounded-lg p-4">
                       <label className="flex items-center gap-3 cursor-pointer">
                         <input
                           type="file"
                           name="pan"
+                          accept="image/*"
                           onChange={handleInputChange}
                           className="hidden"
                         />
@@ -375,15 +423,25 @@ export default function Register() {
                             {formData.documents.pan ? formData.documents.pan.name : "Click to upload"}
                           </p>
                         </div>
-                        <Upload className="h-4 w-4 text-muted-foreground" />
+                        {formData.documents.pan ? (
+                          <img
+                            src={URL.createObjectURL(formData.documents.pan)}
+                            alt="pan preview"
+                            className="h-10 w-16 object-cover rounded border border-border"
+                          />
+                        ) : (
+                          <Upload className="h-4 w-4 text-muted-foreground" />
+                        )}
                       </label>
                     </div>
 
+                    {/* Driving License */}
                     <div className="border border-border rounded-lg p-4">
                       <label className="flex items-center gap-3 cursor-pointer">
                         <input
                           type="file"
                           name="drivingLicense"
+                          accept="image/*"
                           onChange={handleInputChange}
                           className="hidden"
                         />
@@ -395,15 +453,23 @@ export default function Register() {
                               : "Click to upload"}
                           </p>
                         </div>
-                        <Upload className="h-4 w-4 text-muted-foreground" />
+                        {formData.documents.drivingLicense ? (
+                          <img
+                            src={URL.createObjectURL(formData.documents.drivingLicense)}
+                            alt="license preview"
+                            className="h-10 w-16 object-cover rounded border border-border"
+                          />
+                        ) : (
+                          <Upload className="h-4 w-4 text-muted-foreground" />
+                        )}
                       </label>
                     </div>
                   </div>
+
                   {errors.documents && (
                     <p className="text-xs text-red-500">{errors.documents}</p>
                   )}
                 </div>
-
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
@@ -438,17 +504,17 @@ export default function Register() {
                   Back
                 </Button>
               )}
-              {( loading ) ? (
+              {(loading) ? (
                 <Button type="button" className={step === 1 ? "w-full" : "flex-1"} disabled>
                   Processing...
                 </Button>
               ) : (
-             <Button type="submit" className={step === 1 ? "w-full" : "flex-1"}>
-                {step === 1 ? "Continue" :  "Create Account"}
-              </Button>
+                <Button type="submit" className={step === 1 ? "w-full" : "flex-1"}>
+                  {step === 1 ? "Continue" : "Create Account"}
+                </Button>
               )}
             </div>
-              {error && (<div className="text-sm text-red-500 mt-2">{error}</div>)}
+            {error && (<div className="text-sm text-red-500 mt-2">{error}</div>)}
 
           </form>
 
