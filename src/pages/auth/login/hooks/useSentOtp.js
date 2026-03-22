@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { sendOtpService } from "../services/otpServices";
+import { sendOtpService } from "../services/OtpServices";
 //hook to send OTP
 export const useSentOtp = () => {
   const [loading, setLoading] = useState(false);
