@@ -107,13 +107,13 @@ export default function RequestHistory() {
     });
   };
 
-  const calculateDaysLeft = (expiryDate) => {
-    const today = new Date();
-    const expiry = new Date(expiryDate);
-    const diffTime = expiry - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
+  // const calculateDaysLeft = (expiryDate) => {
+  //   const today = new Date();
+  //   const expiry = new Date(expiryDate);
+  //   const diffTime = expiry - today;
+  //   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  //   return diffDays;
+  // };
 
   const filteredRequests = () => {
     let requests = userRequests || [];
@@ -151,7 +151,7 @@ export default function RequestHistory() {
   const stats = calculateStats();
 
   const renderRequestCard = (request) => {
-    const daysLeft = calculateDaysLeft(request?.foodPost?.expiryDate);
+    // const daysLeft = calculateDaysLeft(request?.foodPost?.expiryDate);
     
     return (
       <Card
@@ -179,7 +179,7 @@ export default function RequestHistory() {
                   {request?.foodPost?.quantity} {request?.foodPost?.unit}
                 </Badge>
               </div>
-              {daysLeft <= 7 && (
+              {/* {daysLeft <= 7 && (
                 <div className="absolute bottom-3 left-3">
                   <Badge className={`${
                     daysLeft <= 2 ? 'bg-gradient-to-r from-rose-500 to-rose-600' :
@@ -189,7 +189,7 @@ export default function RequestHistory() {
                     {daysLeft} days left
                   </Badge>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
 
@@ -234,7 +234,7 @@ export default function RequestHistory() {
                       onClick={() => handleViewDonor(request?.foodPost?.donor?._id)}
                       className="font-bold text-lg text-slate-900 hover:text-emerald-600 transition-colors flex items-center gap-1"
                     >
-                      {request.foodPost.donor?.name}
+                      {request?.foodPost?.donor?.name}
                       <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </button>
                   </div>
