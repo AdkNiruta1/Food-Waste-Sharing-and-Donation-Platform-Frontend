@@ -47,7 +47,9 @@ export default function AdminVerifyDocuments() {
   }
 
   const DOCUMENTS = [
-    { key: "citizenship", label: "Citizenship Certificate", icon: "📄" },
+    { key: "citizenshipFront", label: "Citizenship Front", icon: "📄" },
+    { key: "citizenshipBack", label: "Citizenship Back", icon: "📄" },
+
     { key: "pan", label: "PAN Card", icon: "💳" },
     { key: "drivingLicense", label: "Driving License", icon: "🚗" },
   ];
@@ -333,7 +335,6 @@ export default function AdminVerifyDocuments() {
                         {DOCUMENTS.map(({ key, label, icon }) => {
                           const file = userData.documents?.[key];
                           if (!file) return null;
-
                           const isPdf = file.endsWith(".pdf");
 
                           return (

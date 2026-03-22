@@ -355,7 +355,7 @@ export default function CreateFood() {
             <section className="space-y-6">
               <div className="flex items-center gap-3">
                 <Upload className="h-7 w-7 text-green-600" />
-                <h2 className="text-2xl font-bold text-slate-900">Add Photo (Optional)</h2>
+                <h2 className="text-2xl font-bold text-slate-900">Add Photo *</h2>
               </div>
 
               <div
