@@ -66,7 +66,7 @@ export function Header() {
               <>
                 <Link to="/" className={`text-sm font-medium pb-1 transition-colors ${isActive("/")}`}>Home</Link>
                 <Link to="/browse" className={`text-sm font-medium pb-1 transition-colors ${isActive("/browse")}`}>Browse Food</Link>
-                <Link to="/about" className={`text-sm font-medium pb-1 transition-colors ${isActive("/about")}`}>About Us</Link>
+                <Link to="/about" className={`text-sm font-medium pb-1 transition-colors ${isActive("/about")}`}>About</Link>
                 <Link to="/contact" className={`text-sm font-medium pb-1 transition-colors ${isActive("/contact")}`}>Contact</Link>
               </>
             )}
