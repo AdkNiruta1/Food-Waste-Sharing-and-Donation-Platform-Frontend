@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SendOtpService } from "../services/resetPasswordService";
+import { SendOtpService } from "../services/ResetPasswordService";
 //hook to send OTP
 export const useResetPasswordSentOtp = () => {
   const [loading, setLoading] = useState(false);

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { VerifyOtpService } from "../services/resetPasswordService";
+import { VerifyOtpService } from "../services/ResetPasswordService";
 //hook to verify OTP
 export const useForgetPasswordVerifiedOtp = () => {
   const [loading, setLoading] = useState(false);

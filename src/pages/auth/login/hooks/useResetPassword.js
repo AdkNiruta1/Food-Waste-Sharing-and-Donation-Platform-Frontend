@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { resetPasswordService } from "../services/resetPasswordService";
+import { resetPasswordService } from "../services/ResetPasswordService";
 //hook to reset password
 export const useResetPassword = () => {
   const [loading, setLoading] = useState(false);
