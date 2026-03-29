@@ -315,21 +315,21 @@ export default function Index() {
               <h4 className="font-semibold text-slate-900 mb-4">Platform</h4>
               <ul className="space-y-2 text-sm text-slate-600">
                 <li><Link to="/browse" className="hover:text-[#28bd5f] transition-colors">Browse</Link></li>
-                <li><Link to="/donate" className="hover:text-[#28bd5f] transition-colors">Donate</Link></li>
+                <li><Link to="/register" className="hover:text-[#28bd5f] transition-colors">Donate</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold text-slate-900 mb-4">About</h4>
               <ul className="space-y-2 text-sm text-slate-600">
-                <li><a href="#" className="hover:text-[#28bd5f] transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-[#28bd5f] transition-colors">Contact</a></li>
+                <li><Link to="/about" className="hover:text-[#28bd5f] transition-colors">About Us</Link></li>
+                <li><Link to="/contact" className="hover:text-[#28bd5f] transition-colors">Contact</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold text-slate-900 mb-4">Legal</h4>
               <ul className="space-y-2 text-sm text-slate-600">
-                <li><a href="#" className="hover:text-[#28bd5f] transition-colors">Privacy</a></li>
-                <li><a href="#" className="hover:text-[#28bd5f] transition-colors">Terms</a></li>
+                <li><Link to="/privacy" className="hover:text-[#28bd5f] transition-colors">Privacy</Link></li>
+                <li><Link to="/terms" className="hover:text-[#28bd5f] transition-colors">Terms</Link></li>
               </ul>
             </div>
           </div>

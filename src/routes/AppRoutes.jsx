@@ -35,6 +35,8 @@ import DonationHistory from "../pages/donor/DonationHistory/pages/DonationHistor
 import AdminManageUsers from "../pages/admin/users/pages/AdminManageUsers";
 import AdminManageFoodPosts from "../pages/admin/posts/pages/AdminViewPostList";
 import { AdminViewContactMessage } from "../pages/admin/contact/pages/AdminViewContactMessage";
+import Terms from "../pages/landing/Terms";
+import Privacy from "../pages/landing/Privacy";
 
 export default function AppRoutes() {
   return (
@@ -51,6 +53,8 @@ export default function AppRoutes() {
         <Route path="/email-verification" element={<VerifyEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/browse" element={<BrowseFood />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
         <Route
           path="/resubmit-documents/:token"
           element={<ResubmitDocuments />}
@@ -75,7 +79,7 @@ export default function AppRoutes() {
 
         {/* Recipient */}
         <Route element={<ProtectedRoute roles={["recipient"]} />}>
-          <Route path="/recipient-dashboard" element={<RecipientDashboard />} />\
+          <Route path="/recipient-dashboard" element={<RecipientDashboard />} />
           <Route path="/food-browse" element={<ReciverBrowseFood />} />
           <Route path="/food-browse/:foodId" element={<FoodDetail />} />
           <Route path="/request-history" element={<RequestHistory />} />
