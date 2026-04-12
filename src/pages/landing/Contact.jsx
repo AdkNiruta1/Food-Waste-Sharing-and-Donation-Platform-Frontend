@@ -34,14 +34,14 @@ export default function Contact() {
     {
       icon: <Phone className="h-6 w-6" />,
       title: "Phone",
-      details: "+977 1 4123456",
+      details: "+977 9804346486",
       description: "Monday to Friday, 9 AM - 5 PM",
     },
     {
       icon: <MapPin className="h-6 w-6" />,
       title: "Address",
-      details: "Kathmandu, Nepal",
-      description: "Tech Park, Thamel",
+      details: "Itahari, Nepal",
+      description: "Near Army Camp",
     },
     {
       icon: <Clock className="h-6 w-6" />,
