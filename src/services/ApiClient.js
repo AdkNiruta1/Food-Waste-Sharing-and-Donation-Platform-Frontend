@@ -14,7 +14,7 @@ const axiosInstance = axios.create({
     Accept: "application/json", // Expect JSON responses
     "Content-Type": "application/json", // Send JSON data
   },
-  timeout: 5000, // Request will fail if it takes more than 5 seconds
+  timeout: 20000, // Request will fail if it takes more than 20 seconds
   withCredentials: true, // Send cookies (useful for auth sessions)
 });
 
