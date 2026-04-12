@@ -18,10 +18,6 @@ const axiosInstance = axios.create({
   withCredentials: true, // Send cookies (useful for auth sessions)
 });
 
-/**
- * Axios response interceptor
- * Handles successful responses and errors globally
- */
 axiosInstance.interceptors.response.use(
   // If request is successful, just return the response
   (response) => response,
