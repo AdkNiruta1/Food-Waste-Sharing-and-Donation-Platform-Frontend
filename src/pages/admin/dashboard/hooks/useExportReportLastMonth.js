@@ -18,17 +18,16 @@ export const useExportFullMonthlyReport = () => {
 
       const month = lastMonthDate.getMonth() + 1; // 1–12
       const year = lastMonthDate.getFullYear();
-console.log(month, year);
       const response = await exportFullReportMonthlyService(month, year);
 
       // ✅ Create blob URL
-      const blob = new Blob([response], { type: "application/zip" });
+      const blob = new Blob([response], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
 
       // ✅ Trigger download
       const link = document.createElement("a");
       link.href = url;
-      link.download = "full-app-report-last-month.zip";
+      link.download = "full-app-report-last-month.pdf";
       document.body.appendChild(link);
       link.click();
       link.remove();

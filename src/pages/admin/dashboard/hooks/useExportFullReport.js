@@ -14,14 +14,14 @@ export const useExportFullReport = () => {
     try {
       const response = await exportFullReportService();
 
-      // ✅ Create blob URL
-      const blob = new Blob([response], { type: "application/zip" });
+      // Create blob URL
+      const blob = new Blob([response], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
 
-      // ✅ Trigger download
+      // Trigger download
       const link = document.createElement("a");
       link.href = url;
-      link.download = "full-app-report.zip";
+      link.download = "full-app-report.pdf";
       document.body.appendChild(link);
       link.click();
       link.remove();

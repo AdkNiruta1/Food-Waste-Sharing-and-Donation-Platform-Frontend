@@ -14,19 +14,19 @@ export const useExportUserAnalytics = () => {
     try {
       const response = await exportUserAnalyticsService();
 
-      // ✅ Create CSV blob
-      const blob = new Blob([response], { type: "text/csv;charset=utf-8;" });
+      // ✅ Create PDF blob
+      const blob = new Blob([response], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
 
       // ✅ Trigger download
       const link = document.createElement("a");
       link.href = url;
-      link.download = "users.csv"; // 👈 Correct filename
+      link.download = "users.pdf"; // 👈 Correct filename
       document.body.appendChild(link);
       link.click();
       link.remove();
 
-      showToast("Users CSV exported successfully", "success");
+      showToast("Users PDF exported successfully", "success");
     } catch (err) {
       setError(err.message);
       showToast(err.message || "Failed to export users", "error");
