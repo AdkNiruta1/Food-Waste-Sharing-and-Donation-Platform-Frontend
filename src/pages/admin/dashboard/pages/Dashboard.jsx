@@ -677,7 +677,7 @@ export default function AdminDashboard() {
                         Exporting...
                       </div>
                     ) : (
-                      "Export Users Report (CSV)"
+                      "Export Users Report (PDF)"
                     )}
                   </Button>
                   
@@ -694,7 +694,7 @@ export default function AdminDashboard() {
                         Exporting...
                       </div>
                     ) : (
-                      "Export Monthly Report (CSV)"
+                      "Export Monthly Report (PDF)"
                     )}
                   </Button>
                 </div>
