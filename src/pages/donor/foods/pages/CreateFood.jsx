@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../../../../components/ui/button";
 import { Card } from "../../../../components/ui/card";
 import { Input } from "../../../../components/ui/input";
@@ -40,6 +40,7 @@ const CITIES = {
 
 export default function CreateFood() {
   const navigate = useNavigate();
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -78,15 +79,23 @@ export default function CreateFood() {
       );
     });
   };
+
   const [sendLoading, setsendLoading] = useState(false);
   const handleFileChange = (file) => {
     if (!file) return;
 
-    setFormData((prev) => ({
-      ...prev,
-      photo: file,
-    }));
+    setFormData((prev) => ({ ...prev, photo: file }));
+
+    // Revoke previous URL to avoid memory leaks
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(URL.createObjectURL(file));
   };
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   const handleChange = (
     e
@@ -380,6 +389,29 @@ export default function CreateFood() {
                   onChange={(e) => handleFileChange(e.target.files[0])}
                 />
               </div>
+              {previewUrl && (
+                <div className="mt-4 relative w-full rounded-xl overflow-hidden border border-slate-200">
+                  <img
+                    src={previewUrl}
+                    alt="Food preview"
+                    className="w-full max-h-72 object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPreviewUrl(null);
+                      setFormData((prev) => ({ ...prev, photo: null }));
+                      document.getElementById("food-photo").value = "";
+                    }}
+                    className="absolute top-2 right-2 bg-white/80 hover:bg-white text-slate-700 rounded-full p-1 shadow"
+                  >
+                    ✕
+                  </button>
+                  <p className="text-sm text-slate-500 px-3 py-2 bg-white truncate">
+                    {formData.photo?.name}
+                  </p>
+                </div>
+              )}
 
               {formData.photo && (
                 <p className="mt-2 text-green-700">Selected file: {formData.photo.name}</p>

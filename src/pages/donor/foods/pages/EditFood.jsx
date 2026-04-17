@@ -39,7 +39,8 @@ export default function EditFood() {
 
   const { foods: post, FoodDonationDetails, loading } = useGetFoodDetails();
   const { updatePost, updating } = useUpdatePost();
-
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [isNewPhoto, setIsNewPhoto] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -59,7 +60,6 @@ export default function EditFood() {
   useEffect(() => {
     FoodDonationDetails(foodId);
   }, [foodId]);
-
   /* Populate form */
   useEffect(() => {
     if (!post) return;
@@ -77,6 +77,10 @@ export default function EditFood() {
       pickupInstructions: post.pickupInstructions,
       photo: null,
     });
+    if (post.photo) {
+      setPreviewUrl(IMAGE_URL + post.photo);
+      setIsNewPhoto(false);
+    }
   }, [post]);
 
   const handleChange = (e) => {
@@ -95,8 +99,18 @@ export default function EditFood() {
   };
 
   const handleFileChange = (file) => {
-    if (file) setFormData((prev) => ({ ...prev, photo: file }));
+    if (!file) return;
+    setFormData((prev) => ({ ...prev, photo: file }));
+
+    if (isNewPhoto && previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(URL.createObjectURL(file));
+    setIsNewPhoto(true);
   };
+  useEffect(() => {
+    return () => {
+      if (isNewPhoto && previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl, isNewPhoto]);
 
   const validate = () => {
     const e = {};
@@ -166,8 +180,8 @@ export default function EditFood() {
                     <label
                       key={t.value}
                       className={`p-4 border-2 rounded-lg cursor-pointer ${formData.type === t.value
-                          ? "border-green-600 bg-green-50"
-                          : "border-slate-300"
+                        ? "border-green-600 bg-green-50"
+                        : "border-slate-300"
                         }`}
                     >
                       <input
@@ -281,19 +295,45 @@ export default function EditFood() {
             <section>
               <h2 className="text-2xl font-bold mb-4">Update Photo</h2>
 
-              {post?.photo && (
-                <img
-                  src={IMAGE_URL + post.photo}
-                  className="h-40 rounded mb-4"
-                />
+              {previewUrl && (
+                <div className="relative w-full rounded-xl overflow-hidden border border-slate-200 mb-4">
+                  <img
+                    src={previewUrl}
+                    alt="Food preview"
+                    className="w-full max-h-72 object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isNewPhoto) URL.revokeObjectURL(previewUrl);
+                      setPreviewUrl(post?.photo ? IMAGE_URL + post.photo : null);
+                      setIsNewPhoto(false);
+                      setFormData((prev) => ({ ...prev, photo: null }));
+                      document.getElementById("edit-food-photo").value = "";
+                    }}
+                    className="absolute top-2 right-2 bg-white/80 hover:bg-white text-slate-700 rounded-full px-2 py-1 shadow text-sm"
+                  >
+                    {isNewPhoto ? "✕ Remove" : "✕ Reset to original"}
+                  </button>
+                  {isNewPhoto && (
+                    <p className="text-sm text-slate-500 px-3 py-2 bg-white truncate">
+                      {formData.photo?.name}
+                    </p>
+                  )}
+                </div>
               )}
 
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileChange(e.target.files[0])}
-                className="cursor-pointer"
-              />
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-green-700 hover:underline">
+                <Upload className="h-4 w-4" />
+                {previewUrl ? "Change photo" : "Upload photo"}
+                <input
+                  id="edit-food-photo"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handleFileChange(e.target.files[0])}
+                />
+              </label>
             </section>
 
             {/* Actions */}
