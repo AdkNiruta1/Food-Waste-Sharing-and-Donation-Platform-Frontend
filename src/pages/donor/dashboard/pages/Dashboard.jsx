@@ -396,8 +396,8 @@ export default function DonorDashboard() {
                 {pagination && (
                   <div className="flex justify-between items-center mb-4 text-sm text-slate-600">
                     <p>
-                      Showing {(pagination.currentPage - 1) * pagination.limit + 1} to{' '}
-                      {Math.min(pagination.currentPage * pagination.limit, pagination.total)} of{' '}
+                      Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
+                      {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
                       {pagination.total} donations
                     </p>
                     <div className="flex items-center gap-2">
