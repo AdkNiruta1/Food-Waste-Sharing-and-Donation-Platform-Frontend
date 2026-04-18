@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { Header } from "../../../../components/Header";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "../../../../components/ui/button";
 import { Card } from "../../../../components/ui/card";
 import { Link } from "react-router-dom";
@@ -16,32 +15,46 @@ import {
   Calendar,
   CheckCircle2,
   AlertCircle,
+  Filter,
+  RefreshCw
 } from "lucide-react";
-import { useGetFoodRequestList } from "../hooks/useGetFoodRequestList";
 import { IMAGE_URL } from "../../../../constants/constants";
 import { useCancelFoodRequest } from "../hooks/useCancelFoodRequest";
-import { useAuth } from "../../../../context/AuthContext";
+import { Pagination } from "../../../../components/Paginations";
+import { useGetActiveFoodRequestList } from "../hooks/useGetFoodRequestActiveList"; // Fixed import
+import { useFoodRequestStats } from "../hooks/useGetFoodRequestStats";
 
 export default function RecipientDashboard() {
   const [activeTab, setActiveTab] = useState("active");
-  const { foods: userRequests, loading, error, fetchFoodRequestList } = useGetFoodRequestList();
+  const [activeCurrentPage, setActiveCurrentPage] = useState(1);
+  
+  const { 
+    foods: userRequests, 
+    loading, 
+    error, 
+    fetchActiveFoodRequestList, 
+    pagination,
+  } = useGetActiveFoodRequestList();
+  
   const { cancelFoodRequest, error: cancelError } = useCancelFoodRequest();
   const [cancellingId, setCancellingId] = useState(null);
-  const { user } = useAuth();
 
+  const { stats: apiStats, loading: statsLoading} = useFoodRequestStats(); // Stats are now calculated locally from the request list, so we don't need to fetch them separately
+
+  // Fetch data when page or tab changes
   useEffect(() => {
-    fetchFoodRequestList();
-  }, []);
+    const page = activeTab === "active" ? activeCurrentPage : 1;
+    fetchActiveFoodRequestList(page, activeTab === "active" ? "active" : "history", 10);
+  }, [activeCurrentPage, activeTab, fetchActiveFoodRequestList]);
 
-  // Stats calculation
-  const totalRequests = userRequests.length;
-  const pendingRequests = userRequests.filter(r => r.status === "pending").length;
-  const acceptedRequests = userRequests.filter(r => r.status === "accepted").length;
-  const completedRequests = userRequests.filter(r => r.status === "completed").length;
-  
+  // Calculate stats from API data or local filtering
+  const totalRequests = statsLoading ?  "..."  : apiStats?.totalRequests || "N/A";
+  const pendingRequests =  statsLoading? "..." : apiStats?.pendingRequests || "N/A";
+  const acceptedRequests = statsLoading ? "..." : apiStats?.acceptedRequests || "N/A";
+  const completedRequests = statsLoading ? "..." : apiStats?.completedRequests || "N/A";
+
   // Calculate average rating
-  const completedWithRating = userRequests.filter(r => r.status === "completed" && r.foodPost?.receiver?.rating);
-
+  const averageRating = statsLoading? "..." : apiStats?.averageRating || "N/A";
 
   const stats = [
     {
@@ -70,8 +83,8 @@ export default function RecipientDashboard() {
     },
     {
       label: "Your Rating",
-      value: `${user?.rating || "0.0"} ★`,
-      change: `${completedWithRating.length} completed deliveries`,
+      value: `${averageRating} ★`,
+      change: `${completedRequests} completed deliveries`,
       icon: <TrendingUp className="h-6 w-6" />,
       color: "text-yellow-600",
       bgColor: "bg-yellow-50",
@@ -79,7 +92,7 @@ export default function RecipientDashboard() {
   ];
 
   // Filter requests based on active tab
-  const getFilteredRequests = () => {
+  const getFilteredRequests = useCallback(() => {
     switch (activeTab) {
       case "active":
         return userRequests.filter(request => 
@@ -87,20 +100,18 @@ export default function RecipientDashboard() {
         );
       case "history":
         return userRequests.filter(request => 
-          request.status === "completed" || 
-          request.status === "rejected" || 
-          request.status === "cancelled"
+          request.status === "completed" || request.status === "cancelled" || request.status === "rejected"
         );
       default:
         return [];
     }
-  };
+  }, [activeTab, userRequests]);
 
   const filteredRequests = getFilteredRequests();
 
   // Get status badge styling
   const getStatusBadge = (status) => {
-    const baseClass = "inline-block px-4 py-1.5 rounded-full text-sm font-semibold";
+    const baseClass = "inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold";
     
     switch(status) {
       case "pending":
@@ -158,16 +169,27 @@ export default function RecipientDashboard() {
     try {
       setCancellingId(id);
       await cancelFoodRequest({ "requestId": id });
-      fetchFoodRequestList();
+      // Refresh the current page after cancellation
+      const page = activeTab === "active" ? activeCurrentPage : 1;
+      await fetchActiveFoodRequestList(page, activeTab === "active" ? "active" : "history", 10);
     } catch (err) {
-      console.log(err);
-      setCancellingId(null);
+      console.error("Cancel error:", err);
     } finally {
       setCancellingId(null);
     }
   };
 
-  if (loading) {
+  const handleActivePageChange = (newPage) => {
+    setActiveCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleRefresh = async () => {
+    const page = activeTab === "active" ? activeCurrentPage : 1;
+    await fetchActiveFoodRequestList(page, activeTab === "active" ? "active" : "history", 10);
+  };
+
+  if (loading && userRequests.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-green-600"></div>
@@ -178,7 +200,14 @@ export default function RecipientDashboard() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-600 text-lg">Error: {error}</p>
+        <div className="text-center">
+          <AlertCircle className="h-16 w-16 text-red-600 mx-auto mb-4" />
+          <p className="text-red-600 text-lg mb-4">Error: {error}</p>
+          <Button onClick={handleRefresh} variant="outline">
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Try Again
+          </Button>
+        </div>
       </div>
     );
   }
@@ -197,12 +226,23 @@ export default function RecipientDashboard() {
                 Track your food requests and received donations
               </p>
             </div>
-            <Link to="/food-browse">
-              <Button size="lg" className="bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-shadow">
-                <Package className="mr-2 h-5 w-5" />
-                Browse Available Food
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={handleRefresh}
+                disabled={loading}
+                className="border-slate-300 hover:border-slate-400"
+              >
+                <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
               </Button>
-            </Link>
+              <Link to="/food-browse">
+                <Button size="lg" className="bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-shadow">
+                  <Package className="mr-2 h-5 w-5" />
+                  Browse Available Food
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -233,23 +273,52 @@ export default function RecipientDashboard() {
           ))}
         </div>
 
-        {/* Tabs */}
         <div className="space-y-8">
-          <div className="flex gap-8 border-b border-slate-200 overflow-x-auto">
-            <button
-              onClick={() => setActiveTab("active")}
-              className={`pb-4 px-2 font-medium text-lg transition-colors border-b-2 whitespace-nowrap ${activeTab === "active"
-                ? "text-green-600 border-green-600"
-                : "text-slate-600 hover:text-slate-900 border-transparent"
-                }`}
-            >
-              Active Requests ({pendingRequests + acceptedRequests})
-            </button>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200">
+            <div className="flex gap-8 overflow-x-auto">
+              <button
+                onClick={() => {
+                  setActiveTab("active");
+                  setActiveCurrentPage(1);
+                }}
+                className={`pb-4 px-2 font-medium text-lg transition-colors border-b-2 whitespace-nowrap ${activeTab === "active"
+                  ? "text-green-600 border-green-600"
+                  : "text-slate-600 hover:text-slate-900 border-transparent"
+                  }`}
+              >
+                Active Requests ({pendingRequests + acceptedRequests})
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab("history");
+                }}
+                className={`pb-4 px-2 font-medium text-lg transition-colors border-b-2 whitespace-nowrap ${activeTab === "history"
+                  ? "text-green-600 border-green-600"
+                  : "text-slate-600 hover:text-slate-900 border-transparent"
+                  }`}
+              >
+                History
+              </button>
+            </div>
           </div>
 
           {/* Active Requests Tab */}
           {activeTab === "active" && (
             <div className="space-y-6">
+              {/* Results Info */}
+              {pagination && pagination.total > 0 && (
+                <div className="flex justify-between items-center mb-4 text-sm text-slate-600">
+                  <p>
+                    Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
+                    {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
+                    {pagination.total} active requests
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span>Items per page: {pagination.limit}</span>
+                  </div>
+                </div>
+              )}
+
               {filteredRequests.length === 0 ? (
                 <Card className="p-16 text-center border-slate-200 shadow-sm">
                   <Package className="h-20 w-20 text-slate-400 mx-auto mb-6" />
@@ -266,136 +335,150 @@ export default function RecipientDashboard() {
                   </Link>
                 </Card>
               ) : (
-                filteredRequests.map((request) => (
-                  <Card
-                    key={request._id}
-                    className="p-6 border-slate-200 hover:shadow-lg transition-shadow"
-                  >
-                    <div className="grid lg:grid-cols-5 gap-6 items-start">
-                      {/* Image */}
-                      <div className="lg:col-span-1">
-                        <img
-                          src={request.foodPost?.photo 
-                            ? IMAGE_URL + request.foodPost.photo 
-                            : "https://via.placeholder.com/300x200?text=No+Image"}
-                          alt={request.foodPost?.title}
-                          className="w-full h-44 object-cover rounded-lg border border-slate-200"
-                        />
-                      </div>
-
-                      {/* Food & Donor Details */}
-                      <div className="lg:col-span-2 space-y-4">
-                        <div>
-                          <Link
-                            to={`/food/${request.foodPost?._id}`}
-                            className="text-2xl font-bold text-slate-900 hover:text-green-600 transition-colors"
-                          >
-                            {request.foodPost?.title || "Unknown Food"}
-                          </Link>
-                          <p className="text-slate-600 mt-2 line-clamp-2">
-                            {request.foodPost?.description}
-                          </p>
+                <>
+                  {filteredRequests.map((request) => (
+                    <Card
+                      key={request._id}
+                      className="p-6 border-slate-200 hover:shadow-lg transition-shadow"
+                    >
+                      <div className="grid lg:grid-cols-5 gap-6 items-start">
+                        {/* Image */}
+                        <div className="lg:col-span-1">
+                          <img
+                            src={request.foodPost?.photo 
+                              ? IMAGE_URL + request.foodPost.photo 
+                              : "https://via.placeholder.com/300x200?text=No+Image"}
+                            alt={request.foodPost?.title}
+                            className="w-full h-44 object-cover rounded-lg border border-slate-200"
+                          />
                         </div>
 
-                        <div className="space-y-3 text-sm">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-50 rounded-lg">
-                              <User className="h-5 w-5 text-blue-600" />
-                            </div>
-                            <div>
-                              <p className="text-slate-600">Donated by</p>
-                              <p className="font-medium text-slate-900">
-                                {request.foodPost?.donor.name} 
-                                {request.foodPost?.donor.rating && (
-                                  <span className="ml-2 text-yellow-600">
-                                    ({request.foodPost.donor.rating}★)
-                                  </span>
-                                )}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-50 rounded-lg">
-                              <MapPin className="h-5 w-5 text-blue-600" />
-                            </div>
-                            <div>
-                              <p className="text-slate-600">Location</p>
-                              <p className="font-medium text-slate-900">
-                                {request.foodPost?.city}, {request.foodPost?.district}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-50 rounded-lg">
-                              <Calendar className="h-5 w-5 text-blue-600" />
-                            </div>
-                            <div>
-                              <p className="text-slate-600">Requested</p>
-                              <p className="font-medium text-slate-900">
-                                {new Date(request.requestedAt).toLocaleDateString()}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Status & Actions */}
-                      <div className="lg:col-span-2 space-y-5">
-                        <div>
-                          <p className="text-sm text-slate-600 mb-2">
-                            Request Status
-                          </p>
-                          <div className="flex items-center gap-2">
-                            <span className={getStatusBadge(request.status)}>
-                              {getStatusIcon(request.status)}
-                              <span className="ml-2">{getStatusText(request.status)}</span>
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="space-y-3">
-                          <Link to={`/food-donations/details/${request._id}`} className="block">
-                            <Button variant="outline" className="w-full border-slate-300 hover:border-green-600 hover:text-green-600">
-                              View Donation Details
-                            </Button>
-                          </Link>
-                          
-                          {request.status === "pending" && (
-                            <Button
-                              variant="outline"
-                              className="w-full text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200"
-                              onClick={() => handleCancelRequest(request._id)}
-                              disabled={cancellingId === request._id}
+                        {/* Food & Donor Details */}
+                        <div className="lg:col-span-2 space-y-4">
+                          <div>
+                            <Link
+                              to={`/food/${request.foodPost?._id}`}
+                              className="text-2xl font-bold text-slate-900 hover:text-green-600 transition-colors"
                             >
-                              {cancellingId === request._id ? "Cancelling..." : "Cancel Request"}
-                            </Button>
-                          )}
-                          
-                          {cancelError && (
-                            <p className="text-red-600 text-sm">{cancelError}</p>
-                          )}
-                          
-                          {request.status === "accepted" && (
-                            <Button asChild className="w-full bg-green-600 hover:bg-green-700">
-                              <a href={`tel:${request.foodPost?.donor.phone}`}>
-                                <MessageSquare className="mr-2 h-5 w-5" />
-                                Contact Donor
-                              </a>
-                            </Button>
-                          )}
-                        </div>
-
-                        {request.status === "accepted" && (
-                          <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm">
-                            <p className="font-medium text-green-700">
-                              Coordinate pickup time and location can view in your donation details.
+                              {request.foodPost?.title || "Unknown Food"}
+                            </Link>
+                            <p className="text-slate-600 mt-2 line-clamp-2">
+                              {request.foodPost?.description}
                             </p>
                           </div>
-                        )}
+
+                          <div className="space-y-3 text-sm">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-blue-50 rounded-lg">
+                                <User className="h-5 w-5 text-blue-600" />
+                              </div>
+                              <div>
+                                <p className="text-slate-600">Donated by</p>
+                                <p className="font-medium text-slate-900">
+                                  {request.foodPost?.donor?.name || "Unknown"} 
+                                  {request.foodPost?.donor?.rating && (
+                                    <span className="ml-2 text-yellow-600">
+                                      ({request.foodPost.donor.rating}★)
+                                    </span>
+                                  )}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-blue-50 rounded-lg">
+                                <MapPin className="h-5 w-5 text-blue-600" />
+                              </div>
+                              <div>
+                                <p className="text-slate-600">Location</p>
+                                <p className="font-medium text-slate-900">
+                                  {request.foodPost?.city || "N/A"}, {request.foodPost?.district || "N/A"}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-blue-50 rounded-lg">
+                                <Calendar className="h-5 w-5 text-blue-600" />
+                              </div>
+                              <div>
+                                <p className="text-slate-600">Requested</p>
+                                <p className="font-medium text-slate-900">
+                                  {new Date(request.requestedAt).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Status & Actions */}
+                        <div className="lg:col-span-2 space-y-5">
+                          <div>
+                            <p className="text-sm text-slate-600 mb-2">
+                              Request Status
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <span className={getStatusBadge(request.status)}>
+                                {getStatusIcon(request.status)}
+                                <span className="ml-2">{getStatusText(request.status)}</span>
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3">
+                            <Link to={`/food-donations/details/${request._id}`} className="block">
+                              <Button variant="outline" className="w-full border-slate-300 hover:border-green-600 hover:text-green-600">
+                                View Donation Details
+                              </Button>
+                            </Link>
+                            
+                            {request.status === "pending" && (
+                              <Button
+                                variant="outline"
+                                className="w-full text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200"
+                                onClick={() => handleCancelRequest(request._id)}
+                                disabled={cancellingId === request._id}
+                              >
+                                {cancellingId === request._id ? "Cancelling..." : "Cancel Request"}
+                              </Button>
+                            )}
+                            
+                            {cancelError && cancellingId === request._id && (
+                              <p className="text-red-600 text-sm">{cancelError}</p>
+                            )}
+                            
+                            {request.status === "accepted" && request.foodPost?.donor?.phone && (
+                              <Button asChild className="w-full bg-green-600 hover:bg-green-700">
+                                <a href={`tel:${request.foodPost.donor.phone}`}>
+                                  <MessageSquare className="mr-2 h-5 w-5" />
+                                  Contact Donor
+                                </a>
+                              </Button>
+                            )}
+                          </div>
+
+                          {request.status === "accepted" && (
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm">
+                              <p className="font-medium text-green-700">
+                                ✓ Request accepted! Check donation details for pickup information.
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
+                    </Card>
+                  ))}
+
+                  {/* Active Pagination */}
+                  {pagination && pagination.totalPages > 1 && (
+                    <div className="mt-8 flex justify-center">
+                      <Pagination
+                        currentPage={activeCurrentPage}
+                        totalPages={pagination.totalPages}
+                        onPageChange={handleActivePageChange}
+                        loading={loading}
+                      />
                     </div>
-                  </Card>
-                ))
+                  )}
+                </>
               )}
             </div>
           )}

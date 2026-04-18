@@ -11,3 +11,11 @@ export const getFoodRequestDetailsService = (id) => {
 export const cancelFoodRequestService = (data) => {
   return client.post(data,`/request/cancel`);
 }
+export const getActiveListFoodRequestsService = (page, limit, status) => {
+  return client.get(
+    `my/requests/active?page=${page}&limit=${limit}&status=${status}`
+  );
+};
+export const getFoodRequestStatsService = () => {
+  return client.get(`my/requests/stats`);
+}

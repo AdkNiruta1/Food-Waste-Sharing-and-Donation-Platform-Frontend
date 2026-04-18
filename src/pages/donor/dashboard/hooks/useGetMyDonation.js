@@ -7,15 +7,29 @@ export const useGetMyFood = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // ✅ pagination state
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
+
   const { showToast } = useContext(AppContext);
 
-  const fetchMyFoodDonation = async (page = 1, limit = 10) => {
+  const fetchMyFoodDonation = async (page = 1) => {
     setLoading(true);
     setError(null);
 
     try {
-      const res = await donationServices(page, limit);
-      setFoods(res.data);
+      const res = await donationServices(page, 10);
+
+      // ✅ set data
+      setFoods(res.data.donations);
+
+      // ✅ set pagination from backend
+      setPagination(res.data.pagination);
+
       return res;
     } catch (err) {
       setError(err.message);
@@ -30,6 +44,7 @@ export const useGetMyFood = () => {
     foods,
     loading,
     error,
+    pagination, // ✅ expose pagination
     fetchMyFoodDonation,
   };
 };
