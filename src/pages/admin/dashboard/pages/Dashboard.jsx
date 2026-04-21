@@ -453,7 +453,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900"
-                    onClick={() => navigate("manage-posts")}>
+                    onClick={() => navigate("/manage-posts")}>
                       View All
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
@@ -535,7 +535,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900"
-                    onClick={() => navigate("manage-users")}>
+                    onClick={() => navigate("/manage-users")}>
                       View All
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
