@@ -48,13 +48,13 @@ export default function RecipientDashboard() {
   }, [activeCurrentPage, activeTab, fetchActiveFoodRequestList]);
 
   // Calculate stats from API data or local filtering
-  const totalRequests = statsLoading ?  "..."  : apiStats?.totalRequests || "N/A";
-  const pendingRequests =  statsLoading? "..." : apiStats?.pendingRequests || "N/A";
-  const acceptedRequests = statsLoading ? "..." : apiStats?.acceptedRequests || "N/A";
-  const completedRequests = statsLoading ? "..." : apiStats?.completedRequests || "N/A";
+  const totalRequests = statsLoading ?  "..."  : apiStats?.totalRequests || "0";
+  const pendingRequests =  statsLoading? "..." : apiStats?.pendingRequests || "0";
+  const acceptedRequests = statsLoading ? "..." : apiStats?.acceptedRequests || "0";
+  const completedRequests = statsLoading ? "..." : apiStats?.completedRequests || "0";
 
   // Calculate average rating
-  const averageRating = statsLoading? "..." : apiStats?.averageRating || "N/A";
+  const averageRating = statsLoading? "..." : apiStats?.averageRating || "0";
 
   const stats = [
     {
@@ -67,7 +67,7 @@ export default function RecipientDashboard() {
     },
     {
       label: "Active Now",
-      value: (pendingRequests + acceptedRequests).toString(),
+      value: (parseInt(pendingRequests) + parseInt(acceptedRequests)).toString(),
       change: `${pendingRequests} pending, ${acceptedRequests} accepted`,
       icon: <Clock className="h-6 w-6" />,
       color: "text-orange-600",
@@ -286,7 +286,7 @@ export default function RecipientDashboard() {
                   : "text-slate-600 hover:text-slate-900 border-transparent"
                   }`}
               >
-                Active Requests ({pendingRequests + acceptedRequests})
+                Active Requests ({parseInt(pendingRequests) + parseInt(acceptedRequests)})
               </button>
               
             </div>
