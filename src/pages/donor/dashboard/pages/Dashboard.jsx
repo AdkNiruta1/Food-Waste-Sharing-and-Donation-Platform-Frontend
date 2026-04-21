@@ -67,7 +67,6 @@ export default function DonorDashboard() {
     loading: activeLoading, 
     error: activeError, 
     fetchMyFoodDonation: fetchMyActiveFoodDonation, 
-    pagination: activePagination 
   } = useGetActiveDonation();
   const { error, foods: statsFoods, fetchDonorStats, loading: statsLoading } = useGetDonorStats();
   const { completePickup } = useCompletePickup();
@@ -117,11 +116,6 @@ export default function DonorDashboard() {
 
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleActivePageChange = (newPage) => {
-    setActiveCurrentPage(newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -328,7 +322,7 @@ export default function DonorDashboard() {
                 className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-slate-200/60 px-6"
               >
                 <Bell className="mr-2 h-4 w-4" />
-                Active Requests ({activePagination?.total || 0})
+                 Active Requests ({activeFoods.length || 0})
               </TabsTrigger>
             </TabsList>
 
@@ -601,20 +595,6 @@ export default function DonorDashboard() {
             {/* Active Requests List */}
             {!activeLoading && activeFoods.length > 0 && (
               <>
-                {/* Results Info for Active Requests */}
-                {activePagination && (
-                  <div className="flex justify-between items-center mb-4 text-sm text-slate-600">
-                    <p>
-                      Showing {(activePagination.currentPage - 1) * activePagination.limit + 1} to{' '}
-                      {Math.min(activePagination.currentPage * activePagination.limit, activePagination.total)} of{' '}
-                      {activePagination.total} active requests
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <span>Items per page: {activePagination.limit}</span>
-                    </div>
-                  </div>
-                )}
-
                 {activeFoods.map((post) => {
                   const isLoading = loadingMap[post._id] || false;
                   const error = errorMap[post._id] || null;
@@ -734,18 +714,6 @@ export default function DonorDashboard() {
                     </Card>
                   );
                 })}
-
-                {/* Active Requests Pagination */}
-                {activePagination && activePagination.totalPages > 1 && (
-                  <div className="mt-8 flex justify-center">
-                    <Pagination
-                      currentPage={activeCurrentPage}
-                      totalPages={activePagination.totalPages}
-                      onPageChange={handleActivePageChange}
-                      loading={activeLoading}
-                    />
-                  </div>
-                )}
               </>
             )}
           </TabsContent>
